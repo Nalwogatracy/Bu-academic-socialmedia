@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICT 3101 - Software Engineering | Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f3f4f6;
+        }
+
+        /* Navigation Bar (same as previous) */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px 10px 45px;
+            border: 1px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            background: #f5f5f5;
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-icon {
+            position: relative;
+            font-size: 1.3rem;
+            color: #555;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .nav-icon:hover {
+            color: #667eea;
+        }
+
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 30px;
+            transition: background 0.3s;
+        }
+
+        .user-profile:hover {
+            background: #f5f5f5;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 90px auto 30px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 25px;
+        }
+
+        /* Left Sidebar - Course Info */
+        .course-sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 90px;
+        }
+
+        .course-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .course-icon-large {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 3rem;
+            color: #667eea;
+        }
+
+        .course-code-large {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .course-name-large {
+            font-size: 1.1rem;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .course-credits {
+            background: #f8f9fa;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
+            display: inline-block;
+        }
+
+        .instructor-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .instructor-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .instructor-details {
+            flex: 1;
+        }
+
+        .instructor-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .instructor-title {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .course-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .course-stat {
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .course-stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .course-stat-label {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .progress-section {
+            margin-bottom: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 65%;
+            border-radius: 4px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: #555;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu-item:hover {
+            background: #f5f5f5;
+            color: #667eea;
+        }
+
+        .sidebar-menu-item.active {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            color: #667eea;
+            font-weight: 500;
+            border-left: 3px solid #667eea;
+        }
+
+        .sidebar-menu-item i {
+            font-size: 1.2rem;
+            width: 25px;
+        }
+
+        .sidebar-menu-item .badge {
+            position: static;
+            margin-left: auto;
+        }
+
+        /* Main Content */
+        .course-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Course Navigation Tabs */
+        .content-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: #f5f5f5;
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* Materials Section */
+        .materials-section {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Week/Module Accordion */
+        .week-accordion {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .week-header {
+            background: #f8f9fa;
+            padding: 18px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.3s;
+        }
+
+        .week-header:hover {
+            background: #f0f0f0;
+        }
+
+        .week-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .week-number {
+            font-weight: 700;
+            color: #667eea;
+            background: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .week-title {
+            font-weight: 600;
+        }
+
+        .week-dates {
+            color: #666;
+            font-size: 0.9rem;
+            margin-left: 15px;
+        }
+
+        .week-header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .week-stats {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .week-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .week-content {
+            display: none;
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+        }
+
+        .week-content.active {
+            display: block;
+        }
+
+        /* Material Items */
+        .material-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .material-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 10px rgba(102,126,234,0.1);
+        }
+
+        .material-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #667eea;
+            margin-right: 15px;
+        }
+
+        .material-details {
+            flex: 1;
+        }
+
+        .material-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .material-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .material-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .material-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .material-action-btn {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: none;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .material-action-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Assignments Grid */
+        .assignments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .assignment-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .assignment-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102,126,234,0.1);
+        }
+
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .assignment-type {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .assignment-points {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .assignment-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .assignment-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .assignment-deadline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #fff3e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .deadline-urgent {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .assignment-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-not-started {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-in-progress {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .status-submitted {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-graded {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Discussion Forum */
+        .forum-topics {
+            margin-top: 20px;
+        }
+
+        .topic-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .topic-item:hover {
+            border-color: #667eea;
+        }
+
+        .topic-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #667eea;
+        }
+
+        .topic-content {
+            flex: 1;
+        }
+
+        .topic-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .topic-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .topic-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .topic-stat {
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .topic-stat-value {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .topic-stat-label {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .topic-last-reply {
+            font-size: 0.85rem;
+            color: #667eea;
+        }
+
+        /* Grades Table */
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grades-table th {
+            text-align: left;
+            padding: 15px;
+            background: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .grades-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .grades-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .assignment-cell {
+            font-weight: 500;
+        }
+
+        .grade-cell {
+            font-weight: 600;
+        }
+
+        .grade-pass {
+            color: #2e7d32;
+        }
+
+        .grade-fail {
+            color: #c62828;
+        }
+
+        .feedback-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* People Section */
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .person-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .person-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102,126,234,0.1);
+        }
+
+        .person-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0 auto 15px;
+        }
+
+        .person-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .person-role {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .person-status {
+            font-size: 0.85rem;
+            color: #2e7d32;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .message-person-btn {
+            margin-top: 15px;
+            padding: 8px 20px;
+            border: 1px solid #667eea;
+            background: none;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .message-person-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .course-sidebar {
+                position: static;
+            }
+            
+            .assignments-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .week-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .week-header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .material-item {
+                flex-wrap: wrap;
+            }
+            
+            .material-actions {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        /* Toggle functionality */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema<span style="font-weight:300">Connect</span></span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search in this course...">
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-icon">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge">3</span>
+                </div>
+                <div class="nav-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">5</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar">NT</div>
+                    <div class="user-info">
+                        <span class="user-name">Nalwoga Tracy</span>
+                        <span class="user-role">BSE Year 3</span>
+                    </div>
+                    <i class="fas fa-chevron-down" style="font-size:0.8rem; color:#666;"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Left Sidebar - Course Info -->
+        <div class="course-sidebar">
+            <div class="course-header">
+                <div class="course-icon-large">
+                    <i class="fas fa-code"></i>
+                </div>
+                <div class="course-code-large">ICT 3101</div>
+                <div class="course-name-large">Software Engineering</div>
+                <span class="course-credits">3 Credits</span>
+            </div>
+
+            <div class="instructor-info">
+                <div class="instructor-avatar">LO</div>
+                <div class="instructor-details">
+                    <div class="instructor-name">Mr. Laban Onyango</div>
+                    <div class="instructor-title">Course Instructor</div>
+                </div>
+                <i class="fas fa-envelope" style="color:#667eea; cursor:pointer;"></i>
+            </div>
+
+            <div class="course-stats">
+                <div class="course-stat">
+                    <div class="course-stat-value">45</div>
+                    <div class="course-stat-label">Students</div>
+                </div>
+                <div class="course-stat">
+                    <div class="course-stat-value">12</div>
+                    <div class="course-stat-label">Materials</div>
+                </div>
+                <div class="course-stat">
+                    <div class="course-stat-value">4</div>
+                    <div class="course-stat-label">Assignments</div>
+                </div>
+                <div class="course-stat">
+                    <div class="course-stat-value">87%</div>
+                    <div class="course-stat-label">Avg Grade</div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span>Course Progress</span>
+                    <span>65%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:65%"></div>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item active" onclick="switchMainTab('materials')">
+                    <i class="fas fa-book-open"></i>
+                    <span>Materials</span>
+                </li>
+                <li class="sidebar-menu-item" onclick="switchMainTab('assignments')">
+                    <i class="fas fa-tasks"></i>
+                    <span>Assignments</span>
+                    <span class="badge" style="position:static; margin-left:auto; background:#667eea;">2</span>
+                </li>
+                <li class="sidebar-menu-item" onclick="switchMainTab('discussions')">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                    <span class="badge" style="position:static; margin-left:auto; background:#ef4444;">8</span>
+                </li>
+                <li class="sidebar-menu-item" onclick="switchMainTab('grades')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Grades</span>
+                </li>
+                <li class="sidebar-menu-item" onclick="switchMainTab('people')">
+                    <i class="fas fa-users"></i>
+                    <span>Classmates</span>
+                </li>
+                <li class="sidebar-menu-item" onclick="switchMainTab('syllabus')">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Syllabus</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="course-content">
+            <!-- Quick Navigation Tabs -->
+            <div class="content-tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">All</button>
+                <button class="tab-btn" onclick="switchTab('lectures')">Lectures</button>
+                <button class="tab-btn" onclick="switchTab('assignments')">Assignments</button>
+                <button class="tab-btn" onclick="switchTab('readings')">Readings</button>
+                <button class="tab-btn" onclick="switchTab('videos')">Videos</button>
+                <button class="tab-btn" onclick="switchTab('quizzes')">Quizzes</button>
+            </div>
+
+            <!-- Materials Section (Default) -->
+            <div id="materials-tab" class="tab-content active">
+                <div class="section-header">
+                    <h2>📚 Course Materials</h2>
+                    <!-- Only visible to lecturers -->
+                    <button class="upload-btn" style="display:none;" id="lecturerUploadBtn">
+                        <i class="fas fa-upload"></i>
+                        Upload Material
+                    </button>
+                </div>
+
+                <!-- Week 1 -->
+                <div class="week-accordion">
+                    <div class="week-header" onclick="toggleWeek(this)">
+                        <div class="week-header-left">
+                            <span class="week-number">Week 1</span>
+                            <span class="week-title">Introduction to Software Engineering</span>
+                            <span class="week-dates">Jan 15 - Jan 21</span>
+                        </div>
+                        <div class="week-header-right">
+                            <div class="week-stats">
+                                <span class="week-stat"><i class="fas fa-file-pdf"></i> 3</span>
+                                <span class="week-stat"><i class="fas fa-video"></i> 2</span>
+                                <span class="week-stat"><i class="fas fa-tasks"></i> 1</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="week-content active">
+                        <!-- Material Item 1 -->
+                        <div class="material-item">
+                            <div class="material-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="material-details">
+                                <div class="material-title">Lecture 1 - Introduction to SE.pdf</div>
+                                <div class="material-meta">
+                                    <span><i class="far fa-clock"></i> Uploaded Jan 15</span>
+                                    <span><i class="fas fa-download"></i> 32 downloads</span>
+                                    <span><i class="far fa-file-pdf"></i> 2.4 MB</span>
+                                </div>
+                            </div>
+                            <div class="material-actions">
+                                <button class="material-action-btn"><i class="fas fa-download"></i></button>
+                                <button class="material-action-btn"><i class="fas fa-share-alt"></i></button>
+                                <button class="material-action-btn"><i class="fas fa-bookmark"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Material Item 2 -->
+                        <div class="material-item">
+                            <div class="material-icon">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <div class="material-details">
+                                <div class="material-title">Lecture Recording - Introduction</div>
+                                <div class="material-meta">
+                                    <span><i class="far fa-clock"></i> Uploaded Jan 16</span>
+                                    <span><i class="fas fa-eye"></i> 28 views</span>
+                                    <span><i class="far fa-clock"></i> 45:32 min</span>
+                                </div>
+                            </div>
+                            <div class="material-actions">
+                                <button class="material-action-btn"><i class="fas fa-play"></i></button>
+                                <button class="material-action-btn"><i class="fas fa-download"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Material Item 3 -->
+                        <div class="material-item">
+                            <div class="material-icon">
+                                <i class="fas fa-file-powerpoint"></i>
+                            </div>
+                            <div class="material-details">
+                                <div class="material-title">Week 1 Slides - Software Engineering Basics</div>
+                                <div class="material-meta">
+                                    <span><i class="far fa-clock"></i> Uploaded Jan 15</span>
+                                    <span><i class="fas fa-download"></i> 45 downloads</span>
+                                    <span><i class="far fa-file-powerpoint"></i> 5.1 MB</span>
+                                </div>
+                            </div>
+                            <div class="material-actions">
+                                <button class="material-action-btn"><i class="fas fa-download"></i></button>
+                                <button class="material-action-btn"><i class="fas fa-share-alt"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 2 -->
+                <div class="week-accordion">
+                    <div class="week-header" onclick="toggleWeek(this)">
+                        <div class="week-header-left">
+                            <span class="week-number">Week 2</span>
+                            <span class="week-title">Software Development Life Cycle</span>
+                            <span class="week-dates">Jan 22 - Jan 28</span>
+                        </div>
+                        <div class="week-header-right">
+                            <div class="week-stats">
+                                <span class="week-stat"><i class="fas fa-file-pdf"></i> 4</span>
+                                <span class="week-stat"><i class="fas fa-video"></i> 1</span>
+                                <span class="week-stat"><i class="fas fa-tasks"></i> 1</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="week-content">
+                        <div class="material-item">
+                            <div class="material-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="material-details">
+                                <div class="material-title">SDLC Models - Waterfall vs Agile.pdf</div>
+                                <div class="material-meta">
+                                    <span><i class="far fa-clock"></i> Uploaded Jan 22</span>
+                                    <span><i class="fas fa-download"></i> 28 downloads</span>
+                                </div>
+                            </div>
+                            <div class="material-actions">
+                                <button class="material-action-btn"><i class="fas fa-download"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignments Tab -->
+            <div id="assignments-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>📋 Assignments</h2>
+                    <!-- Only visible to lecturers -->
+                    <button class="upload-btn" style="display:none;" id="lecturerAssignmentBtn">
+                        <i class="fas fa-plus"></i>
+                        Create Assignment
+                    </button>
+                </div>
+
+                <div class="assignments-grid">
+                    <!-- Assignment 1 -->
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <span class="assignment-type">Individual</span>
+                            <span class="assignment-points">100 pts</span>
+                        </div>
+                        <div class="assignment-title">Project Proposal</div>
+                        <div class="assignment-description">
+                            Submit a 2-page project proposal outlining your chosen software engineering project topic, objectives, and methodology.
+                        </div>
+                        <div class="assignment-deadline">
+                            <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
+                            <span><strong>Due:</strong> March 15, 2026 - 11:59 PM</span>
+                            <span class="deadline-urgent" style="margin-left:auto;">3 days left</span>
+                        </div>
+                        <div class="assignment-status">
+                            <span class="status-badge status-not-started">Not Started</span>
+                            <button class="submit-btn">Submit</button>
+                        </div>
+                    </div>
+
+                    <!-- Assignment 2 -->
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <span class="assignment-type">Group</span>
+                            <span class="assignment-points">150 pts</span>
+                        </div>
+                        <div class="assignment-title">Requirements Specification</div>
+                        <div class="assignment-description">
+                            Work with your group to create a complete Software Requirements Specification (SRS) document for your project.
+                        </div>
+                        <div class="assignment-deadline">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span><strong>Due:</strong> March 30, 2026 - 11:59 PM</span>
+                        </div>
+                        <div class="assignment-status">
+                            <span class="status-badge status-in-progress">In Progress</span>
+                            <button class="submit-btn">Continue</button>
+                        </div>
+                    </div>
+
+                    <!-- Assignment 3 -->
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <span class="assignment-type">Quiz</span>
+                            <span class="assignment-points">50 pts</span>
+                        </div>
+                        <div class="assignment-title">SDLC Models Quiz</div>
+                        <div class="assignment-description">
+                            Online quiz covering Software Development Life Cycle models, methodologies, and best practices.
+                        </div>
+                        <div class="assignment-deadline">
+                            <i class="fas fa-clock"></i>
+                            <span><strong>Available:</strong> Until April 5, 2026</span>
+                        </div>
+                        <div class="assignment-status">
+                            <span class="status-badge status-submitted">Submitted</span>
+                            <span style="color:#667eea; font-weight:600;">Score: 42/50</span>
+                        </div>
+                    </div>
+
+                    <!-- Assignment 4 -->
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <span class="assignment-type">Individual</span>
+                            <span class="assignment-points">200 pts</span>
+                        </div>
+                        <div class="assignment-title">Final Project - Phase 1</div>
+                        <div class="assignment-description">
+                            Complete implementation of core features for your software engineering project.
+                        </div>
+                        <div class="assignment-deadline">
+                            <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
+                            <span><strong>Due:</strong> April 20, 2026</span>
+                        </div>
+                        <div class="assignment-status">
+                            <span class="status-badge status-not-started">Not Started</span>
+                            <button class="submit-btn">Start</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discussions Tab -->
+            <div id="discussions-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>💬 Discussion Forum</h2>
+                    <button class="upload-btn">
+                        <i class="fas fa-plus"></i>
+                        New Topic
+                    </button>
+                </div>
+
+                <div class="forum-topics">
+                    <!-- Topic 1 -->
+                    <div class="topic-item">
+                        <div class="topic-icon">
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <div class="topic-content">
+                            <div class="topic-title">Question about Agile vs Waterfall for our project</div>
+                            <div class="topic-meta">
+                                <span>Started by John Mukasa</span>
+                                <span>2 days ago</span>
+                            </div>
+                        </div>
+                        <div class="topic-stats">
+                            <div class="topic-stat">
+                                <div class="topic-stat-value">8</div>
+                                <div class="topic-stat-label">replies</div>
+                            </div>
+                            <div class="topic-stat">
+                                <div class="topic-stat-value">24</div>
+                                <div class="topic-stat-label">views</div>
+                            </div>
+                        </div>
+                        <div class="topic-last-reply">
+                            Last reply by Mr. Onyango • 2h ago
+                        </div>
+                    </div>
+
+                    <!-- Topic 2 -->
+                    <div class="topic-item">
+                        <div class="topic-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="topic-content">
+                            <div class="topic-title">Recommended tools for UML diagrams?</div>
+                            <div class="topic-meta">
+                                <span>Started by Sarah Nabatanzi</span>
+                                <span>5 days ago</span>
+                            </div>
+                        </div>
+                        <div class="topic-stats">
+                            <div class="topic-stat">
+                                <div class="topic-stat-value">12</div>
+                                <div class="topic-stat-label">replies</div>
+                            </div>
+                            <div class="topic-stat">
+                                <div class="topic-stat-value">45</div>
+                                <div class="topic-stat-label">views</div>
+                            </div>
+                        </div>
+                        <div class="topic-last-reply">
+                            Last reply by Peter K • 1 day ago
+                        </div>
+                    </div>
+
+                    <!-- Topic 3 - Pinned -->
+                    <div class="topic-item" style="background:#f8f9fa; border-left:3px solid #667eea;">
+                        <div class="topic-icon">
+                            <i class="fas fa-thumbtack" style="color:#667eea;"></i>
+                        </div>
+                        <div class="topic-content">
+                            <div class="topic-title">📢 IMPORTANT: Project Guidelines and FAQs</div>
+                            <div class="topic-meta">
+                                <span>Pinned by Mr. Onyango</span>
+                                <span>1 week ago</span>
+                            </div>
+                        </div>
+                        <div class="topic-stats">
+                            <div class="topic-stat">
+                                <div class="topic-stat-value">23</div>
+                                <div class="topic-stat-label">replies</div>
+                            </div>
+                            <div class="topic-stat">
+                                <div class="topic-stat-value">156</div>
+                                <div class="topic-stat-label">views</div>
+                            </div>
+                        </div>
+                        <div class="topic-last-reply">
+                            Updated yesterday
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grades Tab -->
+            <div id="grades-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>📊 My Grades</h2>
+                    <select style="padding:8px 15px; border-radius:30px; border:1px solid #e0e0e0;">
+                        <option>All Assignments</option>
+                        <option>Individual Work</option>
+                        <option>Group Work</option>
+                        <option>Quizzes</option>
+                    </select>
+                </div>
+
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Assignment</th>
+                            <th>Type</th>
+                            <th>Due Date</th>
+                            <th>Grade</th>
+                            <th>Out of</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="assignment-cell">Project Proposal</td>
+                            <td>Individual</td>
+                            <td>Mar 15, 2026</td>
+                            <td class="grade-cell grade-pass">85</td>
+                            <td>100</td>
+                            <td><a href="#" class="feedback-link">View Feedback</a></td>
+                        </tr>
+                        <tr>
+                            <td class="assignment-cell">Requirements Specification</td>
+                            <td>Group</td>
+                            <td>Mar 30, 2026</td>
+                            <td class="grade-cell">-</td>
+                            <td>150</td>
+                            <td>Not graded yet</td>
+                        </tr>
+                        <tr>
+                            <td class="assignment-cell">SDLC Models Quiz</td>
+                            <td>Quiz</td>
+                            <td>Apr 5, 2026</td>
+                            <td class="grade-cell grade-pass">42</td>
+                            <td>50</td>
+                            <td><a href="#" class="feedback-link">View Feedback</a></td>
+                        </tr>
+                        <tr>
+                            <td class="assignment-cell">Midterm Examination</td>
+                            <td>Exam</td>
+                            <td>Apr 10, 2026</td>
+                            <td class="grade-cell grade-pass">78</td>
+                            <td>100</td>
+                            <td><a href="#" class="feedback-link">View Feedback</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top:30px; padding:20px; background:#f8f9fa; border-radius:12px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                        <span style="font-weight:600;">Current Course Grade</span>
+                        <span style="font-weight:700; color:#667eea; font-size:1.3rem;">B+ (82.5%)</span>
+                    </div>
+                    <div class="progress-bar" style="height:20px;">
+                        <div class="progress-fill" style="width:82.5%; height:20px;"></div>
+                    </div>
+                    <p style="margin-top:15px; color:#666; font-size:0.95rem;">
+                        <i class="fas fa-info-circle"></i> Based on 4 graded assignments out of 8 total
+                    </p>
+                </div>
+            </div>
+
+            <!-- People Tab -->
+            <div id="people-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>👥 Classmates (45)</h2>
+                    <input type="text" placeholder="Search classmates..." style="padding:10px 20px; border:1px solid #e0e0e0; border-radius:30px;">
+                </div>
+
+                <div class="people-grid">
+                    <!-- Instructor -->
+                    <div class="person-card">
+                        <div class="person-avatar-large">LO</div>
+                        <div class="person-name">Mr. Laban Onyango</div>
+                        <div class="person-role">Course Instructor</div>
+                        <div class="person-status">
+                            <i class="fas fa-circle" style="color:#2e7d32; font-size:0.5rem;"></i> Online now
+                        </div>
+                        <button class="message-person-btn">Message</button>
+                    </div>
+
+                    <!-- Student 1 -->
+                    <div class="person-card">
+                        <div class="person-avatar-large">JM</div>
+                        <div class="person-name">John Mukasa</div>
+                        <div class="person-role">BSE Year 3</div>
+                        <div class="person-status">
+                            <i class="fas fa-circle" style="color:#2e7d32; font-size:0.5rem;"></i> Online
+                        </div>
+                        <button class="message-person-btn">Message</button>
+                    </div>
+
+                    <!-- Student 2 -->
+                    <div class="person-card">
+                        <div class="person-avatar-large">SN</div>
+                        <div class="person-name">Sarah Nabatanzi</div>
+                        <div class="person-role">BSE Year 3</div>
+                        <div class="person-status" style="color:#666;">
+                            <i class="far fa-clock"></i> Last seen 2h ago
+                        </div>
+                        <button class="message-person-btn">Message</button>
+                    </div>
+
+                    <!-- Student 3 -->
+                    <div class="person-card">
+                        <div class="person-avatar-large">PK</div>
+                        <div class="person-name">Peter Kibuuka</div>
+                        <div class="person-role">BSE Year 3</div>
+                        <div class="person-status" style="color:#666;">
+                            <i class="far fa-clock"></i> Last seen 1 day ago
+                        </div>
+                        <button class="message-person-btn">Message</button>
+                    </div>
+
+                    <!-- Student 4 -->
+                    <div class="person-card">
+                        <div class="person-avatar-large">RN</div>
+                        <div class="person-name">Ritah Nakato</div>
+                        <div class="person-role">BSE Year 3</div>
+                        <div class="person-status">
+                            <i class="fas fa-circle" style="color:#2e7d32; font-size:0.5rem;"></i> Online
+                        </div>
+                        <button class="message-person-btn">Message</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle week accordion
+        function toggleWeek(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.fa-chevron-down');
+            
+            content.classList.toggle('active');
+            icon.style.transform = content.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        // Switch main tabs (Materials, Assignments, etc.)
+        function switchMainTab(tabName) {
+            // Update sidebar menu
+            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Show corresponding content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // If it's assignments tab, show lecturer button if user is lecturer
+            if (tabName === 'assignments') {
+                // Check user role (you'd set this from backend)
+                const isLecturer = false; // Change based on actual user role
+                document.getElementById('lecturerAssignmentBtn').style.display = isLecturer ? 'flex' : 'none';
+            }
+            
+            if (tabName === 'materials') {
+                const isLecturer = false;
+                document.getElementById('lecturerUploadBtn').style.display = isLecturer ? 'flex' : 'none';
+            }
+        }
+
+        // Switch filter tabs (All, Lectures, etc.)
+        function switchTab(filter) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Here you would filter materials based on type
+            console.log('Filtering by:', filter);
+        }
+
+        // Check user role on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // This would come from your backend (Thymeleaf)
+            const isLecturer = /*[[${user.role == 'LECTURER'}]]*/ false;
+            
+            if (isLecturer) {
+                document.getElementById('lecturerUploadBtn').style.display = 'flex';
+                document.getElementById('lecturerAssignmentBtn').style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>

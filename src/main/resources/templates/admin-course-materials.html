@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Materials - Bugema Academic Connect</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { background: #f0f2f5; overflow-x: hidden; }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed; width: 100%; top: 0; z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+        .nav-container {
+            max-width: 1400px; margin: 0 auto; padding: 0 24px;
+            height: 64px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-left  { display: flex; align-items: center; gap: 32px; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .search-bar { position: relative; width: 320px; }
+        .search-bar i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #5e6775; }
+        .search-bar input { width: 100%; padding: 10px 16px 10px 44px; border: none; border-radius: 24px; background: #eef3f8; font-size: 0.9rem; }
+        .search-bar input:focus { outline: none; }
+
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+
+        .logout-btn { border: none; background: transparent; color: #5e6775; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+
+        /* ── Layout ── */
+        .main-container {
+            max-width: 1400px; margin: 88px auto 30px; padding: 0 24px;
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            gap: 24px;
+        }
+
+        /* ── Sidebar ── */
+        .left-sidebar {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content; position: sticky; top: 88px;
+            border: 1px solid #eef0f3;
+        }
+        .profile-card { padding: 20px; border-bottom: 1px solid #eef0f3; background: linear-gradient(to bottom, #f7f9fc, white); }
+        .profile-cover { height: 80px; background: linear-gradient(135deg, #0a66c2, #7b2eda); margin: -20px -20px 0; margin-bottom: 30px; overflow: hidden; }
+        .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.2rem; font-weight: 600; margin: -45px auto 12px; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .profile-name-large { font-weight: 700; font-size: 1.3rem; text-align: center; color: #1a2634; }
+        .profile-title-large { color: #5e6775; font-size: 0.9rem; text-align: center; margin-bottom: 16px; background: #eef3f8; padding: 4px 12px; border-radius: 30px; display: table; margin-left: auto; margin-right: auto; }
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 0 8px; border-top: 1px solid #eef0f3; }
+        .stat-cell { text-align: center; background: #f7f9fc; padding: 12px; border-radius: 10px; }
+        .stat-num { font-weight: 700; font-size: 1.3rem; color: #0a66c2; }
+        .stat-label-small { font-size: 0.75rem; color: #5e6775; text-transform: uppercase; }
+
+        .menu-section { padding: 16px 0; }
+        .menu-item-prof { display: flex; align-items: center; gap: 14px; padding: 12px 20px; color: #1a2634; transition: all 0.2s; cursor: pointer; text-decoration: none; font-weight: 500; border-left: 3px solid transparent; }
+        .menu-item-prof:hover { background: #f7f9fc; color: #0a66c2; }
+        .menu-item-prof.active { background: #eef3f8; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+        .menu-item-prof i { font-size: 1.2rem; width: 24px; color: #5e6775; }
+        .menu-item-prof:hover i, .menu-item-prof.active i { color: #0a66c2; }
+
+        /* ── Main content ── */
+        .main-content {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px; border: 1px solid #eef0f3;
+            min-width: 0;
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-header h1 i {
+            color: #0a66c2;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #004182;
+        }
+        .btn-secondary {
+            background: #eef3f8;
+            color: #1a2634;
+        }
+        .btn-secondary:hover {
+            background: #e0e4e9;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #e0e4e9;
+            color: #1a2634;
+        }
+        .btn-outline:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #bb2d3b;
+        }
+
+        /* ── Course Info Bar ── */
+        .course-info-bar {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .course-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .course-code {
+            background: #eef3f8;
+            color: #0a66c2;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .course-name {
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 4px 12px 4px 4px;
+            border-radius: 8px;
+            border: 1px solid #e0e4e9;
+        }
+        .filter-group i {
+            color: #5e6775;
+            font-size: 0.9rem;
+            padding: 0 4px;
+        }
+        .filter-group select, .filter-group input {
+            border: none;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            outline: none;
+            background: transparent;
+            min-width: 140px;
+        }
+
+        /* ── Materials Table ── */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #eef0f3;
+            width: 100%;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 14px 16px;
+            background: #f7f9fc;
+            color: #1a2634;
+            font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #eef0f3;
+        }
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #eef0f3;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+        .data-table tr:hover td {
+            background: #f7f9fc;
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .material-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .material-icon {
+            width: 40px;
+            height: 40px;
+            background: #eef3f8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1.2rem;
+        }
+        .material-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .material-name {
+            font-weight: 600;
+            color: #1a2634;
+        }
+        .material-size {
+            font-size: 0.8rem;
+            color: #5e6775;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-pdf {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-video {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .badge-audio {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+        .badge-doc {
+            background: #e6f7e6;
+            color: #166534;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: #eef3f8;
+            color: #5e6775;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .btn-icon:hover {
+            background: #0a66c2;
+            color: white;
+        }
+        .btn-icon.delete:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* ── Modal ── */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.25s;
+        }
+        .modal-header {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+        .modal-close {
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: #5e6775;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+        .modal-footer {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid #eef0f3;
+        }
+
+        /* ── Form ── */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a2634;
+            font-size: 0.95rem;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0a66c2;
+            box-shadow: 0 0 0 3px rgba(10,102,194,0.1);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .file-upload {
+            border: 2px dashed #e0e4e9;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-upload:hover {
+            border-color: #0a66c2;
+            background: #f7f9fc;
+        }
+        .file-upload i {
+            font-size: 2rem;
+            color: #0a66c2;
+            margin-bottom: 12px;
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5e6775;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: #c8d0da;
+            display: block;
+            margin-bottom: 16px;
+        }
+        .empty-state h3 {
+            font-size: 1.1rem;
+            color: #1a2634;
+            margin-bottom: 8px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar {
+                display: none;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                    <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Admin</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search materials...">
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-item" onclick="window.location='/admin/dashboard'">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">0</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
+                </div>
+                <form th:action="@{/admin/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── Main container ── -->
+    <div class="main-container">
+
+        <!-- ── Sidebar ── -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
+                <div class="profile-name-large" th:text="${user != null ? user.fullName : 'Admin'}">Admin User</div>
+                <div class="profile-title-large">System Administrator</div>
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${totalUsers}">150</div>
+                        <div class="stat-label-small" >Total Users</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${totalCourses}">24</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/admin/dashboard}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/users}"><i class="fas fa-users-cog"></i><span>User Management</span></a>
+                <a class="menu-item-prof active" th:href="@{/admin/courses}"><i class="fas fa-book"></i><span>Course Management</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/posts}"><i class="fas fa-newspaper"></i><span>Content Moderation</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/analytics}"><i class="fas fa-chart-bar"></i><span>Analytics</span></a>
+            </div>
+        </div>
+
+        <!-- ── Main content ── -->
+        <div class="main-content">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>
+                    <i class="fas fa-file-alt"></i>
+                    Course Materials
+                </h1>
+                <div class="header-actions">
+                    <a class="btn btn-secondary" th:href="@{/admin/courses/{id}(id=${course.id})}">
+                        <i class="fas fa-arrow-left"></i> Back to Course
+                    </a>
+                    <button class="btn btn-primary" onclick="openModal('addMaterialModal')">
+                        <i class="fas fa-plus-circle"></i> Upload Material
+                    </button>
+                </div>
+            </div>
+
+            <!-- Course Info Bar -->
+            <div class="course-info-bar">
+                <div class="course-info">
+                    <span class="course-code" th:text="${course.code}">ICT3101</span>
+                    <span class="course-name" th:text="${course.name}">Software Engineering</span>
+                </div>
+                <div>
+                    <span style="color: #5e6775; margin-right: 16px;">
+                        <i class="fas fa-file"></i> Total: <span th:text="${materials != null ? #lists.size(materials) : 0}">0</span>
+                    </span>
+                    <span style="color: #5e6775;">
+                        <i class="fas fa-download"></i> Downloads: 245
+                    </span>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <i class="fas fa-filter"></i>
+                    <select id="typeFilter">
+                        <option value="all">All Types</option>
+                        <option value="PDF">PDF</option>
+                        <option value="VIDEO">Video</option>
+                        <option value="AUDIO">Audio</option>
+                        <option value="DOCUMENT">Document</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search materials...">
+                </div>
+                <button class="btn btn-outline" onclick="applyFilters()">
+                    <i class="fas fa-check"></i> Apply
+                </button>
+            </div>
+
+            <!-- Materials Table -->
+            <div th:if="${materials == null or #lists.isEmpty(materials)}" class="empty-state">
+                <i class="fas fa-file-upload"></i>
+                <h3>No materials uploaded yet</h3>
+                <p>Click "Upload Material" to add course materials.</p>
+            </div>
+
+            <div class="table-responsive" th:unless="${materials == null or #lists.isEmpty(materials)}">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Type</th>
+                            <th>Uploaded By</th>
+                            <th>Date</th>
+                            <th>Downloads</th>
+                            <th>Size</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="material : ${materials}">
+                            <td>
+                                <div class="material-cell">
+                                    <div class="material-icon">
+                                        <i th:class="${material.type == 'PDF' ? 'fas fa-file-pdf' : 
+                                                      (material.type == 'VIDEO' ? 'fas fa-video' : 
+                                                      (material.type == 'AUDIO' ? 'fas fa-headphones' : 
+                                                      (material.type == 'DOCUMENT' ? 'fas fa-file-word' : 'fas fa-file')))}"></i>
+                                    </div>
+                                    <div class="material-info">
+                                        <span class="material-name" th:text="${material.title}">Lecture Notes</span>
+                                        <span class="material-size" th:text="${material.fileName != null ? material.fileName : 'document.pdf'}">document.pdf</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${material.type == 'PDF' ? 'badge-pdf' : 
+                                                                     (material.type == 'VIDEO' ? 'badge-video' : 
+                                                                     (material.type == 'AUDIO' ? 'badge-audio' : 'badge-doc'))}"
+                                      th:text="${material.type != null ? material.type : 'OTHER'}">PDF</span>
+                            </td>
+                            <td th:text="${material.uploadedBy != null ? material.uploadedBy.fullName : 'Admin'}">Dr. Onyango</td>
+                            <td th:text="${material.uploadDate != null ? material.uploadDate : '2024-01-15'}">2024-01-15</td>
+                            <td th:text="${material.downloadCount != null ? material.downloadCount : 0}">24</td>
+                            <td th:text="${material.fileSize != null ? material.fileSize : '2.4 MB'}">2.4 MB</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" th:onclick="'previewMaterial('+${material.id}+')'" title="Preview">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon" th:onclick="'downloadMaterial('+${material.id}+')'" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn-icon" th:onclick="'editMaterial('+${material.id}+')'" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form th:action="@{/courses/{courseId}/materials/{id}/delete(courseId=${course.id}, id=${material.id})}" 
+                                          method="post" style="display:inline;"
+                                          onsubmit="return confirm('Delete this material? This cannot be undone.')">
+                                        <button type="submit" class="btn-icon delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 24px;">
+                <span style="color:#5e6775;">Showing 1–10 of <span th:text="${materials != null ? #lists.size(materials) : 0}">0</span></span>
+                <a href="#" class="page-link active">1</a>
+                <a href="#" class="page-link">2</a>
+                <a href="#" class="page-link">3</a>
+                <a href="#" class="page-link"><i class="fas fa-chevron-right"></i></a>
+            </div>
+
+        </div><!-- end .main-content -->
+    </div><!-- end .main-container -->
+
+    <!-- Add Material Modal -->
+    <div class="modal" id="addMaterialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-upload" style="color:#0a66c2; margin-right:8px;"></i>Upload Material</h3>
+                <button class="modal-close" onclick="closeModal('addMaterialModal')">&times;</button>
+            </div>
+            <form th:action="@{/courses/{id}/materials/upload(id=${course.id})}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Material Title</label>
+                        <input type="text" name="title" required placeholder="e.g., Lecture 1: Introduction">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select name="type" required>
+                                <option value="PDF">PDF Document</option>
+                                <option value="VIDEO">Video</option>
+                                <option value="AUDIO">Audio</option>
+                                <option value="DOCUMENT">Document (Word/PPT)</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Visibility</label>
+                            <select name="visibility">
+                                <option value="PUBLIC">Public</option>
+                                <option value="ENROLLED_ONLY">Enrolled Students Only</option>
+                                <option value="LECTURERS_ONLY">Lecturers Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description <span class="hint">(optional)</span></label>
+                        <textarea name="description" rows="3" placeholder="Brief description of the material..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>File</label>
+                        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload or drag and drop</p>
+                            <p style="font-size:0.8rem; color:#5e6775; margin-top:8px;">PDF, Video, Audio, Documents (Max 100MB)</p>
+                        </div>
+                        <input type="file" id="fileInput" name="file" style="display: none;" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addMaterialModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #e0e4e9;
+            color: #1a2634;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .page-link:hover,
+        .page-link.active {
+            background: #0a66c2;
+            color: white;
+            border-color: #0a66c2;
+        }
+    </style>
+
+    <script>
+        // Modal functions
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        };
+
+        // Material actions
+        function previewMaterial(id) {
+            window.open('/admin/materials/' + id + '/preview', '_blank');
+        }
+        function downloadMaterial(id) {
+            window.location.href = '/admin/materials/' + id + '/download';
+        }
+        function editMaterial(id) {
+            alert('Edit material ' + id + ' - implement edit functionality');
+        }
+
+        // Filter functions
+        function applyFilters() {
+            const type = document.getElementById('typeFilter').value;
+            const search = document.getElementById('searchInput').value;
+            // Implement filter logic here
+            console.log('Filtering by:', type, search);
+        }
+
+        // File upload display
+        document.getElementById('fileInput')?.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const fileName = this.files[0].name;
+                const uploadArea = document.querySelector('.file-upload p');
+                if (uploadArea) {
+                    uploadArea.innerHTML = `<strong>${fileName}</strong> selected`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

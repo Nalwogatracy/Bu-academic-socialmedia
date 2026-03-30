@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Moderation - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Copy all base styles from previous pages */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .search-bar { position: relative; width: 320px; }
+        .search-bar i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #5e6775; }
+        .search-bar input { width: 100%; padding: 10px 16px 10px 44px; border: none; border-radius: 24px; background: #eef3f8; }
+        
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+        
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        
+        .logout-btn { border: none; background: transparent; color: #5e6775; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card { padding: 20px; border-bottom: 1px solid #eef0f3; background: linear-gradient(to bottom, #f7f9fc, white); }
+        .profile-cover { height: 80px; background: linear-gradient(135deg, #0a66c2, #7b2eda); margin: -20px -20px 0 -20px; margin-bottom: 30px; position: relative; overflow: hidden; }
+        .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.2rem; font-weight: 600; margin: -45px auto 12px; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .profile-name-large { font-weight: 700; font-size: 1.3rem; text-align: center; color: #1a2634; }
+        .profile-title-large { color: #5e6775; font-size: 0.9rem; text-align: center; margin-bottom: 16px; background: #eef3f8; padding: 4px 12px; border-radius: 30px; display: inline-block; margin-left: auto; margin-right: auto; width: fit-content; }
+        
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 0 8px; border-top: 1px solid #eef0f3; }
+        .stat-cell { text-align: center; background: #f7f9fc; padding: 12px; border-radius: 10px; }
+        .stat-num { font-weight: 700; font-size: 1.3rem; color: #0a66c2; }
+        .stat-label-small { font-size: 0.75rem; color: #5e6775; text-transform: uppercase; }
+
+        .menu-section { padding: 16px 0; }
+        .menu-item-prof { display: flex; align-items: center; gap: 14px; padding: 12px 20px; color: #1a2634; transition: all 0.2s; cursor: pointer; text-decoration: none; font-weight: 500; border-left: 3px solid transparent; }
+        .menu-item-prof:hover { background: #f7f9fc; color: #0a66c2; }
+        .menu-item-prof.active { background: #eef3f8; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+        .menu-item-prof i { font-size: 1.2rem; width: 24px; color: #5e6775; }
+        .menu-item-prof:hover i { color: #0a66c2; }
+        .menu-badge { margin-left: auto; background: #eef3f8; color: #1a2634; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .menu-badge.danger { background: #f8d7da; color: #cc1010; }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header h1 i {
+            color: #0a66c2;
+            font-size: 2rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #004182;
+        }
+
+        .btn-secondary {
+            background: #eef3f8;
+            color: #1a2634;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e4e9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #e0e4e9;
+            color: #1a2634;
+        }
+
+        .btn-outline:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+        }
+
+        .btn-danger {
+            background: #cc1010;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #a50d0d;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            border-color: #0a66c2;
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: #eef3f8;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #0a66c2;
+        }
+
+        .stat-info h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+        }
+
+        .stat-info .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+            line-height: 1.2;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 4px 12px 4px 4px;
+            border-radius: 8px;
+            border: 1px solid #e0e4e9;
+        }
+
+        .filter-group i {
+            color: #5e6775;
+            font-size: 0.9rem;
+            padding: 0 4px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            border: none;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            outline: none;
+            background: transparent;
+            min-width: 140px;
+        }
+
+        /* Posts Grid */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .post-card {
+            background: white;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .post-card:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .post-card.reported {
+            border-left: 4px solid #cc1010;
+            background: #fff8f8;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .post-author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .post-author-info {
+            flex: 1;
+        }
+
+        .post-author-name {
+            font-weight: 600;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: #5e6775;
+        }
+
+        .post-meta i {
+            font-size: 0.8rem;
+            margin-right: 4px;
+        }
+
+        .post-type {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .post-type.discussion {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .post-type.material {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .post-type.question {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .post-content {
+            margin-bottom: 16px;
+        }
+
+        .post-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a2634;
+            margin-bottom: 8px;
+        }
+
+        .post-text {
+            color: #2c3e50;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .post-attachment {
+            background: #f7f9fc;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #eef0f3;
+        }
+
+        .attachment-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1.2rem;
+        }
+
+        .attachment-info {
+            flex: 1;
+        }
+
+        .attachment-name {
+            font-weight: 500;
+            color: #1a2634;
+            font-size: 0.9rem;
+        }
+
+        .attachment-size {
+            font-size: 0.75rem;
+            color: #5e6775;
+        }
+
+        .post-stats {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+            border-bottom: 1px solid #eef0f3;
+            margin-bottom: 16px;
+        }
+
+        .post-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .post-stat i {
+            color: #0a66c2;
+        }
+
+        .post-stat.highlight {
+            color: #cc1010;
+        }
+
+        .post-stat.highlight i {
+            color: #cc1010;
+        }
+
+        .report-details {
+            background: #fff8f8;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .report-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: #cc1010;
+            font-weight: 600;
+        }
+
+        .report-list {
+            list-style: none;
+        }
+
+        .report-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ffe6e6;
+        }
+
+        .report-item:last-child {
+            border-bottom: none;
+        }
+
+        .report-reason {
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .report-count {
+            background: #cc1010;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .comment {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #eef3f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #1a2634;
+            font-size: 0.9rem;
+        }
+
+        .comment-time {
+            font-size: 0.75rem;
+            color: #5e6775;
+        }
+
+        .comment-text {
+            color: #2c3e50;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .comment-action {
+            font-size: 0.8rem;
+            color: #5e6775;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .comment-action:hover {
+            color: #0a66c2;
+        }
+
+        .comment-action.danger:hover {
+            color: #cc1010;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .action-card {
+            background: #f7f9fc;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-card:hover {
+            background: #0a66c2;
+            border-color: #0a66c2;
+        }
+
+        .action-card:hover i,
+        .action-card:hover h4,
+        .action-card:hover p {
+            color: white;
+        }
+
+        .action-card i {
+            font-size: 2rem;
+            color: #0a66c2;
+            margin-bottom: 12px;
+        }
+
+        .action-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+
+        .action-card p {
+            font-size: 0.8rem;
+            color: #5e6775;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 500px;
+            max-width: 90%;
+            padding: 24px;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: #5e6775;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar {
+                display: none;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                    <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Admin</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search posts...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${notifications}">5</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
+                </div>
+                <form th:action="@{/admin/logout}" method="post">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Admin User</div>
+                <div class="profile-title-large">Content Moderator</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${moderatedToday}">24</div>
+                        <div class="stat-label-small">Moderated Today</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${pendingReports}">12</div>
+                        <div class="stat-label-small">Pending</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/admin/dashboard}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/users}">
+                    <i class="fas fa-users-cog"></i>
+                    <span>User Management</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/courses}">
+                    <i class="fas fa-book"></i>
+                    <span>Course Management</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/admin/posts}">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Content Moderation</span>
+                    <span class="menu-badge danger" th:text="${pendingReports}">5</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/analytics}">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/reports}">
+                    <i class="fas fa-flag"></i>
+                    <span>Reports</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/system}">
+                    <i class="fas fa-cog"></i>
+                    <span>System Settings</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/logs}">
+                    <i class="fas fa-history"></i>
+                    <span>Audit Logs</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>
+                    <i class="fas fa-newspaper"></i>
+                    Content Moderation
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="openModal('announcementModal')">
+                        <i class="fas fa-bullhorn"></i> Send Announcement
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportPosts()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Posts</h3>
+                        <div class="stat-number" th:text="${totalPosts}">3,456</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Reported</h3>
+                        <div class="stat-number" th:text="${reportedPosts}">23</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Comments</h3>
+                        <div class="stat-number" th:text="${totalComments}">8,942</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Pending Review</h3>
+                        <div class="stat-number" th:text="${pendingReports}">12</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <i class="fas fa-tag"></i>
+                    <select id="typeFilter">
+                        <option value="all">All Types</option>
+                        <option value="DISCUSSION">Discussions</option>
+                        <option value="MATERIAL">Materials</option>
+                        <option value="QUESTION">Questions</option>
+                        <option value="ANNOUNCEMENT">Announcements</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <i class="fas fa-flag"></i>
+                    <select id="statusFilter">
+                        <option value="all">All Posts</option>
+                        <option value="reported">Reported Only</option>
+                        <option value="pending">Pending Review</option>
+                        <option value="approved">Approved</option>
+                        <option value="hidden">Hidden</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <i class="fas fa-calendar"></i>
+                    <select id="dateFilter">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="flex:1;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search posts by title or content...">
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn btn-outline" onclick="applyFilters()">
+                        <i class="fas fa-check"></i> Apply
+                    </button>
+                    <button class="btn btn-outline" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Posts List -->
+            <div class="posts-grid">
+                <!-- Reported Post Example -->
+                <div th:each="post : ${posts}" class="post-card" th:classappend="${post.reported ? 'reported' : ''}">
+                    <div class="post-header">
+                        <div class="post-author-avatar" th:text="${#strings.substring(post.authorName, 0, 2)}">JD</div>
+                        <div class="post-author-info">
+                            <div class="post-author-name" th:text="${post.authorName}">John Doe</div>
+                            <div class="post-meta">
+                                <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(post.createdAt, 'MMM dd, HH:mm')}">Mar 6, 10:30</span></span>
+                                <span><i class="fas fa-book"></i> <span th:text="${post.courseName}">Software Engineering</span></span>
+                                <span class="post-type" th:classappend="
+                                    ${post.type == 'DISCUSSION' ? 'discussion' : 
+                                    (post.type == 'MATERIAL' ? 'material' : 'question')}"
+                                    th:text="${post.type}">Discussion</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-content">
+                        <div class="post-title" th:text="${post.title}">Understanding Inheritance in Java</div>
+                        <div class="post-text" th:text="${post.content}">Can someone explain the concept of inheritance with practical examples? I'm having trouble understanding...</div>
+                        
+                        <!-- Attachment (if any) -->
+                        <div th:if="${post.hasAttachment}" class="post-attachment">
+                            <div class="attachment-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="attachment-info">
+                                <div class="attachment-name" th:text="${post.attachmentName}">Java_Inheritance_Notes.pdf</div>
+                                <div class="attachment-size" th:text="${post.attachmentSize}">2.4 MB</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-stats">
+                        <div class="post-stat">
+                            <i class="far fa-heart"></i> <span th:text="${post.likes}">24</span>
+                        </div>
+                        <div class="post-stat">
+                            <i class="far fa-comment"></i> <span th:text="${post.comments}">12</span>
+                        </div>
+                        <div class="post-stat">
+                            <i class="far fa-eye"></i> <span th:text="${post.views}">156</span>
+                        </div>
+                        <div th:if="${post.reported}" class="post-stat highlight">
+                            <i class="fas fa-flag"></i> <span th:text="${post.reportCount}">3</span> reports
+                        </div>
+                    </div>
+
+                    <!-- Report Details (if reported) -->
+                    <div th:if="${post.reported}" class="report-details">
+                        <div class="report-header">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Content Reports</span>
+                        </div>
+                        <div class="report-list">
+                            <div th:each="report : ${post.reports}" class="report-item">
+                                <span class="report-reason" th:text="${report.reason}">Inappropriate content</span>
+                                <span class="report-count" th:text="${report.count}">2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comments Preview -->
+                    <div th:if="${post.showComments}" class="comments-section">
+                        <div th:each="comment : ${post.recentComments}" class="comment">
+                            <div class="comment-avatar" th:text="${#strings.substring(comment.authorName, 0, 2)}">JS</div>
+                            <div class="comment-content">
+                                <div class="comment-header">
+                                    <span class="comment-author" th:text="${comment.authorName}">Jane Smith</span>
+                                    <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'HH:mm')}">10:30</span>
+                                </div>
+                                <div class="comment-text" th:text="${comment.text}">Great explanation! This really helped me understand.</div>
+                                <div class="comment-actions">
+                                    <span class="comment-action"><i class="far fa-flag"></i> Report</span>
+                                    <span class="comment-action danger"><i class="fas fa-ban"></i> Hide</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Moderation Actions -->
+                    <div class="post-actions">
+                        <button th:if="${post.reported}" class="btn btn-primary" th:onclick="'reviewPost(' + ${post.id} + ')'">
+                            <i class="fas fa-check-circle"></i> Review Reports
+                        </button>
+                        <button class="btn btn-outline" th:onclick="'viewPost(' + ${post.id} + ')'">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-outline" th:onclick="'hidePost(' + ${post.id} + ')'">
+                            <i class="fas fa-eye-slash"></i> Hide
+                        </button>
+                        <button class="btn btn-danger" th:onclick="'deletePost(' + ${post.id} + ')'">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="action-card" onclick="openModal('announcementModal')">
+                    <i class="fas fa-bullhorn"></i>
+                    <h4>Send Announcement</h4>
+                    <p>Broadcast to all users</p>
+                </div>
+                <div class="action-card" onclick="reviewAllReports()">
+                    <i class="fas fa-flag"></i>
+                    <h4>Review All Reports</h4>
+                    <p><span th:text="${pendingReports}">12</span> pending reports</p>
+                </div>
+                <div class="action-card" onclick="moderationSettings()">
+                    <i class="fas fa-cog"></i>
+                    <h4>Moderation Settings</h4>
+                    <p>Configure filters</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 24px;">
+                <span style="color:#5e6775; margin-right:16px;">Showing 1-10 of <span th:text="${totalPosts}">3,456</span></span>
+                <a href="#" class="page-link active">1</a>
+                <a href="#" class="page-link">2</a>
+                <a href="#" class="page-link">3</a>
+                <a href="#" class="page-link">4</a>
+                <a href="#" class="page-link">5</a>
+                <a href="#" class="page-link">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Announcement Modal -->
+    <div class="modal" id="announcementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Send Announcement</h3>
+                <span class="modal-close" onclick="closeModal('announcementModal')">&times;</span>
+            </div>
+            <form th:action="@{/admin/announcements/send}" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" name="title" required placeholder="Announcement title">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea name="message" rows="4" required placeholder="Enter your announcement..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Send to</label>
+                        <select name="recipients" required>
+                            <option value="ALL">All Users</option>
+                            <option value="STUDENTS">All Students</option>
+                            <option value="LECTURERS">All Lecturers</option>
+                            <option value="COURSE">Specific Course</option>
+                            <option value="DEPARTMENT">Specific Department</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="courseSelect" style="display:none;">
+                        <label>Select Course</label>
+                        <select name="courseId">
+                            <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.name}">Software Engineering</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="departmentSelect" style="display:none;">
+                        <label>Select Department</label>
+                        <select name="department">
+                            <option value="COMPUTING">Computing</option>
+                            <option value="BUSINESS">Business</option>
+                            <option value="EDUCATION">Education</option>
+                            <option value="THEOLOGY">Theology</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select name="priority">
+                            <option value="NORMAL">Normal</option>
+                            <option value="IMPORTANT">Important</option>
+                            <option value="URGENT">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('announcementModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Announcement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Review Post Modal -->
+    <div class="modal" id="reviewPostModal">
+        <div class="modal-content" style="width: 600px;">
+            <div class="modal-header">
+                <h3>Review Content Reports</h3>
+                <span class="modal-close" onclick="closeModal('reviewPostModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 8px;">Post Details</h4>
+                    <p><strong>Title:</strong> <span id="reviewPostTitle"></span></p>
+                    <p><strong>Author:</strong> <span id="reviewPostAuthor"></span></p>
+                </div>
+                
+                <h4 style="margin-bottom: 12px;">Reports Summary</h4>
+                <div id="reportsList" style="margin-bottom: 20px;">
+                    <!-- Reports will be populated by JavaScript -->
+                </div>
+
+                <div class="form-group">
+                    <label>Moderation Action</label>
+                    <select id="moderationAction">
+                        <option value="APPROVE">Approve Content (No action needed)</option>
+                        <option value="WARN">Warn User</option>
+                        <option value="HIDE">Hide Content</option>
+                        <option value="DELETE">Delete Content</option>
+                        <option value="SUSPEND">Suspend User</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Moderator Notes</label>
+                    <textarea id="moderatorNotes" rows="3" placeholder="Add notes about this decision..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('reviewPostModal')">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitModeration()">Apply Action</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Show/hide conditional fields in announcement modal
+        document.querySelector('select[name="recipients"]')?.addEventListener('change', function(e) {
+            const courseSelect = document.getElementById('courseSelect');
+            const departmentSelect = document.getElementById('departmentSelect');
+            
+            if (e.target.value === 'COURSE') {
+                courseSelect.style.display = 'block';
+                departmentSelect.style.display = 'none';
+            } else if (e.target.value === 'DEPARTMENT') {
+                courseSelect.style.display = 'none';
+                departmentSelect.style.display = 'block';
+            } else {
+                courseSelect.style.display = 'none';
+                departmentSelect.style.display = 'none';
+            }
+        });
+
+        // Post Actions
+        function viewPost(postId) {
+            window.location.href = '/admin/posts/' + postId;
+        }
+
+        function reviewPost(postId) {
+            fetch('/api/admin/posts/' + postId + '/reports')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('reviewPostTitle').textContent = data.title;
+                    document.getElementById('reviewPostAuthor').textContent = data.author;
+                    
+                    const reportsList = document.getElementById('reportsList');
+                    reportsList.innerHTML = '';
+                    data.reports.forEach(report => {
+                        reportsList.innerHTML += `
+                            <div style="display: flex; justify-content: space-between; padding: 8px; background: #f8f9fa; margin-bottom: 4px; border-radius: 4px;">
+                                <span>${report.reason}</span>
+                                <span style="color: #cc1010; font-weight: 600;">${report.count} reports</span>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('reviewPostModal').setAttribute('data-post-id', postId);
+                    openModal('reviewPostModal');
+                });
+        }
+
+        function submitModeration() {
+            const postId = document.getElementById('reviewPostModal').getAttribute('data-post-id');
+            const action = document.getElementById('moderationAction').value;
+            const notes = document.getElementById('moderatorNotes').value;
+            
+            fetch('/admin/posts/' + postId + '/moderate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, notes: notes })
+            }).then(() => {
+                closeModal('reviewPostModal');
+                location.reload();
+            });
+        }
+
+        function hidePost(postId) {
+            if (confirm('Hide this post? It will no longer be visible to users.')) {
+                fetch('/admin/posts/' + postId + '/hide', { method: 'POST' })
+                    .then(() => location.reload());
+            }
+        }
+
+        function deletePost(postId) {
+            if (confirm('Are you sure you want to permanently delete this post? This action cannot be undone.')) {
+                fetch('/admin/posts/' + postId + '/delete', { method: 'POST' })
+                    .then(() => location.reload());
+            }
+        }
+
+        function reviewAllReports() {
+            window.location.href = '/admin/posts?filter=reported';
+        }
+
+        function moderationSettings() {
+            window.location.href = '/admin/settings/moderation';
+        }
+
+        function exportPosts() {
+            const type = document.getElementById('typeFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            window.location.href = '/admin/posts/export?type=' + type + '&status=' + status;
+        }
+
+        function applyFilters() {
+            const type = document.getElementById('typeFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const date = document.getElementById('dateFilter').value;
+            const search = document.getElementById('searchInput').value;
+            window.location.href = '/admin/posts?type=' + type + '&status=' + status + '&date=' + date + '&search=' + encodeURIComponent(search);
+        }
+
+        function clearFilters() {
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('dateFilter').value = 'all';
+            document.getElementById('searchInput').value = '';
+            window.location.href = '/admin/posts';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

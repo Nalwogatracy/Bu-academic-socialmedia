@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Enrollments - Bugema Academic Connect</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { background: #f0f2f5; overflow-x: hidden; }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed; width: 100%; top: 0; z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+        .nav-container {
+            max-width: 1400px; margin: 0 auto; padding: 0 24px;
+            height: 64px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-left  { display: flex; align-items: center; gap: 32px; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .search-bar { position: relative; width: 320px; }
+        .search-bar i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #5e6775; }
+        .search-bar input { width: 100%; padding: 10px 16px 10px 44px; border: none; border-radius: 24px; background: #eef3f8; font-size: 0.9rem; }
+        .search-bar input:focus { outline: none; }
+
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+
+        .logout-btn { border: none; background: transparent; color: #5e6775; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+
+        /* ── Layout ── */
+        .main-container {
+            max-width: 1400px; margin: 88px auto 30px; padding: 0 24px;
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            gap: 24px;
+        }
+
+        /* ── Sidebar ── */
+        .left-sidebar {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content; position: sticky; top: 88px;
+            border: 1px solid #eef0f3;
+        }
+        .profile-card { padding: 20px; border-bottom: 1px solid #eef0f3; background: linear-gradient(to bottom, #f7f9fc, white); }
+        .profile-cover { height: 80px; background: linear-gradient(135deg, #0a66c2, #7b2eda); margin: -20px -20px 0; margin-bottom: 30px; overflow: hidden; }
+        .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.2rem; font-weight: 600; margin: -45px auto 12px; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .profile-name-large { font-weight: 700; font-size: 1.3rem; text-align: center; color: #1a2634; }
+        .profile-title-large { color: #5e6775; font-size: 0.9rem; text-align: center; margin-bottom: 16px; background: #eef3f8; padding: 4px 12px; border-radius: 30px; display: table; margin-left: auto; margin-right: auto; }
+
+        .menu-section { padding: 16px 0; }
+        .menu-item-prof { display: flex; align-items: center; gap: 14px; padding: 12px 20px; color: #1a2634; transition: all 0.2s; cursor: pointer; text-decoration: none; font-weight: 500; border-left: 3px solid transparent; }
+        .menu-item-prof:hover { background: #f7f9fc; color: #0a66c2; }
+        .menu-item-prof.active { background: #eef3f8; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+        .menu-item-prof i { font-size: 1.2rem; width: 24px; color: #5e6775; }
+
+        /* ── Main content ── */
+        .main-content {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px; border: 1px solid #eef0f3;
+            min-width: 0;
+        }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #1a2634; display: flex; align-items: center; gap: 12px; }
+        .page-header h1 i { color: #0a66c2; font-size: 2rem; }
+        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; white-space: nowrap; text-decoration: none; }
+        .btn-primary { background: #0a66c2; color: white; }
+        .btn-primary:hover { background: #004182; }
+        .btn-secondary { background: #eef3f8; color: #1a2634; }
+        .btn-secondary:hover { background: #e0e4e9; }
+        .btn-outline { background: transparent; border: 1px solid #e0e4e9; color: #1a2634; }
+        .btn-outline:hover { border-color: #0a66c2; color: #0a66c2; }
+        .btn-danger { background: #cc1010; color: white; }
+        .btn-danger:hover { background: #a10c0c; }
+
+        /* Course Context */
+        .course-context {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            border: 1px solid #eef0f3;
+        }
+        .course-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .course-icon-large {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+        }
+        .course-details h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+        .course-meta {
+            display: flex;
+            gap: 16px;
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #0a66c2;
+        }
+        .stat-info h3 {
+            font-size: 0.85rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 4px 12px 4px 4px;
+            border-radius: 8px;
+            border: 1px solid #e0e4e9;
+        }
+        .filter-group i {
+            color: #5e6775;
+            font-size: 0.9rem;
+            padding: 0 4px;
+        }
+        .filter-group input, .filter-group select {
+            border: none;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            outline: none;
+            background: transparent;
+            min-width: 200px;
+        }
+
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #eef0f3;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 14px 16px;
+            background: #f7f9fc;
+            color: #1a2634;
+            font-weight: 600;
+            font-size: 0.88rem;
+            border-bottom: 2px solid #eef0f3;
+        }
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #eef0f3;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+        .data-table tr:hover td {
+            background: #f7f9fc;
+        }
+
+        .student-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .student-info {
+            line-height: 1.3;
+        }
+        .student-name {
+            font-weight: 600;
+            color: #1a2634;
+        }
+        .student-email {
+            font-size: 0.8rem;
+            color: #5e6775;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-active {
+            background: #e3f7e3;
+            color: #2f9e44;
+        }
+        .status-inactive {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+        .btn-icon.delete:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #e0e4e9;
+            color: #1a2634;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .page-link:hover, .page-link.active {
+            background: #0a66c2;
+            color: white;
+            border-color: #0a66c2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5e6775;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: #c8d0da;
+            display: block;
+            margin-bottom: 16px;
+        }
+        .empty-state h3 {
+            font-size: 1.1rem;
+            color: #1a2634;
+            margin-bottom: 8px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 2000;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 16px;
+            width: 100%; max-width: 520px;
+            max-height: 90vh;
+            display: flex; flex-direction: column;
+            animation: fadeIn 0.25s;
+        }
+        .modal-header {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+        .modal-header h3 { font-size: 1.3rem; font-weight: 700; color: #1a2634; }
+        .modal-close { cursor: pointer; font-size: 1.3rem; color: #5e6775; }
+        .modal-close:hover { color: #cc1010; }
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+        .modal-footer {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .search-student {
+            margin-bottom: 16px;
+        }
+        .search-student input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .student-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eef0f3;
+            border-radius: 8px;
+        }
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #eef0f3;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .student-item:hover {
+            background: #f7f9fc;
+        }
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        .student-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 0 12px; }
+            .left-sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                    <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px; -webkit-text-fill-color:white;">Admin</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search students...">
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-item" onclick="window.location='/admin/dashboard'">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">0</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
+                </div>
+                <form th:action="@{/admin/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
+                <div class="profile-name-large" th:text="${user != null ? user.fullName : 'Admin'}">Admin User</div>
+                <div class="profile-title-large">System Administrator</div>
+            </div>
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/admin/dashboard}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/users}"><i class="fas fa-users-cog"></i><span>User Management</span></a>
+                <a class="menu-item-prof active" th:href="@{/admin/courses}"><i class="fas fa-book"></i><span>Course Management</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/posts}"><i class="fas fa-newspaper"></i><span>Content Moderation</span></a>
+            </div>
+        </div>
+
+        <div class="main-content">
+
+            <div class="page-header">
+                <h1>
+                    <a th:href="@{/admin/courses/{id}(id=${course.id})}" style="color: #5e6775; margin-right: 8px;">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <i class="fas fa-users"></i> Course Enrollments
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openModal('addStudentModal')">
+                        <i class="fas fa-user-plus"></i> Enroll Student
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportEnrollments()">
+                        <i class="fas fa-download"></i> Export List
+                    </button>
+                </div>
+            </div>
+
+            <!-- Course Context -->
+            <div class="course-context">
+                <div class="course-info">
+                    <div class="course-icon-large">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="course-details">
+                        <h2 th:text="${course.name}">Software Engineering</h2>
+                        <div class="course-meta">
+                            <span><i class="fas fa-code"></i> <span th:text="${course.code}">ICT3101</span></span>
+                            <span><i class="fas fa-building"></i> <span th:text="${course.department}">Computing</span></span>
+                            <span><i class="fas fa-chalkboard-teacher"></i> 
+                                <span th:text="${course.lecturer != null ? course.lecturer.fullName : 'No lecturer'}">Dr. Onyango</span>
+                            </span>
+                            <span class="course-meta">
+                                <i class="fas fa-clock"></i> 
+                                <span th:text="${course.schedule}">TBA</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Enrolled</h3>
+                        <div class="stat-number" th:text="${students != null ? #lists.size(students) : 0}">45</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                    <div class="stat-info">
+                        <h3>Active Students</h3>
+                        <div class="stat-number" th:text="${activeStudents != null ? activeStudents : 42}">42</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h3>Completion Rate</h3>
+                        <div class="stat-number">93%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <form class="filter-bar" method="get" th:action="@{/admin/courses/{id}/enrollments(id=${course.id})}">
+                <div class="filter-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="search" placeholder="Search by name or ID..." th:value="${param.search}">
+                </div>
+                <div class="filter-group">
+                    <i class="fas fa-filter"></i>
+                    <select name="status">
+                        <option value="all" th:selected="${param.status == 'all'}">All Students</option>
+                        <option value="active" th:selected="${param.status == 'active'}">Active Only</option>
+                        <option value="inactive" th:selected="${param.status == 'inactive'}">Inactive</option>
+                    </select>
+                </div>
+                <div class="filter-actions" style="margin-left: auto;">
+                    <button class="btn btn-outline" type="submit">
+                        <i class="fas fa-check"></i> Apply
+                    </button>
+                    <a th:href="@{/admin/courses/{id}/enrollments(id=${course.id})}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </form>
+
+            <!-- Students Table -->
+            <div th:if="${students == null or #lists.isEmpty(students)}" class="empty-state">
+                <i class="fas fa-user-graduate"></i>
+                <h3>No students enrolled</h3>
+                <p>Click "Enroll Student" to add students to this course.</p>
+            </div>
+
+            <div class="table-responsive" th:unless="${students == null or #lists.isEmpty(students)}">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Student ID</th>
+                            <th>Email</th>
+                            <th>Enrollment Date</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="student : ${students}">
+                            <td>
+                                <div class="student-cell">
+                                    <div class="student-avatar" th:text="${#strings.substring(student.fullName, 0, 2)}">JD</div>
+                                    <div class="student-info">
+                                        <div class="student-name" th:text="${student.fullName}">John Doe</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${student.universityId != null ? student.universityId : '—'}">STU001</td>
+                            <td th:text="${student.email}">john.doe@bugema.edu</td>
+                            <td th:text="${#temporals.format(student.createdAt, 'MMM dd, yyyy')}">Jan 15, 2024</td>
+                            <td>
+                                <span class="status-badge" th:classappend="${student.approved} ? 'status-active' : 'status-inactive'">
+                                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                    <span th:text="${student.approved} ? 'Active' : 'Inactive'">Active</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 80px; height: 6px; background: #eef3f8; border-radius: 3px;">
+                                        <div style="width: 75%; height: 100%; background: #0a66c2; border-radius: 3px;"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem;">75%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" th:onclick="'viewStudent('+${student.id}+')'" title="View Profile">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon" th:onclick="'messageStudent('+${student.id}+')'" title="Send Message">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                    <form th:action="@{/admin/courses/{courseId}/students/{id}/remove(courseId=${course.id}, id=${student.id})}" 
+                                          method="post" style="display:inline;" 
+                                          onsubmit="return confirm('Remove this student from the course?')">
+                                        <button type="submit" class="btn-icon delete" title="Remove">
+                                            <i class="fas fa-user-minus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" th:if="${students != null and !#lists.isEmpty(students)}">
+                <span style="color:#5e6775; margin-right:16px;">
+                    Showing 1–<span th:text="${#lists.size(students)}">10</span> of <span th:text="${totalStudents != null ? totalStudents : #lists.size(students)}">45</span>
+                </span>
+                <a href="#" class="page-link active">1</a>
+                <a href="#" class="page-link">2</a>
+                <a href="#" class="page-link">3</a>
+                <a href="#" class="page-link"><i class="fas fa-chevron-right"></i></a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal" id="addStudentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus" style="color:#0a66c2;"></i> Enroll Student</h3>
+                <button class="modal-close" onclick="closeModal('addStudentModal')">&times;</button>
+            </div>
+            <form th:action="@{/admin/courses/{id}/enroll(id=${course.id})}" method="post">
+            <div class="modal-body">
+                <p style="margin-bottom: 16px; color: #5e6775;">
+                    Search and select students to enroll in <strong th:text="${course.name}">Software Engineering</strong>
+                </p>
+
+                <!-- Search Input -->
+                <div class="search-student">
+                    <input type="text" id="studentSearch" placeholder="Search by name or ID..." onkeyup="filterStudents()">
+                </div>
+
+                <!-- Student List -->
+                <div class="student-list" id="studentList">
+                    <label class="student-item" th:each="student : ${availableStudents}" 
+                           th:attr="data-name=${student.fullName}, data-id=${student.universityId}">
+                        <input type="checkbox" name="studentIds" th:value="${student.id}">
+
+                        <div class="student-avatar" th:text="${#strings.substring(student.fullName,0,2)}"></div>
+
+                        <div>
+                            <div class="student-name" th:text="${student.fullName}"></div>
+                            <div class="student-id" th:text="${student.universityId}"></div>
+                            <div class="student-email" th:text="${student.email}"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addStudentModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Enroll Selected</button>
+            </div>
+        </form>
+
+        <script>
+            function filterStudents() {
+                const search = document.getElementById('studentSearch').value.toLowerCase();
+                const students = document.querySelectorAll('#studentList .student-item');
+                students.forEach(student => {
+                    const name = student.getAttribute('data-name').toLowerCase();
+                    const id = student.getAttribute('data-id').toLowerCase();
+                    if (name.includes(search) || id.includes(search)) {
+                        student.style.display = 'flex';
+                    } else {
+                        student.style.display = 'none';
+                    }
+                });
+            }
+        </script>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        window.onclick = function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        };
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value;
+            const status = document.getElementById('statusFilter').value;
+            // Apply filtering logic
+            console.log('Filtering by:', search, status);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = 'all';
+            applyFilters();
+        }
+
+        function exportEnrollments() {
+            window.location.href = '/admin/courses/' + [[${course.id}]] + '/enrollments/export';
+        }
+
+        function viewStudent(id) {
+            window.location.href = '/admin/users/' + id;
+        }
+
+        function messageStudent(id) {
+            alert('Message functionality - to be implemented');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Materials - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Copy the same styles from your dashboard */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar - same as dashboard */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Additional styles for upload page */
+        .upload-container {
+            max-width: 900px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+        }
+
+        .upload-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        .upload-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .upload-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .upload-header i {
+            font-size: 2rem;
+            color: #7b2eda;
+        }
+
+        .course-badge {
+            background: #7b2eda;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .upload-area {
+            border: 2px dashed #7b2eda;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #f7f9fc;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+        }
+
+        .upload-area:hover {
+            background: #f0e7fe;
+            border-color: #6229b5;
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: #7b2eda;
+            margin-bottom: 16px;
+        }
+
+        .upload-area h3 {
+            font-size: 1.2rem;
+            color: #1a2634;
+            margin-bottom: 8px;
+        }
+
+        .upload-area p {
+            color: #5e6775;
+            margin-bottom: 4px;
+        }
+
+        .upload-area small {
+            color: #8f9bAB;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a2634;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #7b2eda;
+            box-shadow: 0 0 0 3px rgba(123, 46, 218, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #7b2eda;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6229b5;
+        }
+
+        .btn-secondary {
+            background: #eef3f8;
+            color: #1a2634;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e4e9;
+        }
+
+        .recent-uploads {
+            margin-top: 30px;
+        }
+
+        .recent-uploads h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1a2634;
+            margin-bottom: 16px;
+        }
+
+        .uploads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .uploads-table th {
+            text-align: left;
+            padding: 12px;
+            background: #f7f9fc;
+            color: #1a2634;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #eef0f3;
+        }
+
+        .uploads-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eef0f3;
+            color: #2c3e50;
+        }
+
+        .file-icon {
+            color: #7b2eda;
+            margin-right: 8px;
+        }
+
+        .file-size {
+            color: #5e6775;
+            font-size: 0.85rem;
+        }
+
+        .download-btn {
+            color: #7b2eda;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .download-btn:hover {
+            color: #6229b5;
+        }
+
+        #selectedFileName {
+            margin-top: 8px;
+            color: #7b2eda;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar (same as dashboard) -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Bugema Connect</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="user-profile">
+                <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">LO</div>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="upload-container">
+    <div class="upload-card">
+        <div class="upload-header">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h1>Upload Course Material</h1>
+            <span class="course-badge" th:text="${course.code}">ICT3101</span>
+        </div>
+
+        <form th:action="@{'/lecturer/courses/' + ${course.id} + '/materials/upload'}" method="post" enctype="multipart/form-data">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Click to upload or drag and drop</h3>
+                <p>PDF, PowerPoint, Word, Excel, Video, Audio</p>
+                <small>Maximum file size: 100MB</small>
+                <input type="file" id="fileInput" name="file" style="display:none" required onchange="showFileName(this)">
+            </div>
+            <p id="selectedFileName"></p>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Material Title</label>
+                    <input type="text" name="title" placeholder="e.g., Week 1 Introduction Lecture" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Material Type</label>
+                    <select name="type" required>
+                        <option value="LECTURE_NOTES">Lecture Notes</option>
+                        <option value="SLIDES">Slides/Presentation</option>
+                        <option value="ASSIGNMENT">Assignment</option>
+                        <option value="READING">Reading Material</option>
+                        <option value="VIDEO">Video Recording</option>
+                        <option value="AUDIO">Audio Recording</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="4" placeholder="Provide a brief description of this material..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Additional Settings</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="notifyStudents" checked> Notify students via email
+                    </label>
+                    <label>
+                        <input type="checkbox" name="allowDownload" checked> Allow download
+                    </label>
+                    <label>
+                        <input type="checkbox" name="isPublished" checked> Publish immediately
+                    </label>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Material
+                </button>
+            </div>
+        </form>
+
+        <!-- Recent Uploads -->
+        <div class="recent-uploads">
+            <h3>
+                <i class="fas fa-history" style="color:#7b2eda;"></i>
+                Recent Uploads
+            </h3>
+            <table class="uploads-table">
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Type</th>
+                        <th>Upload Date</th>
+                        <th>Size</th>
+                        <th>Downloads</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="material : ${recentUploads}">
+                        <td>
+                            <i th:class="${material.fileIcon} + ' file-icon'"></i>
+                            <span th:text="${material.title}">Lecture 1 Notes.pdf</span>
+                        </td>
+                        <td th:text="${material.type}">Lecture Notes</td>
+                        <td th:text="${#temporals.format(material.uploadDate, 'MMM dd, yyyy')}">Mar 15, 2026</td>
+                        <td><span class="file-size" th:text="${material.formattedSize}">2.4 MB</span></td>
+                        <td th:text="${material.downloadCount}">45</td>
+                        <td>
+                            <i class="fas fa-download download-btn" title="Download" 
+                               th:onclick="'window.location.href=\'/materials/' + ${material.id} + '/download\''"></i>
+                        </td>
+                    </tr>
+                    
+                    <tr th:if="${#lists.isEmpty(recentUploads)}">
+                        <td colspan="6" class="empty-state">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>No recent uploads</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showFileName(input) {
+        const fileName = document.getElementById('selectedFileName');
+        if (input.files && input.files[0]) {
+            fileName.textContent = '📎 Selected: ' + input.files[0].name;
+            fileName.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

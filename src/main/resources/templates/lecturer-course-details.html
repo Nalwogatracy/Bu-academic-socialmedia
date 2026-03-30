@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${course.name} + ' | Bugema Academic Connect'">Course Details - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        /* Same base styles as courses template */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar (same as before) */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 1.6rem;
+            color: #0a66c2;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #eef3f8;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px #0a66c2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e6775;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: #cc1010;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px 4px 4px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .user-profile:hover {
+            background: #eef3f8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            gap: 24px;
+        }
+
+        /* Left Sidebar (same as before) */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            overflow: hidden;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card {
+            padding: 20px;
+            border-bottom: 1px solid #eef0f3;
+            background: linear-gradient(to bottom, #f7f9fc, white);
+        }
+
+        .profile-cover {
+            height: 80px;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            margin: -20px -20px 0 -20px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-cover::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><path d="M0 0 L100 100 M100 0 L0 100" stroke="white" stroke-width="1"/></svg>');
+            background-size: 20px 20px;
+        }
+
+        .profile-avatar-large {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin: -45px auto 12px;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .profile-name-large {
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .profile-title-large {
+            color: #5e6775;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+            background: #eef3f8;
+            padding: 4px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-left: auto;
+            margin-right: auto;
+            width: fit-content;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 16px 0 8px;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .stat-cell {
+            text-align: center;
+            background: #f7f9fc;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #0a66c2;
+            margin-bottom: 4px;
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+        }
+
+        .menu-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            color: #1a2634;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item-prof:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active {
+            background: #eef3f8;
+            color: #0a66c2;
+            border-left-color: #0a66c2;
+            font-weight: 600;
+        }
+
+        .menu-item-prof i {
+            font-size: 1.2rem;
+            width: 24px;
+            color: #5e6775;
+        }
+
+        .menu-item-prof:hover i {
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active i {
+            color: #0a66c2;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: #eef3f8;
+            color: #1a2634;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        /* Course Header */
+        .course-header {
+            margin-bottom: 24px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: #0a66c2;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .course-title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .course-title-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .course-code-badge {
+            background: #eef3f8;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #0a66c2;
+        }
+
+        /* Course Stats Cards */
+        .course-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card-sm {
+            background: #f7f9fc;
+            border: 1px solid #eef0f3;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-icon-sm {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #0a66c2;
+        }
+
+        .stat-info-sm h4 {
+            font-size: 0.8rem;
+            color: #5e6775;
+            margin-bottom: 4px;
+        }
+
+        .stat-info-sm .stat-number-sm {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid #eef0f3;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            color: #5e6775;
+            cursor: pointer;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #0a66c2;
+        }
+
+        .tab-btn.active {
+            color: #0a66c2;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #0a66c2;
+        }
+
+        /* Tab Content */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Materials Grid */
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .material-card {
+            background: #f7f9fc;
+            border: 1px solid #eef0f3;
+            border-radius: 10px;
+            padding: 16px;
+            transition: all 0.2s;
+        }
+
+        .material-card:hover {
+            border-color: #0a66c2;
+            transform: translateY(-2px);
+        }
+
+        .material-icon {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #0a66c2;
+            margin-bottom: 12px;
+        }
+
+        .material-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .material-meta {
+            font-size: 0.8rem;
+            color: #5e6775;
+            margin-bottom: 12px;
+        }
+
+        .material-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .material-btn {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .material-btn.view {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .material-btn.edit {
+            background: #eef3f8;
+            color: #1a2634;
+        }
+
+        /* Assignments List */
+        .assignment-item {
+            background: #f7f9fc;
+            border: 1px solid #eef0f3;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .assignment-info h4 {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .assignment-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: #5e6775;
+        }
+
+        .assignment-meta i {
+            margin-right: 4px;
+            color: #0a66c2;
+        }
+
+        .assignment-status {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-draft {
+            background: #eef3f8;
+            color: #5e6775;
+        }
+
+        .assignment-progress {
+            width: 200px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e4e9;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0a66c2;
+            border-radius: 3px;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-align: right;
+        }
+
+        /* Students Table */
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .students-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background: #f7f9fc;
+            color: #1a2634;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #eef0f3;
+        }
+
+        .students-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .students-table tr:hover td {
+            background: #f7f9fc;
+        }
+
+        .student-avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .engagement-badge {
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .engagement-high {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .engagement-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .engagement-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .quick-action-btn {
+            padding: 12px;
+            background: #f7f9fc;
+            border: 1px solid #eef0f3;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background: #0a66c2;
+            border-color: #0a66c2;
+        }
+
+        .quick-action-btn:hover i,
+        .quick-action-btn:hover span {
+            color: white;
+        }
+
+        .quick-action-btn i {
+            font-size: 1.3rem;
+            color: #0a66c2;
+        }
+
+        .quick-action-btn span {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1a2634;
+        }
+
+        /* Modal (same as before) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 500px;
+            max-width: 90%;
+            padding: 24px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: #5e6775;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1a2634;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #eef3f8;
+            color: #1a2634;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .left-sidebar {
+                display: none;
+            }
+            
+            .assignment-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .assignment-progress {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar (same as before) -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                    <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Lecturer</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item" onclick="location.href='/lecturer/dashboard'">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-item" onclick="location.href='/lecturer/messages'">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:text="${unreadMessages}">0</span>
+                </div>
+                <div class="nav-item" onclick="location.href='/lecturer/notifications'">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${unreadNotifications}">0</span>
+                </div>
+                <div class="user-profile" onclick="location.href='/lecturer/profile'">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar (same as before) -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div>
+                <div class="profile-name-large" th:text="${user.fullName}">John Doe</div>
+                <div class="profile-title-large">Lecturer</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${courses.size()}">5</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${totalStudents}">124</div>
+                        <div class="stat-label-small">Students</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/lecturer/dashboard}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/lecturer/courses}">
+                    <i class="fas fa-book"></i>
+                    <span>My Courses</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/lecturer/materials}">
+                    <i class="fas fa-file-upload"></i>
+                    <span>Materials</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/lecturer/assignments}">
+                    <i class="fas fa-tasks"></i>
+                    <span>Assignments</span>
+                    <span class="menu-badge warning" th:text="${pendingGrades}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/lecturer/discussions}">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                    <span class="menu-badge danger" th:text="${newQuestions}">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/lecturer/announcements}">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Announcements</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/lecturer/analytics}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Breadcrumb -->
+            <div class="course-header">
+                <div class="breadcrumb">
+                    <a th:href="@{/lecturer/dashboard}">Dashboard</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <a th:href="@{/lecturer/courses}">My Courses</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span th:text="${course.code}">ICT3101</span>
+                </div>
+                
+                <div class="course-title-section">
+                    <h1 th:text="${course.name}">Software Engineering</h1>
+                    <span class="course-code-badge" th:text="${course.code}">ICT3101</span>
+                </div>
+            </div>
+
+            <!-- Course Stats -->
+            <div class="course-stats-grid">
+                <div class="stat-card-sm">
+                    <div class="stat-icon-sm">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info-sm">
+                        <h4>Students</h4>
+                        <div class="stat-number-sm" th:text="${course.students.size()}">45</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-sm">
+                    <div class="stat-icon-sm">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-info-sm">
+                        <h4>Materials</h4>
+                        <div class="stat-number-sm" th:text="${materialsCount}">23</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-sm">
+                    <div class="stat-icon-sm">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-info-sm">
+                        <h4>Assignments</h4>
+                        <div class="stat-number-sm" th:text="${assignmentsCount}">8</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-sm">
+                    <div class="stat-icon-sm">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-info-sm">
+                        <h4>Discussions</h4>
+                        <div class="stat-number-sm" th:text="${discussionsCount}">34</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+                <button class="tab-btn" onclick="showTab('materials')">Materials</button>
+                <button class="tab-btn" onclick="showTab('assignments')">Assignments</button>
+                <button class="tab-btn" onclick="showTab('students')">Students</button>
+                <button class="tab-btn" onclick="showTab('discussions')">Discussions</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div class="tab-pane active" id="overview">
+                <div style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 12px;">Course Description</h3>
+                    <p style="color: #5e6775; line-height: 1.6;" th:text="${course.description}">Course description goes here...</p>
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px;">Recent Activity</h3>
+                    <div class="activity-list">
+                        <div th:each="activity : ${recentActivities}" class="activity-item" style="display: flex; align-items: center; gap: 16px; padding: 12px; border-bottom: 1px solid #f0f2f5;">
+                            <div class="activity-icon" style="width: 36px; height: 36px; background: #eef3f8; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #0a66c2;">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;" th:text="${activity.text}">Activity text</div>
+                                <div style="font-size: 0.8rem; color: #5e6775;" th:text="${activity.time}">2 hours ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materials Tab -->
+            <div class="tab-pane" id="materials">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Course Materials</h3>
+                    <button class="btn btn-primary" onclick="openModal('uploadMaterialModal')">
+                        <i class="fas fa-upload"></i> Upload Material
+                    </button>
+                </div>
+                
+                <div class="materials-grid">
+                    <div class="material-card" th:each="material : ${materials}">
+                        <div class="material-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="material-title" th:text="${material.title}">Introduction to OOP</div>
+                        <div class="material-meta">
+                            <span><i class="far fa-calendar"></i> <span th:text="${#temporals.format(material.uploadDate, 'MMM dd, yyyy')}">Mar 6, 2026</span></span>
+                            <span style="margin-left: 8px;"><i class="far fa-file"></i> <span th:text="${material.fileSize}">2.4 MB</span></span>
+                        </div>
+                        <div class="material-actions">
+                            <button class="material-btn view" th:onclick="'viewMaterial(' + ${material.id} + ')'">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="material-btn edit" th:onclick="'editMaterial(' + ${material.id} + ')'">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignments Tab -->
+            <div class="tab-pane" id="assignments">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Assignments</h3>
+                    <button class="btn btn-primary" onclick="openModal('createAssignmentModal')">
+                        <i class="fas fa-plus"></i> Create Assignment
+                    </button>
+                </div>
+                
+                <div class="assignments-list">
+                    <div class="assignment-item" th:each="assignment : ${assignments}">
+                        <div class="assignment-info">
+                            <h4 th:text="${assignment.title}">Assignment 1: Class Diagram</h4>
+                            <div class="assignment-meta">
+                                <span><i class="far fa-calendar"></i> Due: <span th:text="${#temporals.format(assignment.dueDate, 'MMM dd, yyyy HH:mm')}">Mar 20, 2026 23:59</span></span>
+                                <span><i class="fas fa-users"></i> <span th:text="${assignment.submissions} + '/' + ${assignment.totalStudents}">35/45</span> submitted</span>
+                                <span><i class="fas fa-clock"></i> <span th:text="${assignment.daysLeft}">3</span> days left</span>
+                            </div>
+                        </div>
+                        <div class="assignment-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" th:style="'width: ' + (assignment.submissions/assignment.totalStudents * 100) + '%'"></div>
+                            </div>
+                            <div class="progress-text" th:text="${assignment.submissions} + '/' + ${assignment.totalStudents} + ' submitted'">35/45 submitted</div>
+                        </div>
+                        <span class="assignment-status" th:classappend="${assignment.status == 'ACTIVE' ? 'status-active' : (assignment.status == 'EXPIRED' ? 'status-expired' : 'status-draft')}" th:text="${assignment.status}">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Tab -->
+            <div class="tab-pane" id="students">
+                <h3 style="margin-bottom: 20px;">Enrolled Students</h3>
+                
+                <div style="margin-bottom: 16px;">
+                    <input type="text" placeholder="Search students..." style="width: 100%; padding: 12px; border: 1px solid #e0e4e9; border-radius: 8px;" id="studentSearch">
+                </div>
+                
+                <table class="students-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Engagement</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="student : ${course.students}">
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="student-avatar-sm" th:text="${#strings.substring(student.fullName, 0, 2)}">JD</div>
+                                    <span th:text="${student.fullName}">John Doe</span>
+                                </div>
+                            </td>
+                            <td th:text="${student.universityId}">S12345</td>
+                            <td th:text="${student.email}">john@example.com</td>
+                            <td>
+                                <span class="engagement-badge" th:classappend="${student.engagement > 70 ? 'engagement-high' : (student.engagement > 40 ? 'engagement-medium' : 'engagement-low')}" th:text="${student.engagement} + '%'">85%</span>
+                            </td>
+                            <td>
+                                <button class="btn-icon" th:onclick="'viewStudent(' + ${student.id} + ')'" title="View Progress">
+                                    <i class="fas fa-chart-line"></i>
+                                </button>
+                                <button class="btn-icon" th:onclick="'messageStudent(' + ${student.id} + ')'" title="Send Message">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Discussions Tab -->
+            <div class="tab-pane" id="discussions">
+                <h3 style="margin-bottom: 20px;">Discussion Forum</h3>
+                <!-- Add discussion content here -->
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="quick-action-btn" onclick="openModal('createPostModal')">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>New Post</span>
+                </div>
+                <div class="quick-action-btn" onclick="openModal('uploadMaterialModal')">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload</span>
+                </div>
+                <div class="quick-action-btn" onclick="openModal('createAssignmentModal')">
+                    <i class="fas fa-tasks"></i>
+                    <span>Assignment</span>
+                </div>
+                <div class="quick-action-btn" onclick="exportGrades()">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Export</span>
+                </div>
+                <div class="quick-action-btn" onclick="sendAnnouncement()">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Announce</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Material Modal -->
+    <div class="modal" id="uploadMaterialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Upload Course Material</h3>
+                <span class="modal-close" onclick="closeModal('uploadMaterialModal')">&times;</span>
+            </div>
+            <form th:action="@{/lecturer/material/upload}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="courseId" th:value="${course.id}">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>File</label>
+                        <input type="file" name="file" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select name="type">
+                            <option value="LECTURE_NOTE">Lecture Notes</option>
+                            <option value="SLIDES">Slides</option>
+                            <option value="REFERENCE">Reference Material</option>
+                            <option value="LAB">Lab Work</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('uploadMaterialModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Student search
+        document.getElementById('studentSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.students-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // View material function
+        function viewMaterial(id) {
+            window.location.href = '/lecturer/material/' + id;
+        }
+
+        // Edit material function
+        function editMaterial(id) {
+            window.location.href = '/lecturer/material/' + id + '/edit';
+        }
+
+        // View student progress
+        function viewStudent(id) {
+            window.location.href = '/lecturer/student/' + id + '/progress?course=' + [[${course.id}]] '';
+        }
+
+        // Message student
+        function messageStudent(id) {
+            window.location.href = '/lecturer/messages/new?student=' + id;
+        }
+
+        // Export grades
+        function exportGrades() {
+            window.location.href = '/lecturer/' + [[${course.id}]]'' + '/export/grades';
+        }
+
+        // Send announcement
+        function sendAnnouncement() {
+            window.location.href = '/lecturer/' + [[${course.id}]] '' + '/announcements';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

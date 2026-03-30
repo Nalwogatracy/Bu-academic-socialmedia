@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Discussions | Bugema Academic Connect'">Discussions - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar - Professional */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 1.6rem;
+            color: #0a66c2;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #eef3f8;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px #0a66c2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e6775;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: #cc1010;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px 4px 4px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .user-profile:hover {
+            background: #eef3f8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1280px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            gap: 24px;
+        }
+
+        /* ===== PROFESSIONAL LEFT SIDEBAR - LINKEDIN STYLE ===== */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            overflow: hidden;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border-bottom: 1px solid #eef0f3;
+            background: linear-gradient(to bottom, #f7f9fc, white);
+        }
+
+        .profile-cover {
+            height: 60px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            margin: -16px -16px 0 -16px;
+            margin-bottom: 40px;
+        }
+
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: -40px auto 12px;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-name-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .profile-title-large {
+            color: #5e6775;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .stat-cell {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a2634;
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+        }
+
+        .menu-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            color: #1a2634;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item-prof:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active {
+            background: #eef3f8;
+            color: #0a66c2;
+            border-left-color: #0a66c2;
+            font-weight: 600;
+        }
+
+        .menu-item-prof i {
+            font-size: 1.2rem;
+            width: 24px;
+            color: #5e6775;
+        }
+
+        .menu-item-prof:hover i {
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active i {
+            color: #0a66c2;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: #eef3f8;
+            color: #1a2634;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .new-topic-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .new-topic-btn:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        /* Discussion Filters */
+        .discussion-filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 18px;
+            border: 1px solid #e0e4e9;
+            border-radius: 30px;
+            background: none;
+            color: #5e6775;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-tab:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        .filter-tab.active {
+            background: #0a66c2;
+            border-color: #0a66c2;
+            color: white;
+        }
+
+        .course-filter select {
+            padding: 8px 20px;
+            border: 1px solid #e0e4e9;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: #1a2634;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .course-filter select:focus {
+            outline: none;
+            border-color: #0a66c2;
+        }
+
+        /* Discussion List */
+        .discussion-list {
+            margin-top: 20px;
+        }
+
+        .discussion-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+            background: white;
+            cursor: pointer;
+        }
+
+        .discussion-item:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 4px 12px rgba(10,102,194,0.1);
+            transform: translateY(-2px);
+        }
+
+        .discussion-item.pinned {
+            background: #f7f9fc;
+            border-left: 4px solid #0a66c2;
+        }
+
+        .discussion-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .discussion-content {
+            flex: 1;
+        }
+
+        .discussion-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .discussion-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a2634;
+        }
+
+        .discussion-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .discussion-badge.pinned {
+            background: #e3f2fd;
+            color: #0a66c2;
+        }
+
+        .discussion-badge.popular {
+            background: #fff3e0;
+            color: #b86b0c;
+        }
+
+        .discussion-badge.unanswered {
+            background: #ffebee;
+            color: #cc1010;
+        }
+
+        .discussion-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #5e6775;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .discussion-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .discussion-author {
+            font-weight: 600;
+            color: #0a66c2;
+        }
+
+        .discussion-course {
+            background: #eef3f8;
+            color: #0a66c2;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .discussion-excerpt {
+            color: #5e6775;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .discussion-stats {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-left: 20px;
+            flex-shrink: 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: #f7f9fc;
+            padding: 8px 12px;
+            border-radius: 8px;
+            min-width: 60px;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            color: #0a66c2;
+            font-size: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #5e6775;
+            text-transform: uppercase;
+        }
+
+        .discussion-chevron {
+            color: #8f9bAB;
+            font-size: 1.2rem;
+            margin-left: 15px;
+        }
+
+        /* My Questions Section */
+        .my-questions {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1a2634;
+        }
+
+        .section-title i {
+            color: #0a66c2;
+        }
+
+        .question-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #eef0f3;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            background: #f7f9fc;
+        }
+
+        .question-item:hover {
+            border-color: #0a66c2;
+            background: white;
+        }
+
+        .question-icon {
+            width: 40px;
+            height: 40px;
+            background: #eef3f8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .question-content {
+            flex: 1;
+        }
+
+        .question-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #1a2634;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #5e6775;
+        }
+
+        .question-status {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .question-status.answered {
+            color: #0a66c2;
+        }
+
+        /* ===== PROFESSIONAL RIGHT SIDEBAR ===== */
+        .right-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header h3 i {
+            color: #0a66c2;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-title a {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .section-title a:hover {
+            text-decoration: underline;
+        }
+
+        /* Popular Topics */
+        .popular-topic-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .popular-topic-item:last-child {
+            border-bottom: none;
+        }
+
+        .popular-topic-item:hover {
+            background: #f7f9fc;
+            transform: translateX(4px);
+        }
+
+        .topic-rank {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            border-radius: 6px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .topic-info {
+            flex: 1;
+        }
+
+        .topic-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+            color: #1a2634;
+        }
+
+        .topic-stats {
+            font-size: 0.8rem;
+            color: #5e6775;
+        }
+
+        /* Course items */
+        .course-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .course-item-prof:hover {
+            background: #f7f9fc;
+            transform: translateX(4px);
+        }
+
+        .course-icon-prof {
+            width: 42px;
+            height: 42px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1.2rem;
+        }
+
+        .course-info-prof {
+            flex: 1;
+        }
+
+        .course-name-prof {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a2634;
+            margin-bottom: 2px;
+        }
+
+        .course-code-prof {
+            font-size: 0.8rem;
+            color: #5e6775;
+            font-weight: 500;
+        }
+
+        .unread-badge {
+            background: #0a66c2;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+
+        /* Guidelines Card */
+        .guidelines-card {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 12px;
+        }
+
+        .guidelines-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guidelines-card ul {
+            list-style: none;
+        }
+
+        .guidelines-card li {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.9;
+        }
+
+        .guidelines-card li i {
+            font-size: 0.7rem;
+            color: #ffd700;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #5e6775;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #0a66c2;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a2634;
+            font-size: 0.95rem;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #f7f9fc;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #0a66c2;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(10,102,194,0.1);
+        }
+
+        .form-group textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        .btn-secondary {
+            background: none;
+            border: 1px solid #e0e4e9;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #5e6775;
+        }
+
+        .btn-secondary:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar, .right-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .discussion-item {
+                flex-wrap: wrap;
+            }
+            .discussion-stats {
+                margin-left: 72px;
+                margin-top: 10px;
+            }
+            .discussion-chevron {
+                display: none;
+            }
+            .filter-tabs {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar - Professional Style -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search discussions...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:text="${unreadMessages}">3</span>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${unreadNotifications}">5</span>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                </div>
+                
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Left Sidebar - Professional LinkedIn Style -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+                <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">BSE Student | 23/BSE/BU/R/0001</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${coursesCount}">6</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${materialsCount}">12</div>
+                        <div class="stat-label-small">Materials</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${engagementPercentage}">89%</div>
+                        <div class="stat-label-small">Engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/student/dashboard}">
+                    <i class="fas fa-home"></i>
+                    <span>Home Feed</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/courses}">
+                    <i class="fas fa-book-open"></i>
+                    <span>My Courses</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/assignments}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Assignments</span>
+                    <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/student/discussions}">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                    <span class="menu-badge" th:text="${unreadDiscussions}">8</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/study-groups}">
+                    <i class="fas fa-users"></i>
+                    <span>Study Groups</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/downloads}">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/saved}">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Saved</span>
+                    <span class="menu-badge" th:text="${savedItems}">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/progress}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Progress</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content - Discussions -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1>Discussion Forum</h1>
+                <button class="new-topic-btn" onclick="openNewTopicModal()">
+                    <i class="fas fa-plus"></i>
+                    New Topic
+                </button>
+            </div>
+
+            <!-- Discussion Filters -->
+            
+            <div class="filter-tabs">
+                <a class="filter-tab" th:classappend="${activeFilter == 'ALL'} ? ' active' : ''"
+                   th:href="@{/student/discussions(filter='ALL')}">All Topics</a>
+                <a class="filter-tab" th:classappend="${activeFilter == 'MINE'} ? ' active' : ''"
+                   th:href="@{/student/discussions(filter='MINE')}">My Topics</a>
+                <a class="filter-tab" th:classappend="${activeFilter == 'POPULAR'} ? ' active' : ''"
+                   th:href="@{/student/discussions(filter='POPULAR')}">Popular</a>
+                <a class="filter-tab" th:classappend="${activeFilter == 'UNANSWERED'} ? ' active' : ''"
+                   th:href="@{/student/discussions(filter='UNANSWERED')}">Unanswered</a>
+                <a class="filter-tab" th:classappend="${activeFilter == 'PINNED'} ? ' active' : ''"
+                   th:href="@{/student/discussions(filter='PINNED')}">Pinned</a>
+            </div>
+
+            <!-- Course filter dropdown — also server-side -->
+            <div class="course-filter">
+                <select onchange="window.location.href='/student/discussions?course=' + this.value">
+                    <option value="">All Courses</option>
+                    <option th:each="course : ${courses}"
+                            th:value="${course.id}"
+                            th:text="${course.code}"
+                            th:selected="${selectedCourse == course.id}">ICT 3101</option>
+                </select>
+            </div>
+            <!-- Discussion List -->
+            <div class="discussion-list">
+                <!-- Pinned Topic -->
+                <div class="discussion-item pinned" th:each="question : ${pinnedTopics}" th:if="${pinnedTopics != null}" th:data-id="${question.id}">
+                    <div class="discussion-avatar" th:text="${#strings.substring(question.author.fullName, 0, 2)}">LO</div>
+                    <div class="discussion-content">
+                        <div class="discussion-header">
+                            <span class="discussion-title" th:text="${question.title}">📢 Important: Software Engineering Project Q&A</span>
+                            <span class="discussion-badge pinned">Pinned</span>
+                            <span class="discussion-badge popular" th:if="${question.popular}">Popular</span>
+                        </div>
+                        <div class="discussion-meta">
+                            <span class="discussion-author" th:text="${question.author.fullName}">Mr. Laban Onyango</span>
+                            <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(question.createdAt, 'MMM dd, yyyy')}">Mar 10, 2026</span></span>
+                            <span class="discussion-course" th:text="${question.course.code}">ICT 3101</span>
+                        </div>
+                        <div class="discussion-excerpt" th:text="${question.excerpt}">
+                            This is a dedicated thread for all questions related to the Software Engineering project...
+                        </div>
+                    </div>
+                    <div class="discussion-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" th:text="${question.replyCount}">24</div>
+                            <div class="stat-label">replies</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" th:text="${question.viewCount}">156</div>
+                            <div class="stat-label">views</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right discussion-chevron"></i>
+                </div>
+
+                <!-- Regular Topics -->
+                <div class="discussion-item" th:each="question : ${discussionTopics}" th:if="${discussionTopics != null}" th:data-id="${question.id}">
+                    <div class="discussion-avatar" th:text="${#strings.substring(question.author.fullName, 0, 2)}">JM</div>
+                    <div class="discussion-content">
+                        <div class="discussion-header">
+                            <span class="discussion-title" th:text="${question.title}">Question about Agile vs Waterfall for our project</span>
+                            <span class="discussion-badge unanswered" th:if="${question.replyCount == 0}">Unanswered</span>
+                        </div>
+                        <div class="discussion-meta">
+                            <span class="discussion-author" th:text="${question.author.fullName}">John Mukasa</span>
+                            <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(question.createdAt, 'MMM dd, yyyy')}">Mar 15, 2026</span></span>
+                            <span class="discussion-course" th:text="${question.course.code}">ICT 3101</span>
+                            <span th:if="${question.lastReplyAt != null}"><i class="far fa-clock"></i> Last reply <span th:text="${#temporals.format(question.lastReplyAt, 'MMM dd')}">Mar 16</span></span>
+                        </div>
+                    </div>
+                    <div class="discussion-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" th:text="${question.replyCount}">8</div>
+                            <div class="stat-label">replies</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" th:text="${question.viewCount}">45</div>
+                            <div class="stat-label">views</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right discussion-chevron"></i>
+                </div>
+
+                <!-- No Topics Message -->
+                <div th:if="${discussionTopics == null or discussionTopics.isEmpty()}" style="text-align: center; padding: 60px 20px; color: #5e6775;">
+                    <i class="fas fa-comments" style="font-size: 3rem; color: #0a66c2; margin-bottom: 16px;"></i>
+                    <h3 style="margin-bottom: 8px; color: #1a2634;">No discussions yet</h3>
+                    <p style="margin-bottom: 20px;">Be the first to start a discussion!</p>
+                    <button class="new-topic-btn" style="margin: 0 auto;" onclick="openNewTopicModal()">
+                        <i class="fas fa-plus"></i>
+                        Start a Discussion
+                    </button>
+                </div>
+            </div>
+
+            <!-- My Recent Questions -->
+            <div class="my-questions" th:if="${myQuestions != null and !myQuestions.isEmpty()}">
+                <div class="section-title">
+                    <i class="fas fa-question-circle"></i>
+                    <span>My Recent Questions</span>
+                </div>
+
+                <div th:each="question : ${myQuestions}" class="question-item" th:data-id="${question.id}">
+                    <div class="question-icon">
+                        <i class="fas fa-question"></i>
+                    </div>
+                    <div class="question-content">
+                        <div class="question-title" th:text="${question.title}">How do I create a REST API in Spring Boot?</div>
+                        <div class="question-meta">
+                            <span th:text="${question.course.code}">ICT 3101</span>
+                            <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(question.createdAt, 'MMM dd')}">Mar 14</span></span>
+                            <span class="question-status" th:classappend="${question.answered ? 'answered' : ''}" 
+                                  th:text="${question.answered} ? 'Answered' : 'Pending'">Pending</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color:#8f9bAB;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Professional Style -->
+        <div class="right-sidebar">
+            <!-- Popular Topics -->
+            <div class="sidebar-header">
+                <h3><i class="fas fa-fire" style="color:#f5b042;"></i> Popular This Week</h3>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="popular-topic-item" th:each="topic, iterStat : ${popularTopics}" th:if="${popularTopics != null}">
+                    <div class="topic-rank" th:text="${iterStat.index + 1}">1</div>
+                    <div class="topic-info">
+                        <div class="topic-name" th:text="${topic.title}">Spring Boot vs Spring MVC</div>
+                        <div class="topic-stats" th:text="${topic.replyCount} + ' replies · ' + ${topic.viewCount} + ' views'">24 replies · 156 views</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Categories -->
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <h4><i class="fas fa-book-open" style="color:#0a66c2;"></i> Course Discussions</h4>
+                    <a href="#" th:href="@{/student/courses}">All</a>
+                </div>
+
+                <div th:each="course : ${courses}" class="course-item-prof" th:onclick="'window.location.href=\'/student/discussions?course=' + ${course.id} + '\''">
+                    <div class="course-icon-prof">
+                        <i th:class="'fas fa-code'"></i>
+                    </div>
+                    <div class="course-info-prof">
+                        <div class="course-name-prof" th:text="${course.name}">Software Engineering</div>
+                        <div class="course-code-prof" th:text="${course.code} + ' · ' + ${course.discussionCount} + ' topics'">ICT 3101 · 12 topics</div>
+                    </div>
+                    <span class="unread-badge" th:if="${course.unreadCount > 0}" th:text="${course.unreadCount}">3</span>
+                </div>
+            </div>
+
+            <!-- Discussion Guidelines -->
+            <div class="guidelines-card">
+                <h4><i class="fas fa-lightbulb"></i> Discussion Guidelines</h4>
+                <ul>
+                    <li><i class="fas fa-circle"></i> Be respectful and constructive</li>
+                    <li><i class="fas fa-circle"></i> Search before asking</li>
+                    <li><i class="fas fa-circle"></i> Use descriptive titles</li>
+                    <li><i class="fas fa-circle"></i> Tag your course correctly</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Topic Modal -->
+        <div class="modal" id="newTopicModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Start New Discussion</h2>
+                <i class="fas fa-times close-modal" onclick="closeNewTopicModal()"></i>
+            </div>
+
+            <form th:action="@{/student/discussions/create}" method="post" id="discussionForm">
+
+                <!-- Discussion type toggle -->
+                <div class="form-group">
+                    <label>Discussion Type</label>
+                    <div style="display:flex; gap:12px;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;
+                                      padding:10px 16px; border:1px solid #e0e4e9; border-radius:8px;
+                                      flex:1; transition:all 0.2s;" id="courseTypeLabel">
+                            <input type="radio" name="type" value="COURSE" checked
+                                   onchange="toggleDiscussionType('COURSE')"
+                                   style="accent-color:#0a66c2;">
+                            <div>
+                                <div style="font-weight:600; color:#1a2634;">
+                                    <i class="fas fa-users" style="color:#0a66c2;"></i> Course Discussion
+                                </div>
+                                <div style="font-size:0.8rem; color:#5e6775;">Visible to all course members</div>
+                            </div>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;
+                                      padding:10px 16px; border:1px solid #e0e4e9; border-radius:8px;
+                                      flex:1; transition:all 0.2s;" id="groupTypeLabel">
+                            <input type="radio" name="type" value="GROUP"
+                                   onchange="toggleDiscussionType('GROUP')"
+                                   style="accent-color:#0a66c2;">
+                            <div>
+                                <div style="font-weight:600; color:#1a2634;">
+                                    <i class="fas fa-lock" style="color:#5e6775;"></i> Private Group
+                                </div>
+                                <div style="font-size:0.8rem; color:#5e6775;">Only selected people</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Course (shown for COURSE type) -->
+                <div class="form-group" id="courseSection">
+                    <label>Course</label>
+                    <select name="courseId">
+                        <option value="">— General (no specific course) —</option>
+                        <option th:each="course : ${courses}"
+                                th:value="${course.id}"
+                                th:text="${course.code} + ' - ' + ${course.name}">
+                            ICT 3101 - Software Engineering
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Member picker (shown for GROUP type) -->
+                <div class="form-group" id="membersSection" style="display:none;">
+                    <label>Add Members</label>
+                    <div style="position:relative;">
+                        <input type="text" id="memberSearch" placeholder="Search classmates..."
+                               oninput="filterMembers(this.value)"
+                               style="width:100%; padding:10px 16px; border:1px solid #e0e4e9;
+                                      border-radius:8px; font-size:0.95rem; background:#f7f9fc;">
+                    </div>
+
+                    <!-- Member list -->
+                    <div id="memberList" style="max-height:200px; overflow-y:auto; border:1px solid #eef0f3;
+                         border-radius:8px; margin-top:8px; background:white;">
+                        <label th:each="u : ${allCoursemates}"
+                               style="display:flex; align-items:center; gap:12px; padding:10px 14px;
+                                      border-bottom:1px solid #f0f2f5; cursor:pointer; transition:all 0.2s;"
+                               onmouseover="this.style.background='#f7f9fc'"
+                               onmouseout="this.style.background='white'">
+                            <input type="checkbox" name="memberIds" th:value="${u.id}"
+                                   style="accent-color:#0a66c2;">
+                            <div style="width:32px; height:32px; border-radius:50%;
+                                        background:linear-gradient(135deg,#0a66c2,#004182);
+                                        display:flex; align-items:center; justify-content:center;
+                                        color:white; font-weight:600; font-size:0.85rem; flex-shrink:0;"
+                                 th:text="${#strings.substring(u.fullName, 0, 2)}">JM</div>
+                            <div>
+                                <div style="font-weight:600; color:#1a2634; font-size:0.9rem;"
+                                     th:text="${u.fullName}">John Mukasa</div>
+                                <div style="font-size:0.8rem; color:#5e6775;"
+                                     th:text="${u.role.name}">Student</div>
+                            </div>
+                        </label>
+                    </div>
+                    <div style="font-size:0.8rem; color:#5e6775; margin-top:6px;">
+                        <i class="fas fa-info-circle" style="color:#0a66c2;"></i>
+                        Select the people you want in this private group
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Topic Title</label>
+                    <input type="text" name="title"
+                           placeholder="e.g., Question about REST APIs in Spring Boot" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="content"
+                              placeholder="Describe your question or topic in detail..." required></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeNewTopicModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Post Discussion
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleDiscussionType(type) {
+            const courseSection  = document.getElementById('courseSection');
+            const membersSection = document.getElementById('membersSection');
+            const courseLabel    = document.getElementById('courseTypeLabel');
+            const groupLabel     = document.getElementById('groupTypeLabel');
+
+            if (type === 'GROUP') {
+                courseSection.style.display  = 'none';
+                membersSection.style.display = 'block';
+                groupLabel.style.borderColor  = '#0a66c2';
+                groupLabel.style.background   = '#eef3f8';
+                courseLabel.style.borderColor = '#e0e4e9';
+                courseLabel.style.background  = 'white';
+            } else {
+                courseSection.style.display  = 'block';
+                membersSection.style.display = 'none';
+                courseLabel.style.borderColor = '#0a66c2';
+                courseLabel.style.background  = '#eef3f8';
+                groupLabel.style.borderColor  = '#e0e4e9';
+                groupLabel.style.background   = 'white';
+            }
+        }
+
+        function filterMembers(query) {
+            const labels = document.querySelectorAll('#memberList label');
+            labels.forEach(label => {
+                const name = label.querySelector('div div:first-child')?.textContent?.toLowerCase() || '';
+                label.style.display = name.includes(query.toLowerCase()) ? 'flex' : 'none';
+            });
+        }
+
+        function openNewTopicModal() {
+            document.getElementById('newTopicModal').classList.add('active');
+        }
+
+        function closeNewTopicModal() {
+            document.getElementById('newTopicModal').classList.remove('active');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('newTopicModal');
+            if (event.target === modal) modal.classList.remove('active');
+        }
+    </script>
+</body>
+</html>

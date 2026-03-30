@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Study Groups | Bugema Academic Connect'">Study Groups - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar - Professional */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 1.6rem;
+            color: #0a66c2;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #eef3f8;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px #0a66c2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e6775;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: #cc1010;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px 4px 4px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .user-profile:hover {
+            background: #eef3f8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1280px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            gap: 24px;
+        }
+
+        /* ===== PROFESSIONAL LEFT SIDEBAR - LINKEDIN STYLE ===== */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            overflow: hidden;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border-bottom: 1px solid #eef0f3;
+            background: linear-gradient(to bottom, #f7f9fc, white);
+        }
+
+        .profile-cover {
+            height: 60px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            margin: -16px -16px 0 -16px;
+            margin-bottom: 40px;
+        }
+
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: -40px auto 12px;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-name-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .profile-title-large {
+            color: #5e6775;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .stat-cell {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a2634;
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+        }
+
+        .menu-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            color: #1a2634;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item-prof:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active {
+            background: #eef3f8;
+            color: #0a66c2;
+            border-left-color: #0a66c2;
+            font-weight: 600;
+        }
+
+        .menu-item-prof i {
+            font-size: 1.2rem;
+            width: 24px;
+            color: #5e6775;
+        }
+
+        .menu-item-prof:hover i {
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active i {
+            color: #0a66c2;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: #eef3f8;
+            color: #1a2634;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .create-group-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .create-group-btn:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        /* Tabs */
+        .groups-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #eef0f3;
+            padding-bottom: 12px;
+        }
+
+        .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            background: none;
+            font-weight: 600;
+            color: #5e6775;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.2s;
+            position: relative;
+            font-size: 0.95rem;
+        }
+
+        .tab-btn:hover {
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        .tab-btn.active {
+            color: #0a66c2;
+            background: #eef3f8;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: #0a66c2;
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Groups Grid */
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .group-card {
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .group-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(10,102,194,0.15);
+            border-color: #0a66c2;
+        }
+
+        .group-header {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            padding: 20px;
+            color: white;
+            position: relative;
+        }
+
+        .group-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        .group-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            backdrop-filter: blur(4px);
+        }
+
+        .group-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .group-course {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .group-body {
+            padding: 20px;
+        }
+
+        .group-description {
+            color: #5e6775;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .group-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .group-stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .group-stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0a66c2;
+        }
+
+        .group-stat-label {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+        }
+
+        .group-members-preview {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .member-avatar-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: -8px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .member-count {
+            margin-left: 12px;
+            color: #5e6775;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .group-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .group-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .group-btn:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        .group-btn.outline {
+            background: none;
+            border: 1px solid #0a66c2;
+            color: #0a66c2;
+        }
+
+        .group-btn.outline:hover {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .group-meta {
+            color: #5e6775;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* My Groups Section */
+        .my-groups-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1a2634;
+        }
+
+        .section-title i {
+            color: #0a66c2;
+        }
+
+        .my-group-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .my-group-item:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 4px 12px rgba(10,102,194,0.1);
+            transform: translateX(4px);
+        }
+
+        .my-group-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            margin-right: 15px;
+        }
+
+        .my-group-info {
+            flex: 1;
+        }
+
+        .my-group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .my-group-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1a2634;
+        }
+
+        .my-group-role {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .my-group-role.leader {
+            background: #fff3e0;
+            color: #b86b0c;
+        }
+
+        .my-group-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: #5e6775;
+        }
+
+        .my-group-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .my-group-action {
+            margin-left: 15px;
+        }
+
+        .my-group-action-btn {
+            background: none;
+            border: 1px solid #0a66c2;
+            color: #0a66c2;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .my-group-action-btn:hover {
+            background: #0a66c2;
+            color: white;
+        }
+
+        /* Upcoming Study Sessions */
+        .study-sessions {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid #eef0f3;
+        }
+
+        .sessions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .sessions-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1a2634;
+        }
+
+        .sessions-header h3 i {
+            color: #0a66c2;
+        }
+
+        .sessions-header a {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #eef0f3;
+            transition: all 0.2s;
+        }
+
+        .session-item:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 2px 8px rgba(10,102,194,0.1);
+        }
+
+        .session-time {
+            background: #eef3f8;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-right: 15px;
+            min-width: 60px;
+        }
+
+        .session-date {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0a66c2;
+        }
+
+        .session-month {
+            font-size: 0.7rem;
+            color: #5e6775;
+            text-transform: uppercase;
+        }
+
+        .session-info {
+            flex: 1;
+        }
+
+        .session-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #1a2634;
+        }
+
+        .session-group {
+            font-size: 0.85rem;
+            color: #0a66c2;
+            font-weight: 500;
+        }
+
+        .session-attendees {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #5e6775;
+            font-size: 0.85rem;
+            margin-right: 15px;
+        }
+
+        .session-join-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .session-join-btn:hover {
+            background: #004182;
+        }
+
+        /* ===== PROFESSIONAL RIGHT SIDEBAR ===== */
+        .right-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header h3 i {
+            color: #0a66c2;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-header h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-header a {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .section-header a:hover {
+            text-decoration: underline;
+        }
+
+        /* Recommended Group Items */
+        .recommended-group-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .recommended-group-item:last-child {
+            border-bottom: none;
+        }
+
+        .recommended-group-item:hover {
+            background: #f7f9fc;
+            transform: translateX(4px);
+        }
+
+        .recommended-group-icon {
+            width: 45px;
+            height: 45px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1.2rem;
+        }
+
+        .recommended-group-info {
+            flex: 1;
+        }
+
+        .recommended-group-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a2634;
+            margin-bottom: 2px;
+        }
+
+        .recommended-group-meta {
+            font-size: 0.8rem;
+            color: #5e6775;
+        }
+
+        .join-small-btn {
+            background: none;
+            border: 1px solid #0a66c2;
+            color: #0a66c2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .join-small-btn:hover {
+            background: #0a66c2;
+            color: white;
+        }
+
+        /* Deadline items */
+        .deadline-item-prof {
+            display: flex;
+            gap: 14px;
+            padding: 12px;
+            background: #fff8e7;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f5b042;
+            transition: all 0.2s;
+        }
+
+        .deadline-item-prof:hover {
+            transform: translateX(4px);
+        }
+
+        .deadline-icon-prof {
+            color: #f5b042;
+            font-size: 1.2rem;
+        }
+
+        .deadline-content-prof {
+            flex: 1;
+        }
+
+        .deadline-title-prof {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+
+        .deadline-meta-prof {
+            font-size: 0.8rem;
+            color: #5e6775;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .deadline-badge {
+            background: #f5b04220;
+            color: #b86b0c;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Active Users */
+        .active-user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .active-user-item:last-child {
+            border-bottom: none;
+        }
+
+        .active-user-item:hover {
+            background: #f7f9fc;
+        }
+
+        .active-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background: #31a24c;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .active-user-info {
+            flex: 1;
+        }
+
+        .active-user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1a2634;
+            margin-bottom: 2px;
+        }
+
+        .active-user-status {
+            font-size: 0.75rem;
+            color: #31a24c;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #5e6775;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #0a66c2;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a2634;
+            font-size: 0.95rem;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #f7f9fc;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #0a66c2;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(10,102,194,0.1);
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .privacy-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .privacy-option {
+            flex: 1;
+            border: 2px solid #e0e4e9;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .privacy-option:hover {
+            border-color: #0a66c2;
+        }
+
+        .privacy-option.selected {
+            border-color: #0a66c2;
+            background: #eef3f8;
+        }
+
+        .privacy-option i {
+            font-size: 1.5rem;
+            color: #0a66c2;
+            margin-bottom: 8px;
+        }
+
+        .privacy-option span {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #1a2634;
+        }
+
+        .privacy-option small {
+            color: #5e6775;
+            font-size: 0.8rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        .btn-secondary {
+            background: none;
+            border: 1px solid #e0e4e9;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #5e6775;
+        }
+
+        .btn-secondary:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr 280px;
+            }
+            .groups-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar, .right-sidebar {
+                display: none;
+            }
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar - Professional Style -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search study groups...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:text="${unreadMessages}">3</span>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${unreadNotifications}">5</span>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                </div>
+                
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Left Sidebar - Professional LinkedIn Style -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+                <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">BSE Student | 23/BSE/BU/R/0001</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${coursesCount}">6</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${materialsCount}">12</div>
+                        <div class="stat-label-small">Materials</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${engagementPercentage}">89%</div>
+                        <div class="stat-label-small">Engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/student/dashboard}">
+                    <i class="fas fa-home"></i>
+                    <span>Home Feed</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/courses}">
+                    <i class="fas fa-book-open"></i>
+                    <span>My Courses</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/assignments}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Assignments</span>
+                    <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/discussions}">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/student/study-groups}">
+                    <i class="fas fa-users"></i>
+                    <span>Study Groups</span>
+                    <span class="menu-badge" th:text="${myGroups.size()}">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/downloads}">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/saved}">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Saved</span>
+                    <span class="menu-badge" th:text="${savedItems}">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/progress}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Progress</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content - Study Groups -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1>Study Groups</h1>
+                <button class="create-group-btn" onclick="openCreateGroupModal()">
+                    <i class="fas fa-plus"></i>
+                    Create Group
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="groups-tabs">
+                <button class="tab-btn active" onclick="switchTab('all')">All Groups</button>
+                <button class="tab-btn" onclick="switchTab('my')">My Groups</button>
+                <button class="tab-btn" onclick="switchTab('popular')">Popular</button>
+                <button class="tab-btn" onclick="switchTab('recent')">Recently Active</button>
+            </div>
+
+            <!-- Groups Grid -->
+            <div class="groups-grid" id="all-groups">
+                <!-- My Groups first (if any) -->
+                <div th:each="group : ${myGroups}" class="group-card" th:data-id="${group.id}">
+                    <div class="group-header">
+                        <span class="group-badge">Member</span>
+                        <div class="group-icon">
+                            <i th:class="${group.iconClass} ?: 'fas fa-users'"></i>
+                        </div>
+                        <div class="group-title" th:text="${group.name}">Software Engineering Study Group</div>
+                        <div class="group-course">
+                            <i class="fas fa-book"></i>
+                            <span th:text="${group.course.name}">ICT 3101 - Software Engineering</span>
+                        </div>
+                    </div>
+                    <div class="group-body">
+                        <div class="group-description" th:text="${group.description}">
+                            Collaborative study group for Software Engineering students preparing for exams and working on projects.
+                        </div>
+                        <div class="group-stats">
+                            <div class="group-stat">
+                                <div class="group-stat-value" th:text="${group.memberCount}">8</div>
+                                <div class="group-stat-label">Members</div>
+                            </div>
+                            <div class="group-stat">
+                                <div class="group-stat-value" th:text="${group.resourcesCount}">24</div>
+                                <div class="group-stat-label">Resources</div>
+                            </div>
+                            <div class="group-stat">
+                                <div class="group-stat-value" th:text="${group.meetingCount}">3</div>
+                                <div class="group-stat-label">Meetings</div>
+                            </div>
+                        </div>
+                        <div class="group-members-preview">
+                            <div th:each="member, iterStat : ${group.recentMembers}" th:if="${iterStat.index < 3}" class="member-avatar-small" 
+                                 th:text="${#strings.substring(member.fullName, 0, 2)}">JD</div>
+                            <span class="member-count" th:text="'+' + (${group.memberCount} - 3) + ' more'">+5 more</span>
+                        </div>
+                        <div class="group-footer">
+                            <button class="group-btn" th:onclick="'viewGroup(\'' + ${group.id} + '\')'">Open Group</button>
+                            <span class="group-meta"><i class="far fa-clock"></i> <span th:text="${#temporals.format(group.lastActive, 'MMM dd')}">Active today</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other groups -->
+                <div th:each="group : ${recommendedGroups}" class="group-card" th:data-id="${group.id}">
+                    <div class="group-header" style="background: linear-gradient(135deg, #5e2a9c, #0a66c2);">
+                        <span class="group-badge">Recommended</span>
+                        <div class="group-icon">
+                            <i th:class="${group.iconClass} ?: 'fas fa-users'"></i>
+                        </div>
+                        <div class="group-title" th:text="${group.name}">Database Systems Study Group</div>
+                        <div class="group-course">
+                            <i class="fas fa-book"></i>
+                            <span th:text="${group.course.name}">ICT 3102 - Database Systems</span>
+                        </div>
+                    </div>
+                    <div class="group-body">
+                        <div class="group-description" th:text="${group.description}">
+                            Weekly meetings to discuss normalization, SQL queries, and database design principles.
+                        </div>
+                        <div class="group-stats">
+                            <div class="group-stat">
+                                <div class="group-stat-value" th:text="${group.memberCount}">12</div>
+                                <div class="group-stat-label">Members</div>
+                            </div>
+                            <div class="group-stat">
+                                <div class="group-stat-value" th:text="${group.resourcesCount}">18</div>
+                                <div class="group-stat-label">Resources</div>
+                            </div>
+                            <div class="group-stat">
+                                <div class="group-stat-value" th:text="${group.meetingCount}">5</div>
+                                <div class="group-stat-label">Meetings</div>
+                            </div>
+                        </div>
+                        <div class="group-members-preview">
+                            <div th:each="member, iterStat : ${group.recentMembers}" th:if="${iterStat.index < 3}" class="member-avatar-small" 
+                                 th:text="${#strings.substring(member.fullName, 0, 2)}">JD</div>
+                            <span class="member-count" th:text="'+' + (${group.memberCount} - 3) + ' more'">+9 more</span>
+                        </div>
+                        <div class="group-footer">
+                            <button class="group-btn outline" th:onclick="'joinGroup(\'' + ${group.id} + '\')'">Join Group</button>
+                            <span class="group-meta"><i class="fas fa-user-plus"></i> <span th:text="${group.spotsLeft} + ' spots left'">3 spots left</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Groups Section (for mobile/alternative view) -->
+            <div class="my-groups-section" th:if="${myGroups != null and !myGroups.isEmpty()}">
+                <div class="section-title">
+                    <i class="fas fa-star"></i>
+                    <span>My Active Groups</span>
+                </div>
+
+                <div th:each="group : ${myGroups}" class="my-group-item" th:data-id="${group.id}">
+                    <div class="my-group-icon">
+                        <i th:class="${group.iconClass} ?: 'fas fa-users'"></i>
+                    </div>
+                    <div class="my-group-info">
+                        <div class="my-group-header">
+                            <span class="my-group-name" th:text="${group.name}">Software Engineering Study Group</span>
+                            <span class="my-group-role" th:classappend="${group.isLeader} ? 'leader'" 
+                                  th:text="${group.isLeader} ? 'Leader' : 'Member'">Member</span>
+                        </div>
+                        <div class="my-group-meta">
+                            <span><i class="fas fa-users"></i> <span th:text="${group.memberCount} + ' members'">8 members</span></span>
+                            <span><i class="far fa-clock"></i> Next: <span th:text="${#temporals.format(group.nextMeeting, 'E, MMM dd')}">Wed, Mar 20</span></span>
+                            <span><i class="fas fa-comment"></i> <span th:text="${group.unreadMessages} + ' new'">3 new</span></span>
+                        </div>
+                    </div>
+                    <div class="my-group-action">
+                        <button class="my-group-action-btn" th:onclick="'viewGroup(\'' + ${group.id} + '\')'">Open</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Study Sessions -->
+            <div class="study-sessions" th:if="${upcomingSessions != null and !upcomingSessions.isEmpty()}">
+                <div class="sessions-header">
+                    <h3><i class="fas fa-calendar-alt"></i> Upcoming Study Sessions</h3>
+                    <a href="#" th:href="@{/student/calendar}">View Calendar</a>
+                </div>
+
+                <div th:each="session : ${upcomingSessions}" class="session-item" th:data-id="${session.id}">
+                    <div class="session-time">
+                        <div class="session-date" th:text="${#temporals.format(session.date, 'dd')}">20</div>
+                        <div class="session-month" th:text="${#temporals.format(session.date, 'MMM')}">MAR</div>
+                    </div>
+                    <div class="session-info">
+                        <div class="session-title" th:text="${session.title}">Normalization Practice</div>
+                        <div class="session-group" th:text="${session.group.name}">Database Systems Study Group</div>
+                    </div>
+                    <div class="session-attendees">
+                        <i class="fas fa-user-check"></i>
+                        <span th:text="${session.attendeeCount} + '/' + ${session.totalMembers} + ' attending'">5/12 attending</span>
+                    </div>
+                    <button class="session-join-btn" th:onclick="'joinSession(\'' + ${session.id} + '\')'">Join</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Professional Style -->
+        <div class="right-sidebar">
+            <!-- Recommended Groups -->
+            <div class="sidebar-header">
+                <h3><i class="fas fa-thumbs-up" style="color:#0a66c2;"></i> Recommended</h3>
+            </div>
+            
+            <div class="sidebar-section">
+                <div th:each="group : ${recommendedGroups}" class="recommended-group-item" th:data-id="${group.id}">
+                    <div class="recommended-group-icon">
+                        <i th:class="${group.iconClass} ?: 'fas fa-users'"></i>
+                    </div>
+                    <div class="recommended-group-info">
+                        <div class="recommended-group-name" th:text="${group.name}">Database Systems</div>
+                        <div class="recommended-group-meta" th:text="${group.memberCount} + ' members · ' + ${group.course.code}">12 members · ICT 3102</div>
+                    </div>
+                    <button class="join-small-btn" th:onclick="'joinGroup(\'' + ${group.id} + '\')'">Join</button>
+                </div>
+            </div>
+
+            <!-- Upcoming Deadlines -->
+            <div class="sidebar-section" th:if="${!deadlines.isEmpty()}">
+                <div class="section-header">
+                    <h3><i class="fas fa-clock" style="color:#f5b042;"></i> Study-relevant Deadlines</h3>
+                    <a href="#" th:href="@{/student/assignments}">View all</a>
+                </div>
+
+                <div th:each="deadline : ${deadlines}" class="deadline-item-prof">
+                    <div class="deadline-icon-prof">
+                        <i class="fas fa-exclamation-triangle" th:if="${#temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') <= 2}"></i>
+                        <i class="fas fa-pencil-alt" th:if="${#temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') > 2 and #temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') <= 5}"></i>
+                        <i class="fas fa-file-pdf" th:if="${#temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') > 5}"></i>
+                    </div>
+                    <div class="deadline-content-prof">
+                        <div class="deadline-title-prof" th:text="${deadline.title}">Project Proposal</div>
+                        <div class="deadline-meta-prof">
+                            <span th:text="${deadline.course.name}">Software Engineering</span>
+                            <span class="deadline-badge" th:text="'Due ' + ${#temporals.format(deadline.dueDate, 'MMM dd')}">Due Mar 15</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Members -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-circle" style="color:#31a24c;"></i> Active Now</h3>
+                    <a href="#" th:href="@{/student/peers}">See all</a>
+                </div>
+
+                <div class="active-user-item" th:each="user : ${activeUsers}" th:if="${activeUsers != null}">
+                    <div class="active-user-avatar">
+                        <span th:text="${#strings.substring(user.fullName, 0, 2)}">JM</span>
+                        <span class="online-indicator"></span>
+                    </div>
+                    <div class="active-user-info">
+                        <div class="active-user-name" th:text="${user.fullName}">John Mukasa</div>
+                        <div class="active-user-status">
+                            <span th:text="${user.currentActivity}">Studying in Database Group</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div class="modal" id="createGroupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Study Group</h2>
+                <i class="fas fa-times close-modal" onclick="closeCreateGroupModal()"></i>
+            </div>
+
+            <form th:action="@{/student/study-groups/create}" method="post">
+                <div class="form-group">
+                    <label>Course</label>
+                    <select name="courseId" required>
+                        <option value="">Select a course</option>
+                        <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.code} + ' - ' + ${course.name}">ICT 3101 - Software Engineering</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Group Name</label>
+                    <input type="text" name="name" placeholder="e.g., Software Engineering Exam Prep" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="What will this group focus on? Study goals, meeting schedule, etc." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Privacy</label>
+                    <div class="privacy-options">
+                        <div class="privacy-option selected" onclick="selectPrivacy('public')" id="privacy-public" data-value="PUBLIC">
+                            <i class="fas fa-globe"></i>
+                            <span>Public</span>
+                            <small>Anyone can join</small>
+                        </div>
+                        <div class="privacy-option" onclick="selectPrivacy('private')" id="privacy-private" data-value="PRIVATE">
+                            <i class="fas fa-lock"></i>
+                            <span>Private</span>
+                            <small>Approval required</small>
+                        </div>
+                    </div>
+                    <input type="hidden" name="privacy" id="privacyValue" value="PUBLIC">
+                </div>
+
+                <div class="form-group">
+                    <label>Meeting Schedule (Optional)</label>
+                    <select name="schedule">
+                        <option value="">No regular schedule</option>
+                        <option value="WEEKLY_MON">Weekly - Mondays</option>
+                        <option value="WEEKLY_WED">Weekly - Wednesdays</option>
+                        <option value="WEEKLY_FRI">Weekly - Fridays</option>
+                        <option value="BIWEEKLY">Bi-weekly</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeCreateGroupModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Here you would filter groups based on tab
+            console.log('Switching to tab:', tab);
+        }
+
+        // Modal functions
+        function openCreateGroupModal() {
+            document.getElementById('createGroupModal').classList.add('active');
+        }
+
+        function closeCreateGroupModal() {
+            document.getElementById('createGroupModal').classList.remove('active');
+        }
+
+        function selectPrivacy(type) {
+            document.getElementById('privacy-public').classList.remove('selected');
+            document.getElementById('privacy-private').classList.remove('selected');
+            document.getElementById('privacy-' + type).classList.add('selected');
+            document.getElementById('privacyValue').value = type.toUpperCase();
+        }
+
+        function viewGroup(groupId) {
+            if (groupId && groupId !== '${group.id}') {
+                window.location.href = '/student/study-group/' + groupId;
+            }
+        }
+
+        function joinGroup(groupId) {
+            if (!groupId || groupId === '${group.id}') return;
+            
+            fetch('/student/study-groups/' + groupId + '/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      location.reload();
+                  } else {
+                      alert('Error joining group: ' + data.message);
+                  }
+              });
+        }
+
+        function joinSession(sessionId) {
+            if (sessionId && sessionId !== '${session.id}') {
+                window.location.href = '/student/study-session/' + sessionId;
+            }
+        }
+
+        // Click on group card
+        document.querySelectorAll('.group-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't navigate if clicking on button
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    return;
+                }
+                const groupId = this.getAttribute('th:data-id') || this.getAttribute('data-id');
+                viewGroup(groupId);
+            });
+        });
+
+        // Click on my group item
+        document.querySelectorAll('.my-group-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    return;
+                }
+                const groupId = this.getAttribute('th:data-id') || this.getAttribute('data-id');
+                viewGroup(groupId);
+            });
+        });
+
+        // Click on recommended group
+        document.querySelectorAll('.recommended-group-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    return;
+                }
+                const groupId = this.getAttribute('th:data-id') || this.getAttribute('data-id');
+                viewGroup(groupId);
+            });
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('createGroupModal');
+            if (event.target == modal) {
+                modal.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

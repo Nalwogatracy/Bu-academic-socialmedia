@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Saved Items | Bugema Academic Connect'">Saved Items - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar - Professional */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 1.6rem;
+            color: #0a66c2;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #eef3f8;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px #0a66c2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e6775;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: #cc1010;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px 4px 4px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .user-profile:hover {
+            background: #eef3f8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1280px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            gap: 24px;
+        }
+
+        /* ===== PROFESSIONAL LEFT SIDEBAR - LINKEDIN STYLE ===== */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            overflow: hidden;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border-bottom: 1px solid #eef0f3;
+            background: linear-gradient(to bottom, #f7f9fc, white);
+        }
+
+        .profile-cover {
+            height: 60px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            margin: -16px -16px 0 -16px;
+            margin-bottom: 40px;
+        }
+
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: -40px auto 12px;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-name-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .profile-title-large {
+            color: #5e6775;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .stat-cell {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a2634;
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+        }
+
+        .menu-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            color: #1a2634;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item-prof:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active {
+            background: #eef3f8;
+            color: #0a66c2;
+            border-left-color: #0a66c2;
+            font-weight: 600;
+        }
+
+        .menu-item-prof i {
+            font-size: 1.2rem;
+            width: 24px;
+            color: #5e6775;
+        }
+
+        .menu-item-prof:hover i {
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active i {
+            color: #0a66c2;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: #eef3f8;
+            color: #1a2634;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .manage-btn {
+            background: none;
+            border: 1px solid #0a66c2;
+            color: #0a66c2;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .manage-btn:hover {
+            background: #0a66c2;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        /* Saved Tabs */
+        .saved-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #eef0f3;
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            background: none;
+            font-weight: 600;
+            color: #5e6775;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.2s;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn:hover {
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        .tab-btn.active {
+            color: #0a66c2;
+            background: #eef3f8;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: #0a66c2;
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Saved Grid */
+        .saved-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .saved-card {
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .saved-card:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 8px 20px rgba(10,102,194,0.1);
+            transform: translateY(-2px);
+        }
+
+        .saved-header {
+            padding: 15px 20px;
+            background: #f7f9fc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .saved-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #0a66c2;
+        }
+
+        .saved-type i {
+            font-size: 1rem;
+        }
+
+        .saved-date {
+            font-size: 0.8rem;
+            color: #5e6775;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .saved-body {
+            padding: 20px;
+        }
+
+        .saved-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #1a2634;
+        }
+
+        .saved-preview {
+            color: #5e6775;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .saved-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #5e6775;
+            margin-bottom: 15px;
+        }
+
+        .saved-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .saved-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: #eef3f8;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #0a66c2;
+        }
+
+        .saved-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eef0f3;
+            padding-top: 15px;
+        }
+
+        .saved-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .saved-btn:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(10,102,194,0.2);
+        }
+
+        .unsave-btn {
+            background: none;
+            border: 1px solid #cc1010;
+            color: #cc1010;
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .unsave-btn:hover {
+            background: #cc1010;
+            color: white;
+        }
+
+        /* Collections */
+        .collections-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1a2634;
+        }
+
+        .section-title i {
+            color: #0a66c2;
+        }
+
+        .collections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .collection-card {
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .collection-card:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 4px 12px rgba(10,102,194,0.1);
+            transform: translateY(-2px);
+        }
+
+        .collection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .collection-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1a2634;
+        }
+
+        .collection-count {
+            color: #5e6775;
+            font-size: 0.85rem;
+            background: #eef3f8;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .collection-items {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .item-preview {
+            width: 35px;
+            height: 35px;
+            background: #eef3f8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .collection-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .collection-action {
+            color: #0a66c2;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        .collection-action:hover {
+            background: #eef3f8;
+        }
+
+        .create-collection-btn {
+            width: 100%;
+            background: #f7f9fc;
+            border: 2px dashed #0a66c2;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: #0a66c2;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .create-collection-btn:hover {
+            background: #eef3f8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.1);
+        }
+
+        .create-collection-btn i {
+            font-size: 1.5rem;
+        }
+
+        /* ===== PROFESSIONAL RIGHT SIDEBAR ===== */
+        .right-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header h3 i {
+            color: #0a66c2;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-header h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-header a {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .section-header a:hover {
+            text-decoration: underline;
+        }
+
+        .create-collection-sidebar-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .create-collection-sidebar-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.3);
+        }
+
+        /* Recently Saved Items */
+        .recently-saved-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .recently-saved-item:last-child {
+            border-bottom: none;
+        }
+
+        .recently-saved-item:hover {
+            background: #f7f9fc;
+            transform: translateX(4px);
+        }
+
+        .recent-icon {
+            width: 40px;
+            height: 40px;
+            background: #eef3f8;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1rem;
+        }
+
+        .recent-info {
+            flex: 1;
+        }
+
+        .recent-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+            color: #1a2634;
+        }
+
+        .recent-time {
+            font-size: 0.75rem;
+            color: #8f9bAB;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Quick Tip Card */
+        .quick-tip {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 12px;
+        }
+
+        .quick-tip h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-tip p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #5e6775;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #0a66c2;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a2634;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #f7f9fc;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #0a66c2;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(10,102,194,0.1);
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        .btn-secondary {
+            background: none;
+            border: 1px solid #e0e4e9;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #5e6775;
+        }
+
+        .btn-secondary:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr 280px;
+            }
+            .saved-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar, .right-sidebar {
+                display: none;
+            }
+            .saved-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar - Professional Style -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search saved items...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:text="${unreadMessages}">3</span>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${unreadNotifications}">5</span>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                </div>
+                
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Left Sidebar - Professional LinkedIn Style -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+                <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">BSE Student | 23/BSE/BU/R/0001</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${coursesCount}">6</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${materialsCount}">12</div>
+                        <div class="stat-label-small">Materials</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${engagementPercentage}">89%</div>
+                        <div class="stat-label-small">Engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/student/dashboard}">
+                    <i class="fas fa-home"></i>
+                    <span>Home Feed</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/courses}">
+                    <i class="fas fa-book-open"></i>
+                    <span>My Courses</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/assignments}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Assignments</span>
+                    <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/discussions}">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/study-groups}">
+                    <i class="fas fa-users"></i>
+                    <span>Study Groups</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/downloads}">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/student/saved}">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Saved</span>
+                    <span class="menu-badge" th:text="${savedItems}">12</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/progress}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Progress</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content - Saved Items -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1>Saved Items</h1>
+                <button class="manage-btn" onclick="openCreateCollectionModal()">
+                    <i class="fas fa-folder-plus"></i> New Collection
+                </button>
+            </div>
+
+            <!-- Saved Tabs -->
+            <div class="saved-tabs">
+                <button class="tab-btn active">All Items</button>
+                <button class="tab-btn">Posts</button>
+                <button class="tab-btn">Materials</button>
+                <button class="tab-btn">Discussions</button>
+                <button class="tab-btn">Assignments</button>
+            </div>
+
+            <!-- Saved Grid -->
+            <div class="saved-grid">
+                <div th:each="item : ${savedItemsList}" class="saved-card" th:data-id="${item.id}">
+                    <div class="saved-header">
+                        <span class="saved-type">
+                            <i th:class="${item.type == 'POST' ? 'fas fa-newspaper' : 
+                                          (item.type == 'MATERIAL' ? 'fas fa-file-pdf' : 
+                                          (item.type == 'DISCUSSION' ? 'fas fa-comments' : 'fas fa-tasks'))}"></i>
+                            <span th:text="${item.type}">Post</span>
+                        </span>
+                        <span class="saved-date">
+                            <i class="far fa-clock"></i>
+                            <span th:text="${#temporals.format(item.createdAt, 'MMM dd, yyyy')}">Mar 15, 2026</span>
+                        </span>
+                    </div>
+                    <div class="saved-body">
+
+                    <div class="saved-title" th:text="${item.title}"></div>
+
+                    <div class="saved-preview"
+                         th:text="${#strings.substring(item.content,0,80)} + '...'">
+                    </div>
+
+                    <div class="saved-meta">
+                        <span>
+                            <i class="fas fa-book"></i>
+                            <span th:text="${item.course.name}"></span>
+                        </span>
+
+                        <span>
+                            <i class="fas fa-user"></i>
+                            <span th:text="${item.author.fullName}"></span>
+                        </span>
+                    </div>
+
+                    <span class="saved-date">
+                        <i class="far fa-clock"></i>
+                        <span th:text="${#temporals.format(item.createdAt, 'MMM dd, yyyy')}"></span>
+                    </span>
+
+                </div>
+                </div>
+            </div>
+
+            <!-- Collections -->
+            <div class="collections-section">
+                <div class="section-title">
+                    <i class="fas fa-folder"></i>
+                    <span>My Collections</span>
+                </div>
+
+                <div class="collections-grid">
+                    <div class="collection-card" th:each="collection : ${collections}" th:data-id="${collection.id}">
+                        <div class="collection-header">
+                            <span class="collection-name" th:text="${collection.name}">Exam Prep</span>
+                            <span class="collection-count" th:text="${collection.count} + ' items'">8 items</span>
+                        </div>
+                        <div class="collection-items">
+                            <div th:each="item, iterStat : ${collection.previewItems}" th:if="${iterStat.index < 4}" 
+                                 class="item-preview" th:text="${#strings.substring(item.title, 0, 1)}">S</div>
+                        </div>
+                        <div class="collection-footer">
+                            <span class="collection-action" th:onclick="'viewCollection(\'' + ${collection.id} + '\')'">
+                                <i class="fas fa-eye"></i> View
+                            </span>
+                            <span class="collection-action" th:onclick="'editCollection(\'' + ${collection.id} + '\')'">
+                                <i class="fas fa-edit"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="create-collection-btn" onclick="openCreateCollectionModal()">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create New Collection</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Professional Style -->
+        <div class="right-sidebar">
+            <!-- Create Collection Button -->
+            <div class="sidebar-section">
+                <button class="create-collection-sidebar-btn" onclick="openCreateCollectionModal()">
+                    <i class="fas fa-plus"></i> New Collection
+                </button>
+            </div>
+
+            <!-- Recently Saved -->
+            <div class="sidebar-header">
+                <h3><i class="fas fa-history" style="color:#0a66c2;"></i> Recently Saved</h3>
+            </div>
+            
+            <div class="sidebar-section">
+                <div th:each="recent : ${recentlySaved}" class="recently-saved-item" th:data-id="${recent.id}">
+                    <div class="recent-icon">
+                        <i th:class="${recent.type == 'POST' ? 'fas fa-newspaper' : 
+                                      (recent.type == 'MATERIAL' ? 'fas fa-file-pdf' : 
+                                      (recent.type == 'DISCUSSION' ? 'fas fa-comments' : 'fas fa-tasks'))}"></i>
+                    </div>
+                    <div class="recent-info">
+                        <div class="recent-title" th:text="${recent.title}">Project Guidelines</div>
+                        <div class="recent-time">
+                            <i class="far fa-clock"></i>
+                            <span th:text="${#temporals.format(recent.createdAt, 'MMM dd, HH:mm')}">2 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Tips -->
+            <div class="quick-tip">
+                <h4><i class="fas fa-lightbulb"></i> Quick Tip</h4>
+                <p>Organize your saved items into collections to easily find them later for exam revision!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Collection Modal -->
+    <div class="modal" id="createCollectionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Collection</h2>
+                <i class="fas fa-times close-modal" onclick="closeCreateCollectionModal()"></i>
+            </div>
+
+            <form th:action="@{/student/collections/create}" method="post">
+                <div class="form-group">
+                    <label>Collection Name</label>
+                    <input type="text" name="name" placeholder="e.g., Exam Revision, Project Resources" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description (Optional)</label>
+                    <textarea name="description" placeholder="What's this collection for?"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeCreateCollectionModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Collection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function viewItem(itemId) {
+            if (itemId && itemId !== '${item.id}') {
+                window.location.href = '/student/saved/' + itemId;
+            }
+        }
+
+        function unsaveItem(itemId) {
+            if (!itemId || itemId === '${item.id}') return;
+            
+            if (confirm('Remove from saved items?')) {
+                fetch('/student/saved/' + itemId, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          location.reload();
+                      } else {
+                          alert('Error removing item: ' + data.message);
+                      }
+                  });
+            }
+        }
+
+        function viewCollection(collectionId) {
+            if (collectionId && collectionId !== '${collection.id}') {
+                window.location.href = '/student/collections/' + collectionId;
+            }
+        }
+
+        function editCollection(collectionId) {
+            if (collectionId && collectionId !== '${collection.id}') {
+                window.location.href = '/student/collections/' + collectionId + '/edit';
+            }
+        }
+
+        function openCreateCollectionModal() {
+            document.getElementById('createCollectionModal').classList.add('active');
+        }
+
+        function closeCreateCollectionModal() {
+            document.getElementById('createCollectionModal').classList.remove('active');
+        }
+
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                // Here you would filter saved items by type
+                const filter = this.textContent;
+                console.log('Filtering by:', filter);
+            });
+        });
+
+        // Click on saved card (but not on buttons)
+        document.querySelectorAll('.saved-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    return;
+                }
+                const itemId = this.getAttribute('th:data-id') || this.getAttribute('data-id');
+                viewItem(itemId);
+            });
+        });
+
+        // Click on recently saved item
+        document.querySelectorAll('.recently-saved-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                const itemId = this.getAttribute('th:data-id') || this.getAttribute('data-id');
+                viewItem(itemId);
+            });
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('createCollectionModal');
+            if (event.target == modal) {
+                modal.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

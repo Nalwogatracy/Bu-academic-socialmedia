@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Copy base styles from previous pages */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .search-bar { position: relative; width: 320px; }
+        .search-bar i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #5e6775; }
+        .search-bar input { width: 100%; padding: 10px 16px 10px 44px; border: none; border-radius: 24px; background: #eef3f8; }
+        
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+        
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        
+        .logout-btn { border: none; background: transparent; color: #5e6775; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card { padding: 20px; border-bottom: 1px solid #eef0f3; background: linear-gradient(to bottom, #f7f9fc, white); }
+        .profile-cover { height: 80px; background: linear-gradient(135deg, #0a66c2, #7b2eda); margin: -20px -20px 0 -20px; margin-bottom: 30px; position: relative; overflow: hidden; }
+        .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.2rem; font-weight: 600; margin: -45px auto 12px; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .profile-name-large { font-weight: 700; font-size: 1.3rem; text-align: center; color: #1a2634; }
+        .profile-title-large { color: #5e6775; font-size: 0.9rem; text-align: center; margin-bottom: 16px; background: #eef3f8; padding: 4px 12px; border-radius: 30px; display: inline-block; margin-left: auto; margin-right: auto; width: fit-content; }
+        
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 0 8px; border-top: 1px solid #eef0f3; }
+        .stat-cell { text-align: center; background: #f7f9fc; padding: 12px; border-radius: 10px; }
+        .stat-num { font-weight: 700; font-size: 1.3rem; color: #0a66c2; }
+        .stat-label-small { font-size: 0.75rem; color: #5e6775; text-transform: uppercase; }
+
+        .menu-section { padding: 16px 0; }
+        .menu-item-prof { display: flex; align-items: center; gap: 14px; padding: 12px 20px; color: #1a2634; transition: all 0.2s; cursor: pointer; text-decoration: none; font-weight: 500; border-left: 3px solid transparent; }
+        .menu-item-prof:hover { background: #f7f9fc; color: #0a66c2; }
+        .menu-item-prof.active { background: #eef3f8; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+        .menu-item-prof i { font-size: 1.2rem; width: 24px; color: #5e6775; }
+        .menu-item-prof:hover i { color: #0a66c2; }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header h1 i {
+            color: #0a66c2;
+            font-size: 2rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #004182;
+        }
+
+        .btn-secondary {
+            background: #eef3f8;
+            color: #1a2634;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e4e9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #e0e4e9;
+            color: #1a2634;
+        }
+
+        .btn-outline:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 4px 12px 4px 4px;
+            border-radius: 8px;
+            border: 1px solid #e0e4e9;
+        }
+
+        .filter-group i {
+            color: #5e6775;
+            font-size: 0.9rem;
+            padding: 0 4px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            border: none;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            outline: none;
+            background: transparent;
+            min-width: 140px;
+        }
+
+        .filter-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Logs Table */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #eef0f3;
+            margin-bottom: 24px;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .logs-table th {
+            text-align: left;
+            padding: 16px;
+            background: #f7f9fc;
+            color: #1a2634;
+            font-weight: 600;
+            border-bottom: 2px solid #eef0f3;
+        }
+
+        .logs-table td {
+            padding: 16px;
+            border-bottom: 1px solid #eef0f3;
+            color: #2c3e50;
+        }
+
+        .logs-table tr:hover td {
+            background: #f7f9fc;
+        }
+
+        .log-level {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .level-info {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .level-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .level-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .level-debug {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .log-message {
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar-xs {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #eef3f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        /* Log Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 600px;
+            max-width: 90%;
+            padding: 24px;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: #5e6775;
+        }
+
+        .log-detail-item {
+            margin-bottom: 16px;
+        }
+
+        .log-detail-label {
+            font-weight: 600;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+
+        .log-detail-value {
+            background: #f7f9fc;
+            padding: 12px;
+            border-radius: 8px;
+            color: #2c3e50;
+            font-family: monospace;
+            word-break: break-word;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #e0e4e9;
+            color: #1a2634;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .page-link:hover,
+        .page-link.active {
+            background: #0a66c2;
+            color: white;
+            border-color: #0a66c2;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar {
+                display: none;
+            }
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-actions {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                    <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Admin</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search logs...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${notifications}">1</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
+                </div>
+                <form th:action="@{/admin/logout}" method="post">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Admin User</div>
+                <div class="profile-title-large">Audit Viewer</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${totalLogs}">15,234</div>
+                        <div class="stat-label-small">Total Logs</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${errorCount}">23</div>
+                        <div class="stat-label-small">Errors</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/admin/dashboard}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/users}">
+                    <i class="fas fa-users-cog"></i>
+                    <span>User Management</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/courses}">
+                    <i class="fas fa-book"></i>
+                    <span>Course Management</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/posts}">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Content Moderation</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/analytics}">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/reports}">
+                    <i class="fas fa-flag"></i>
+                    <span>Reports</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/system}">
+                    <i class="fas fa-cog"></i>
+                    <span>System Settings</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/admin/logs}">
+                    <i class="fas fa-history"></i>
+                    <span>Audit Logs</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>
+                    <i class="fas fa-history"></i>
+                    Audit Logs
+                </h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="exportLogs()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn btn-outline" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <i class="fas fa-tag"></i>
+                    <select id="levelFilter" onchange="applyFilters()">
+                        <option value="all">All Levels</option>
+                        <option value="INFO">INFO</option>
+                        <option value="WARN">WARN</option>
+                        <option value="ERROR">ERROR</option>
+                        <option value="DEBUG">DEBUG</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <i class="fas fa-user"></i>
+                    <select id="userFilter" onchange="applyFilters()">
+                        <option value="all">All Users</option>
+                        <option value="system">System</option>
+                        <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.fullName}">Admin User</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <i class="fas fa-calendar"></i>
+                    <select id="dateFilter" onchange="applyFilters()">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="flex:1;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by message, IP, or user..." onkeyup="if(event.key==='Enter') applyFilters()">
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+                </div>
+            </div>
+
+            <!-- Logs Table -->
+            <div class="table-responsive">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Level</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Message</th>
+                            <th>IP Address</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="log : ${logs}">
+                            <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}">2026-03-06 10:30:45</td>
+                            <td>
+                                <span class="log-level" th:classappend="
+                                    ${log.level == 'INFO' ? 'level-info' : 
+                                    (log.level == 'WARN' ? 'level-warning' : 
+                                    (log.level == 'ERROR' ? 'level-error' : 'level-debug'))}"
+                                    th:text="${log.level}">INFO</span>
+                            </td>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar-xs" th:text="${log.userInitials}">JD</div>
+                                    <span th:text="${log.userName}">John Doe</span>
+                                </div>
+                            </td>
+                            <td th:text="${log.action}">USER_LOGIN</td>
+                            <td class="log-message" th:text="${log.message}">User logged in successfully</td>
+                            <td th:text="${log.ipAddress}">192.168.1.100</td>
+                            <td>
+                                <button class="btn-icon" th:onclick="'viewLogDetails(' + ${log.id} + ')'" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <span style="color:#5e6775; margin-right:16px;">Showing 1-25 of <span th:text="${totalLogs}">15,234</span></span>
+                <a href="#" class="page-link active">1</a>
+                <a href="#" class="page-link">2</a>
+                <a href="#" class="page-link">3</a>
+                <a href="#" class="page-link">4</a>
+                <a href="#" class="page-link">5</a>
+                <a href="#" class="page-link">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Details Modal -->
+    <div class="modal" id="logDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Log Entry Details</h3>
+                <span class="modal-close" onclick="closeModal('logDetailsModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="log-detail-item">
+                    <div class="log-detail-label">Timestamp</div>
+                    <div class="log-detail-value" id="detailTimestamp">2026-03-06 10:30:45</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">Level</div>
+                    <div class="log-detail-value" id="detailLevel">INFO</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">User</div>
+                    <div class="log-detail-value" id="detailUser">John Doe (ID: 123)</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">Action</div>
+                    <div class="log-detail-value" id="detailAction">USER_LOGIN</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">Message</div>
+                    <div class="log-detail-value" id="detailMessage">User logged in successfully</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">IP Address</div>
+                    <div class="log-detail-value" id="detailIP">192.168.1.100</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">User Agent</div>
+                    <div class="log-detail-value" id="detailUserAgent">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">Request URL</div>
+                    <div class="log-detail-value" id="detailURL">/api/users/login</div>
+                </div>
+                <div class="log-detail-item">
+                    <div class="log-detail-label">Method</div>
+                    <div class="log-detail-value" id="detailMethod">POST</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('logDetailsModal')">Close</button>
+                <button class="btn btn-outline" onclick="exportLogEntry()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Log Actions
+        function viewLogDetails(logId) {
+            fetch('/api/admin/logs/' + logId)
+                .then(response => response.json())
+                .then(log => {
+                    document.getElementById('detailTimestamp').textContent = log.timestamp;
+                    document.getElementById('detailLevel').textContent = log.level;
+                    document.getElementById('detailUser').textContent = log.userName + ' (ID: ' + log.userId + ')';
+                    document.getElementById('detailAction').textContent = log.action;
+                    document.getElementById('detailMessage').textContent = log.message;
+                    document.getElementById('detailIP').textContent = log.ipAddress;
+                    document.getElementById('detailUserAgent').textContent = log.userAgent;
+                    document.getElementById('detailURL').textContent = log.requestUrl;
+                    document.getElementById('detailMethod').textContent = log.method;
+                    openModal('logDetailsModal');
+                });
+        }
+
+        function applyFilters() {
+            const level = document.getElementById('levelFilter').value;
+            const user = document.getElementById('userFilter').value;
+            const date = document.getElementById('dateFilter').value;
+            const search = document.getElementById('searchInput').value;
+            
+            window.location.href = '/admin/logs?level=' + level + '&user=' + user + '&date=' + date + '&search=' + encodeURIComponent(search);
+        }
+
+        function clearFilters() {
+            document.getElementById('levelFilter').value = 'all';
+            document.getElementById('userFilter').value = 'all';
+            document.getElementById('dateFilter').value = 'all';
+            document.getElementById('searchInput').value = '';
+            window.location.href = '/admin/logs';
+        }
+
+        function refreshLogs() {
+            location.reload();
+        }
+
+        function exportLogs() {
+            const level = document.getElementById('levelFilter').value;
+            const user = document.getElementById('userFilter').value;
+            const date = document.getElementById('dateFilter').value;
+            window.location.href = '/admin/logs/export?level=' + level + '&user=' + user + '&date=' + date;
+        }
+
+        function exportLogEntry() {
+            // Get log ID from modal data
+            const logId = document.getElementById('logDetailsModal').getAttribute('data-log-id');
+            window.location.href = '/admin/logs/' + logId + '/export';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

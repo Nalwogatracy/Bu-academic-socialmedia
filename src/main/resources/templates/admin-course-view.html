@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Details - Bugema Academic Connect</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { background: #f0f2f5; overflow-x: hidden; }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed; width: 100%; top: 0; z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+        .nav-container {
+            max-width: 1400px; margin: 0 auto; padding: 0 24px;
+            height: 64px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-left  { display: flex; align-items: center; gap: 32px; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .search-bar { position: relative; width: 320px; }
+        .search-bar i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #5e6775; }
+        .search-bar input { width: 100%; padding: 10px 16px 10px 44px; border: none; border-radius: 24px; background: #eef3f8; font-size: 0.9rem; }
+        .search-bar input:focus { outline: none; }
+
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+
+        .logout-btn { border: none; background: transparent; color: #5e6775; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+
+        /* ── Layout ── */
+        .main-container {
+            max-width: 1400px; margin: 88px auto 30px; padding: 0 24px;
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            gap: 24px;
+        }
+
+        /* ── Sidebar ── */
+        .left-sidebar {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content; position: sticky; top: 88px;
+            border: 1px solid #eef0f3;
+        }
+        .profile-card { padding: 20px; border-bottom: 1px solid #eef0f3; background: linear-gradient(to bottom, #f7f9fc, white); }
+        .profile-cover { height: 80px; background: linear-gradient(135deg, #0a66c2, #7b2eda); margin: -20px -20px 0; margin-bottom: 30px; overflow: hidden; }
+        .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.2rem; font-weight: 600; margin: -45px auto 12px; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .profile-name-large { font-weight: 700; font-size: 1.3rem; text-align: center; color: #1a2634; }
+        .profile-title-large { color: #5e6775; font-size: 0.9rem; text-align: center; margin-bottom: 16px; background: #eef3f8; padding: 4px 12px; border-radius: 30px; display: table; margin-left: auto; margin-right: auto; }
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 0 8px; border-top: 1px solid #eef0f3; }
+        .stat-cell { text-align: center; background: #f7f9fc; padding: 12px; border-radius: 10px; }
+        .stat-num { font-weight: 700; font-size: 1.3rem; color: #0a66c2; }
+        .stat-label-small { font-size: 0.75rem; color: #5e6775; text-transform: uppercase; }
+
+        .menu-section { padding: 16px 0; }
+        .menu-item-prof { display: flex; align-items: center; gap: 14px; padding: 12px 20px; color: #1a2634; transition: all 0.2s; cursor: pointer; text-decoration: none; font-weight: 500; border-left: 3px solid transparent; }
+        .menu-item-prof:hover { background: #f7f9fc; color: #0a66c2; }
+        .menu-item-prof.active { background: #eef3f8; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+        .menu-item-prof i { font-size: 1.2rem; width: 24px; color: #5e6775; }
+        .menu-item-prof:hover i, .menu-item-prof.active i { color: #0a66c2; }
+        .menu-badge { margin-left: auto; background: #eef3f8; color: #1a2634; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+
+        /* ── Main content ── */
+        .main-content {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px; border: 1px solid #eef0f3;
+            min-width: 0;
+        }
+
+        /* ── Course Header ── */
+        .course-header {
+            background: linear-gradient(135deg, #f7f9fc, white);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #eef0f3;
+        }
+        .course-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+        .course-breadcrumb a {
+            color: #5e6775;
+            text-decoration: none;
+        }
+        .course-breadcrumb a:hover {
+            color: #0a66c2;
+        }
+        .course-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .course-title-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a2634;
+            margin-bottom: 8px;
+        }
+        .course-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .course-code {
+            background: #eef3f8;
+            color: #0a66c2;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .course-dept {
+            background: #f0f4ff;
+            color: #3451b2;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .course-status {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            background: #e6f7e6;
+            color: #2e7d32;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+            text-decoration: none;
+        }
+        .btn-primary:hover {
+            background: #004182;
+        }
+        .btn-secondary {
+            background: #eef3f8;
+            color: #1a2634;
+            text-decoration: none;
+        }
+        .btn-secondary:hover {
+            background: #e0e4e9;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #e0e4e9;
+            color: #1a2634;
+            text-decoration: none;
+        }
+        .btn-outline:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+        }
+
+        /* ── Stats Grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            border-color: #0a66c2;
+        }
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: #eef3f8;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #0a66c2;
+        }
+        .stat-info h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #5e6775;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+            line-height: 1.2;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #eef0f3;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 12px 24px;
+            font-weight: 600;
+            color: #5e6775;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+        }
+        .tab:hover {
+            color: #0a66c2;
+        }
+        .tab.active {
+            color: #0a66c2;
+            border-bottom-color: #0a66c2;
+        }
+        .tab i {
+            margin-right: 8px;
+        }
+
+        /* ── Tab Content ── */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ── Lecturer Card ── */
+        .lecturer-card {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .lecturer-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #7b2eda);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .lecturer-info h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+        .lecturer-info p {
+            color: #5e6775;
+            margin-bottom: 4px;
+        }
+        .lecturer-contact {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .lecturer-contact span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        /* ── Description Card ── */
+        .description-card {
+            background: white;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .description-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a2634;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .description-card p {
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* ── Students List ── */
+        .students-list {
+            background: white;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .student-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #eef3f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-weight: 600;
+        }
+        .student-details h4 {
+            font-weight: 600;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+        .student-details p {
+            font-size: 0.85rem;
+            color: #5e6775;
+        }
+        .student-date {
+            color: #5e6775;
+            font-size: 0.85rem;
+        }
+
+        /* ── Materials Grid ── */
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .material-card {
+            background: white;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        .material-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            border-color: #0a66c2;
+        }
+        .material-icon {
+            width: 48px;
+            height: 48px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #0a66c2;
+            margin-bottom: 16px;
+        }
+        .material-title {
+            font-weight: 700;
+            color: #1a2634;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        .material-meta {
+            display: flex;
+            gap: 16px;
+            color: #5e6775;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+        .material-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5e6775;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: #c8d0da;
+            display: block;
+            margin-bottom: 16px;
+        }
+        .empty-state h3 {
+            font-size: 1.1rem;
+            color: #1a2634;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar {
+                display: none;
+            }
+            .course-header-top {
+                flex-direction: column;
+            }
+            .action-buttons {
+                width: 100%;
+            }
+            .action-buttons .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                    <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Admin</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search courses...">
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-item" onclick="window.location='/admin/dashboard'">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">0</span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
+                </div>
+                <form th:action="@{/admin/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── Main container ── -->
+    <div class="main-container">
+
+        <!-- ── Sidebar ── -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
+                <div class="profile-name-large" th:text="${user != null ? user.fullName : 'Admin'}">Admin User</div>
+                <div class="profile-title-large">System Administrator</div>
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${totalUsers}">150</div>
+                        <div class="stat-label-small">Total Users</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${totalCourses}">24</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/admin/dashboard}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/users}"><i class="fas fa-users-cog"></i><span>User Management</span></a>
+                <a class="menu-item-prof active" th:href="@{/admin/courses}"><i class="fas fa-book"></i><span>Course Management</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/posts}"><i class="fas fa-newspaper"></i><span>Content Moderation</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/analytics}"><i class="fas fa-chart-bar"></i><span>Analytics</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/reports}"><i class="fas fa-flag"></i><span>Reports</span></a>
+                <a class="menu-item-prof" th:href="@{/admin/system}"><i class="fas fa-cog"></i><span>System Settings</span></a>
+            </div>
+        </div>
+
+        <!-- ── Main content ── -->
+        <div class="main-content">
+
+            <!-- Course Header -->
+            <div class="course-header">
+                <div class="course-breadcrumb">
+                    <a th:href="@{/admin/courses}">Courses</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span th:text="${course.name}">Course Name</span>
+                </div>
+                
+                <div class="course-header-top">
+                    <div class="course-title-section">
+                        <h1 th:text="${course.name}">Software Engineering</h1>
+                        <div class="course-meta">
+                            <span class="course-code" th:text="${course.code}">ICT3101</span>
+                            <span class="course-dept" th:text="${course.department}">Computing</span>
+                            <span class="course-status">Active</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a class="btn btn-secondary" th:href="@{/admin/courses/{id}/edit(id=${course.id})}">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a class="btn btn-primary" th:href="@{/admin/courses/{id}/materials(id=${course.id})}">
+                            <i class="fas fa-file-alt"></i> Materials
+                        </a>
+                        <a class="btn btn-primary" th:href="@{/admin/courses/{id}/enrollments(id=${course.id})}">
+                            <i class="fas fa-users"></i> Enrollments
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Enrolled Students</h3>
+                        <div class="stat-number" th:text="${course.students != null ? #lists.size(course.students) : 0}">45</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info">
+                        <h3>Materials</h3>
+                        <div class="stat-number" th:text="${course.materials != null ? course.materials.size() : 0}">12</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="stat-info">
+                        <h3>Posts</h3>
+                        <div class="stat-number" th:text="${course.postsCount}">8</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="stat-info">
+                        <h3>Semester</h3>
+                        <div class="stat-number">Sem 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('overview')"><i class="fas fa-info-circle"></i> Overview</div>
+                <div class="tab" onclick="showTab('students')"><i class="fas fa-users"></i> Students (<span th:text="${course.students != null ? #lists.size(course.students) : 0}">0</span>)</div>
+                <div class="tab" onclick="showTab('materials')"><i class="fas fa-file-alt"></i> Materials (<span th:text="${course.materials != null ? #lists.size(course.materials) : 0}">0</span>)</div>
+                <div class="tab" onclick="showTab('posts')"><i class="fas fa-newspaper"></i> Posts (<span th:text="${course.posts != null ? #lists.size(course.posts) : 0}">0</span>)</div>
+            </div>
+
+            <!-- Tab: Overview -->
+            <div id="overview" class="tab-content active">
+                
+                <!-- Lecturer Info -->
+                <div class="lecturer-card" th:if="${course.lecturer != null}">
+                    <div class="lecturer-avatar-large" th:text="${#strings.substring(course.lecturer.fullName, 0, 2)}">DO</div>
+                    <div class="lecturer-info">
+                        <h3 th:text="${course.lecturer.fullName}">Dr. John Onyango</h3>
+                        <p>Course Lecturer</p>
+                        <div class="lecturer-contact">
+                            <span><i class="fas fa-envelope"></i> <span th:text="${course.lecturer.email}">j.onyango@bugema.com</span></span>
+                            <span><i class="fas fa-phone"></i> <span th:text="${course.lecturer.phone}">+256 700 123456</span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lecturer-card" th:unless="${course.lecturer != null}">
+                    <div style="text-align: center; width: 100%; color: #5e6775;">
+                        <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <p>No lecturer assigned to this course</p>
+                        <button class="btn btn-primary" style="margin-top: 12px;" onclick="openAssignModal()">
+                            <i class="fas fa-plus"></i> Assign Lecturer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="description-card">
+                    <h3><i class="fas fa-align-left"></i> Course Description</h3>
+                    <p th:text="${course.description != null ? course.description : 'No description provided for this course.'}">
+                        This course covers the fundamental principles of software engineering including requirements analysis, design, implementation, testing, and maintenance. Students will learn industry best practices and work on a team project.
+                    </p>
+                </div>
+
+                <!-- Quick Links to other sections -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="stat-card" style="cursor: pointer;" onclick="window.location.href='/admin/courses/'+${course.id}+'/students'">
+                        <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                        <div>
+                            <h3>View All Students</h3>
+                            <p style="color: #5e6775; margin-top: 4px;"><span th:text="${course.students != null ? #lists.size(course.students) : 0}">45</span> enrolled</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="cursor: pointer;" onclick="window.location.href='/admin/courses/'+${course.id}+'/materials'">
+                        <div class="stat-icon"><i class="fas fa-file-pdf"></i></div>
+                        <div>
+                            <h3>Course Materials</h3>
+                            <p style="color: #5e6775; margin-top: 4px;"><span th:text="${course.materials != null ? #lists.size(course.materials) : 0}">12</span> files</p>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="cursor: pointer;" onclick="window.location.href='/admin/courses/'+${course.id}+'/posts'">
+                        <div class="stat-icon"><i class="fas fa-comments"></i></div>
+                        <div>
+                            <h3>Discussion Posts</h3>
+                            <p style="color: #5e6775; margin-top: 4px;"><span th:text="${course.posts != null ? #lists.size(course.posts) : 0}">8</span> discussions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Students -->
+            <div id="students" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 1.3rem;">Enrolled Students</h2>
+                    <button class="btn btn-primary" onclick="openAddStudentModal()">
+                        <i class="fas fa-user-plus"></i> Add Student
+                    </button>
+                </div>
+
+                <div th:if="${course.students == null or #lists.isEmpty(course.students)}" class="empty-state">
+                    <i class="fas fa-users-slash"></i>
+                    <h3>No students enrolled</h3>
+                    <p>Click "Add Student" to enroll students in this course.</p>
+                </div>
+
+                <div class="students-list" th:unless="${course.students == null or #lists.isEmpty(course.students)}">
+                    <div th:each="student : ${course.students}" class="student-item">
+                        <div class="student-info">
+                            <div class="student-avatar" th:text="${#strings.substring(student.fullName, 0, 2)}">JD</div>
+                            <div class="student-details">
+                                <h4 th:text="${student.fullName}">John Doe</h4>
+                                <p th:text="${student.email}">john.doe@bugema.com</p>
+                            </div>
+                        </div>
+                        <div class="student-date">
+                            <i class="fas fa-calendar-alt"></i> Enrolled: Jan 2024
+                            <span th:text="${#temporals.format(enrollment.createdAt, 'MMM yyyy')}">Jan 2024</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Materials -->
+            <div id="materials" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 1.3rem;">Course Materials</h2>
+                    <a class="btn btn-primary" th:href="@{/admin/courses/{id}/materials(id=${course.id})}">
+                        <i class="fas fa-plus"></i> Manage Materials
+                    </a>
+                </div>
+
+                <div th:if="${course.materials == null or #lists.isEmpty(course.materials)}" class="empty-state">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>No materials uploaded</h3>
+                    <p>Click "Manage Materials" to add course materials.</p>
+                </div>
+
+                <div class="materials-grid" th:unless="${course.materials == null or #lists.isEmpty(course.materials)}">
+                    <div th:each="material : ${course.materials}" class="material-card">
+                        <div class="material-icon">
+                            <i th:class="${material.type == 'PDF' ? 'fas fa-file-pdf' : 
+                                          (material.type == 'VIDEO' ? 'fas fa-video' : 
+                                          (material.type == 'AUDIO' ? 'fas fa-headphones' : 'fas fa-file'))}"></i>
+                        </div>
+                        <div class="material-title" th:text="${material.title}">Introduction to Programming</div>
+                        <div class="material-meta">
+                            <span><i class="fas fa-calendar"></i> <span th:text="${material.uploadDate}">2024-01-15</span></span>
+                            <span><i class="fas fa-download"></i> <span th:text="${material.downloadCount != null ? material.downloadCount : 0}">24</span></span>
+                        </div>
+                        <button class="btn btn-secondary" style="width: 100%;" th:onclick="'downloadMaterial('+${material.id}+')'">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Posts -->
+            <div id="posts" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 1.3rem;">Discussion Posts</h2>
+                    <button class="btn btn-primary" onclick="openCreatePostModal()">
+                        <i class="fas fa-plus"></i> Create Post
+                    </button>
+                </div>
+
+                <div th:if="${course.posts == null or #lists.isEmpty(course.posts)}" class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <h3>No discussion posts</h3>
+                    <p>Click "Create Post" to start a discussion.</p>
+                </div>
+
+                <div class="students-list" th:unless="${course.posts == null or #lists.isEmpty(course.posts)}">
+                    <div th:each="post : ${course.posts}" class="student-item" style="flex-direction: column; align-items: flex-start;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px;">
+                            <h4 th:text="${post.title}" style="font-weight: 700;">Important Announcement</h4>
+                            <span style="color: #5e6775; font-size: 0.85rem;" th:text="${post.createdDate}">2024-01-20</span>
+                        </div>
+                        <p th:text="${post.content}" style="color: #2c3e50; margin-bottom: 12px;">This is the post content...</p>
+                        <div style="display: flex; gap: 16px;">
+                            <span><i class="fas fa-heart"></i> <span th:text="${post.likes != null ? post.likes : 0}">12</span> likes</span>
+                            <span><i class="fas fa-comment"></i> <span th:text="${post.comments != null ? #lists.size(post.comments) : 0}">5</span> comments</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end .main-content -->
+    </div><!-- end .main-container -->
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Navigation functions
+        function viewCourse(id) { window.location.href = '/admin/courses/' + id; }
+        function manageMaterials(id) { window.location.href = '/admin/courses/' + id + '/materials'; }
+        function viewEnrollments(id) { window.location.href = '/admin/courses/' + id + '/enrollments'; }
+        function downloadMaterial(id) { window.location.href = '/admin/materials/' + id + '/download'; }
+
+        // Modal functions (to be implemented)
+        function openAssignModal() { alert('Assign lecturer modal would open here'); }
+        function openAddStudentModal() { alert('Add student modal would open here'); }
+        function openCreatePostModal() { alert('Create post modal would open here'); }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        };
+    </script>
+</body>
+</html>

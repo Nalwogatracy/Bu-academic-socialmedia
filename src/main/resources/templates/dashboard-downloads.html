@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Downloads | Bugema Academic Connect'">Downloads - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar - Professional */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 1.6rem;
+            color: #0a66c2;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #eef3f8;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px #0a66c2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e6775;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: #cc1010;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px 4px 4px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .user-profile:hover {
+            background: #eef3f8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1280px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            gap: 24px;
+        }
+
+        /* ===== PROFESSIONAL LEFT SIDEBAR - LINKEDIN STYLE ===== */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            overflow: hidden;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border-bottom: 1px solid #eef0f3;
+            background: linear-gradient(to bottom, #f7f9fc, white);
+        }
+
+        .profile-cover {
+            height: 60px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            margin: -16px -16px 0 -16px;
+            margin-bottom: 40px;
+        }
+
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: -40px auto 12px;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-name-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .profile-title-large {
+            color: #5e6775;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .stat-cell {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a2634;
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+        }
+
+        .menu-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            color: #1a2634;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item-prof:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active {
+            background: #eef3f8;
+            color: #0a66c2;
+            border-left-color: #0a66c2;
+            font-weight: 600;
+        }
+
+        .menu-item-prof i {
+            font-size: 1.2rem;
+            width: 24px;
+            color: #5e6775;
+        }
+
+        .menu-item-prof:hover i {
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active i {
+            color: #0a66c2;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: #eef3f8;
+            color: #1a2634;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .storage-info {
+            background: #f7f9fc;
+            border-radius: 30px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #eef0f3;
+        }
+
+        .storage-used {
+            font-weight: 700;
+            color: #0a66c2;
+        }
+
+        .storage-total {
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .storage-bar {
+            width: 100px;
+            height: 8px;
+            background: #eef3f8;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .storage-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            border-radius: 4px;
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 20px;
+            border: 1px solid #e0e4e9;
+            border-radius: 30px;
+            background: none;
+            color: #5e6775;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-tab:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        .filter-tab.active {
+            background: #0a66c2;
+            border-color: #0a66c2;
+            color: white;
+        }
+
+        /* Downloads Grid */
+        .downloads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .download-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .download-item:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 4px 12px rgba(10,102,194,0.1);
+            transform: translateY(-2px);
+        }
+
+        .download-icon {
+            width: 56px;
+            height: 56px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #0a66c2;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .download-info {
+            flex: 1;
+        }
+
+        .download-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: #1a2634;
+        }
+
+        .download-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #5e6775;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
+
+        .download-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .download-course {
+            background: #eef3f8;
+            color: #0a66c2;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .download-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .download-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .download-btn:hover {
+            background: #004182;
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(10,102,194,0.3);
+        }
+
+        .delete-btn {
+            background: #ffebee;
+            color: #cc1010;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .delete-btn:hover {
+            background: #cc1010;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Recent Downloads */
+        .recent-downloads {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #1a2634;
+        }
+
+        .section-title i {
+            color: #0a66c2;
+        }
+
+        .recent-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eef0f3;
+            transition: background 0.2s;
+        }
+
+        .recent-item:hover {
+            background: #f7f9fc;
+        }
+
+        .recent-icon {
+            width: 40px;
+            height: 40px;
+            background: #eef3f8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .recent-info {
+            flex: 1;
+        }
+
+        .recent-title {
+            font-weight: 500;
+            margin-bottom: 3px;
+            color: #1a2634;
+        }
+
+        .recent-time {
+            font-size: 0.8rem;
+            color: #8f9bAB;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .recent-course {
+            font-size: 0.8rem;
+            color: #0a66c2;
+            font-weight: 600;
+            margin-right: 15px;
+            background: #eef3f8;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .recent-size {
+            font-size: 0.8rem;
+            color: #5e6775;
+            font-weight: 500;
+        }
+
+        /* ===== PROFESSIONAL RIGHT SIDEBAR ===== */
+        .right-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header h3 i {
+            color: #0a66c2;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-header h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-header a {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .section-header a:hover {
+            text-decoration: underline;
+        }
+
+        /* Category Items */
+        .category-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .category-item-prof:last-child {
+            border-bottom: none;
+        }
+
+        .category-item-prof:hover {
+            background: #f7f9fc;
+            transform: translateX(4px);
+        }
+
+        .category-icon-prof {
+            width: 42px;
+            height: 42px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1.2rem;
+        }
+
+        .category-info-prof {
+            flex: 1;
+        }
+
+        .category-name-prof {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a2634;
+            margin-bottom: 2px;
+        }
+
+        .category-count-prof {
+            font-size: 0.8rem;
+            color: #5e6775;
+        }
+
+        /* Storage Breakdown */
+        .storage-breakdown {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .storage-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .storage-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .storage-label {
+            color: #5e6775;
+        }
+
+        .storage-value {
+            font-weight: 600;
+            color: #1a2634;
+        }
+
+        .storage-total-row {
+            border-top: 1px solid #eef0f3;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        /* Quick Tip Card */
+        .quick-tip {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 12px;
+        }
+
+        .quick-tip h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-tip p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr 280px;
+            }
+            .downloads-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar, .right-sidebar {
+                display: none;
+            }
+            .downloads-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar - Professional Style -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search downloads...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:text="${unreadMessages}">3</span>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${unreadNotifications}">5</span>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                </div>
+                
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Left Sidebar - Professional LinkedIn Style -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+                <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">BSE Student | 23/BSE/BU/R/0001</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${coursesCount}">6</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${materialsCount}">12</div>
+                        <div class="stat-label-small">Materials</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${engagementPercentage}">89%</div>
+                        <div class="stat-label-small">Engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/student/dashboard}">
+                    <i class="fas fa-home"></i>
+                    <span>Home Feed</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/courses}">
+                    <i class="fas fa-book-open"></i>
+                    <span>My Courses</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/assignments}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Assignments</span>
+                    <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/discussions}">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/study-groups}">
+                    <i class="fas fa-users"></i>
+                    <span>Study Groups</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/student/downloads}">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/saved}">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Saved</span>
+                    <span class="menu-badge" th:text="${savedItems}">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/progress}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Progress</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content - Downloads -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1>My Downloads</h1>
+                <div class="storage-info">
+                    <span class="storage-used" th:text="${usedStorage}">450 MB</span>
+                    <span class="storage-total" th:text="' / ' + ${totalStorage}">1 GB</span>
+                    <div class="storage-bar">
+                        <div class="storage-fill" th:style="'width: ' + ${storagePercentage} + '%;'"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="filter-tabs">
+                <button class="filter-tab active">All Files</button>
+                <button class="filter-tab">PDFs</button>
+                <button class="filter-tab">Presentations</button>
+                <button class="filter-tab">Videos</button>
+                <button class="filter-tab">Documents</button>
+                <button class="filter-tab">Images</button>
+            </div>
+
+            <!-- Downloads Grid -->
+            <div class="downloads-grid">
+                <div th:each="download : ${downloads}" class="download-item" th:data-id="${download.id}">
+                    <div class="download-icon">
+                        <i class="fas fa-file-pdf" th:if="${download.fileType == 'pdf'}"></i>
+                        <i class="fas fa-file-powerpoint" th:if="${download.fileType == 'pptx' or download.fileType == 'ppt'}"></i>
+                        <i class="fas fa-file-word" th:if="${download.fileType == 'docx' or download.fileType == 'doc'}"></i>
+                        <i class="fas fa-video" th:if="${download.fileType == 'mp4' or download.fileType == 'avi' or download.fileType == 'mov'}"></i>
+                        <i class="fas fa-file-archive" th:if="${download.fileType == 'zip' or download.fileType == 'rar'}"></i>
+                        <i class="fas fa-file-image" th:if="${download.fileType == 'jpg' or download.fileType == 'png' or download.fileType == 'jpeg'}"></i>
+                    </div>
+                    <div class="download-info">
+                        <div class="download-title" th:text="${download.fileName}">Lecture_Notes_Week6.pdf</div>
+                        <div class="download-meta">
+                            <span><i class="far fa-calendar"></i> <span th:text="${#temporals.format(download.downloadedAt, 'MMM dd, yyyy')}">Mar 15, 2026</span></span>
+                            <span><i class="fas fa-database"></i> <span th:text="${download.fileSize} + ' MB'">2.5 MB</span></span>
+                            <span><i class="fas fa-download"></i> <span th:text="${download.downloadCount} + 'x'">12x</span></span>
+                        </div>
+                        <span class="download-course" th:text="${download.course.code}">ICT 3101</span>
+                    </div>
+                    <div class="download-actions">
+                        <button class="download-btn" th:onclick="'downloadFile(\'' + ${download.id} + '\')'">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="delete-btn" th:onclick="'deleteDownload(\'' + ${download.id} + '\')'">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Downloads -->
+            <div class="recent-downloads">
+                <div class="section-title">
+                    <i class="fas fa-history"></i>
+                    <span>Recently Downloaded</span>
+                </div>
+
+                <div th:each="recent : ${recentDownloads}" class="recent-item" th:data-id="${recent.id}">
+                    <div class="recent-icon">
+                        <i class="fas fa-file-pdf" th:if="${recent.fileType == 'pdf'}"></i>
+                        <i class="fas fa-file-powerpoint" th:if="${recent.fileType == 'pptx'}"></i>
+                        <i class="fas fa-file-word" th:if="${recent.fileType == 'docx'}"></i>
+                        <i class="fas fa-video" th:if="${recent.fileType == 'mp4'}"></i>
+                    </div>
+                    <div class="recent-info">
+                        <div class="recent-title" th:text="${recent.fileName}">Project Guidelines.pdf</div>
+                        <div class="recent-time">
+                            <i class="far fa-clock"></i> 
+                            <span th:text="${#temporals.format(recent.downloadedAt, 'MMM dd, HH:mm')}">Today, 2:30 PM</span>
+                        </div>
+                    </div>
+                    <span class="recent-course" th:text="${recent.course.code}">ICT 3101</span>
+                    <span class="recent-size" th:text="${recent.fileSize} + ' MB'">2.5 MB</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Professional Style -->
+        <div class="right-sidebar">
+            <!-- Categories -->
+            <div class="sidebar-header">
+                <h3><i class="fas fa-folder" style="color:#0a66c2;"></i> Categories</h3>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="category-item-prof">
+                    <div class="category-icon-prof"><i class="fas fa-file-pdf"></i></div>
+                    <div class="category-info-prof">
+                        <div class="category-name-prof">PDF Documents</div>
+                        <div class="category-count-prof" th:text="${pdfCount} + ' files'">24 files</div>
+                    </div>
+                </div>
+                <div class="category-item-prof">
+                    <div class="category-icon-prof"><i class="fas fa-file-powerpoint"></i></div>
+                    <div class="category-info-prof">
+                        <div class="category-name-prof">Presentations</div>
+                        <div class="category-count-prof" th:text="${pptCount} + ' files'">12 files</div>
+                    </div>
+                </div>
+                <div class="category-item-prof">
+                    <div class="category-icon-prof"><i class="fas fa-file-word"></i></div>
+                    <div class="category-info-prof">
+                        <div class="category-name-prof">Word Documents</div>
+                        <div class="category-count-prof" th:text="${docCount} + ' files'">8 files</div>
+                    </div>
+                </div>
+                <div class="category-item-prof">
+                    <div class="category-icon-prof"><i class="fas fa-video"></i></div>
+                    <div class="category-info-prof">
+                        <div class="category-name-prof">Videos</div>
+                        <div class="category-count-prof" th:text="${videoCount} + ' files'">5 files</div>
+                    </div>
+                </div>
+                <div class="category-item-prof">
+                    <div class="category-icon-prof"><i class="fas fa-file-image"></i></div>
+                    <div class="category-info-prof">
+                        <div class="category-name-prof">Images</div>
+                        <div class="category-count-prof" th:text="${imageCount} + ' files'">3 files</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage Breakdown -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-database" style="color:#0a66c2;"></i> Storage</h3>
+                </div>
+                <div class="storage-breakdown">
+                    <div class="storage-row">
+                        <span class="storage-label">PDFs</span>
+                        <span class="storage-value" th:text="${pdfStorage} + ' MB'">156 MB</span>
+                    </div>
+                    <div class="storage-row">
+                        <span class="storage-label">Videos</span>
+                        <span class="storage-value" th:text="${videoStorage} + ' MB'">245 MB</span>
+                    </div>
+                    <div class="storage-row">
+                        <span class="storage-label">Presentations</span>
+                        <span class="storage-value" th:text="${pptStorage} + ' MB'">89 MB</span>
+                    </div>
+                    <div class="storage-row">
+                        <span class="storage-label">Documents</span>
+                        <span class="storage-value" th:text="${docStorage} + ' MB'">32 MB</span>
+                    </div>
+                    <div class="storage-row storage-total-row">
+                        <span class="storage-label"><strong>Total Used</strong></span>
+                        <span class="storage-value"><strong th:text="${usedStorage}">450 MB</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Tip -->
+            <div class="quick-tip">
+                <h4><i class="fas fa-lightbulb"></i> Quick Tip</h4>
+                <p>You can access your downloads offline! Files are stored locally on your device for quick access.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(downloadId) {
+            if (downloadId && downloadId !== '${download.id}') {
+                window.location.href = '/student/download/' + downloadId;
+            }
+        }
+
+        function deleteDownload(downloadId) {
+            if (!downloadId || downloadId === '${download.id}') return;
+            
+            if (confirm('Are you sure you want to delete this file?')) {
+                fetch('/student/downloads/' + downloadId, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          location.reload();
+                      } else {
+                          alert('Error deleting file: ' + data.message);
+                      }
+                  });
+            }
+        }
+
+        // Filter tab functionality
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                // Here you would filter downloads based on category
+                const filter = this.textContent;
+                console.log('Filtering by:', filter);
+            });
+        });
+
+        // Click on download item (but not on buttons)
+        document.querySelectorAll('.download-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    return;
+                }
+                const downloadId = this.getAttribute('th:data-id') || this.getAttribute('data-id');
+                if (downloadId && downloadId !== '${download.id}') {
+                    downloadFile(downloadId);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

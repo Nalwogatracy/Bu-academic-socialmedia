@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Assignment - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Flatpickr for date picking -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <style>
+        /* Copy base styles from previous template */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7b2eda, #0a66c2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+        }
+
+        .assignment-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .header i {
+            font-size: 2rem;
+            color: #7b2eda;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a2634;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #7b2eda;
+            box-shadow: 0 0 0 3px rgba(123, 46, 218, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .points-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .points-input input {
+            width: 120px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+        }
+
+        .file-upload {
+            border: 2px dashed #e0e4e9;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #7b2eda;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #eef3f8;
+            color: #1a2634;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #5e6775;
+            margin-top: 4px;
+        }
+
+        #selectedFileName {
+            margin-top: 8px;
+            color: #7b2eda;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Bugema Connect</span>
+            </div>
+        </div>
+        <div class="nav-right" style="display: flex; align-items: center; gap: 16px;">
+            <div class="user-profile" style="display: flex; align-items: center; gap: 8px;">
+                <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">LO</div>
+                <span th:text="${user.fullName}">Laban Onyango</span>
+            </div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="main-container">
+    <div class="assignment-card">
+        <div class="header">
+            <i class="fas fa-tasks"></i>
+            <h1>Create New Assignment</h1>
+        </div>
+
+        <form th:action="@{/lecturer/assignment/create}" method="post" th:object="${assignment}" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Select Course *</label>
+                <select th:field="*{courseId}" required>
+                    <option value="">-- Select a course --</option>
+                    <option th:each="course : ${courses}" 
+                            th:value="${course.id}" 
+                            th:text="${course.code} + ' - ' + ${course.name}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Assignment Title *</label>
+                <input type="text" th:field="*{title}" placeholder="e.g., Database Design Project" required>
+            </div>
+
+            <div class="form-group">
+                <label>Description / Instructions *</label>
+                <textarea th:field="*{description}" rows="6" 
+                          placeholder="Provide detailed instructions for the assignment..." required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Due Date *</label>
+                    <input type="text" id="dueDate" th:field="*{dueDate}" placeholder="Select date and time" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Points *</label>
+                    <div class="points-input">
+                        <input type="number" th:field="*{totalPoints}" min="0" max="100" value="100" required>
+                        <span>points</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Assignment Type</label>
+                    <select th:field="*{type}">
+                        <option value="INDIVIDUAL">Individual Assignment</option>
+                        <option value="GROUP">Group Assignment</option>
+                        <option value="PROJECT">Project</option>
+                        <option value="QUIZ">Quiz</option>
+                        <option value="EXAM">Take-home Exam</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Submission Type</label>
+                    <select th:field="*{submissionType}">
+                        <option value="FILE_UPLOAD">File Upload</option>
+                        <option value="TEXT">Text Entry</option>
+                        <option value="ONLINE">Online Submission</option>
+                        <option value="OFFLINE">Offline (In-person)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Attachment (Optional)</label>
+                <div class="file-upload" onclick="document.getElementById('attachment').click()">
+                    <i class="fas fa-paperclip" style="font-size: 1.5rem; color: #7b2eda; margin-bottom: 8px;"></i>
+                    <p>Click to attach files (rubric, template, resources)</p>
+                    <small>PDF, DOC, XLS, ZIP up to 50MB</small>
+                    <input type="file" id="attachment" name="attachment" style="display:none" onchange="showFileName(this)">
+                </div>
+                <p id="selectedFileName"></p>
+            </div>
+
+            <div class="form-group">
+                <label>Additional Settings</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="allowLateSubmission" th:field="*{allowLateSubmission}"> Allow late submissions
+                    </label>
+                    <label>
+                        <input type="checkbox" name="notifyStudents" checked> Notify students via email
+                    </label>
+                    <label>
+                        <input type="checkbox" name="plagiarismCheck" checked> Enable plagiarism check
+                    </label>
+                    <label>
+                        <input type="checkbox" name="allowPeerReview"> Enable peer review
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" id="latePenaltyField" style="display:none;">
+                <label>Late Submission Penalty</label>
+                <select name="latePenalty">
+                    <option value="10">10% per day</option>
+                    <option value="20">20% per day</option>
+                    <option value="50">50% per day</option>
+                    <option value="100">No credit after due date</option>
+                </select>
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Create Assignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Initialize date picker
+    flatpickr("#dueDate", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        locale: {
+            firstDayOfWeek: 1
+        }
+    });
+
+    // Show/hide late penalty field
+    document.querySelector('input[name="allowLateSubmission"]')?.addEventListener('change', function(e) {
+        document.getElementById('latePenaltyField').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    function showFileName(input) {
+        const fileName = document.getElementById('selectedFileName');
+        if (input.files && input.files[0]) {
+            fileName.textContent = '📎 Attached: ' + input.files[0].name;
+            fileName.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

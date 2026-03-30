@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Assignments | Bugema Academic Connect'">Assignments - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar - Professional */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 1.6rem;
+            color: #0a66c2;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #eef3f8;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px #0a66c2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e6775;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: #cc1010;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px 4px 4px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .user-profile:hover {
+            background: #eef3f8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1280px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            gap: 24px;
+        }
+
+        /* ===== PROFESSIONAL LEFT SIDEBAR - LINKEDIN STYLE ===== */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            overflow: hidden;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border-bottom: 1px solid #eef0f3;
+            background: linear-gradient(to bottom, #f7f9fc, white);
+        }
+
+        .profile-cover {
+            height: 60px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            margin: -16px -16px 0 -16px;
+            margin-bottom: 40px;
+        }
+
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: -40px auto 12px;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-name-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .profile-title-large {
+            color: #5e6775;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .stat-cell {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a2634;
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+        }
+
+        .menu-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            color: #1a2634;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item-prof:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active {
+            background: #eef3f8;
+            color: #0a66c2;
+            border-left-color: #0a66c2;
+            font-weight: 600;
+        }
+
+        .menu-item-prof i {
+            font-size: 1.2rem;
+            width: 24px;
+            color: #5e6775;
+        }
+
+        .menu-item-prof:hover i {
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active i {
+            color: #0a66c2;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: #eef3f8;
+            color: #1a2634;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            border: 1px solid #eef0f3;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2634;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-tab {
+            padding: 8px 18px;
+            border: 1px solid #e0e4e9;
+            border-radius: 30px;
+            background: none;
+            color: #5e6775;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-tab:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        .filter-tab.active {
+            background: #0a66c2;
+            border-color: #0a66c2;
+            color: white;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: #f7f9fc;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .summary-card:hover {
+            border-color: #0a66c2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.1);
+        }
+
+        .summary-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0a66c2;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            color: #5e6775;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Assignments Grid */
+        .assignments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .assignment-card {
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            background: white;
+        }
+
+        .assignment-card:hover {
+            border-color: #0a66c2;
+            box-shadow: 0 8px 20px rgba(10,102,194,0.1);
+            transform: translateY(-2px);
+        }
+
+        .assignment-card.urgent::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #cc1010;
+        }
+
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .assignment-type {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .assignment-type.quiz {
+            background: #e3f2fd;
+            color: #0a66c2;
+        }
+
+        .assignment-type.group {
+            background: #fff3e0;
+            color: #b86b0c;
+        }
+
+        .assignment-points {
+            font-weight: 600;
+            color: #0a66c2;
+            background: #eef3f8;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .assignment-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a2634;
+        }
+
+        .assignment-course {
+            color: #0a66c2;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .assignment-description {
+            color: #5e6775;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .assignment-deadline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: #f7f9fc;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .deadline-urgent {
+            color: #cc1010;
+            font-weight: 600;
+            margin-left: auto;
+            font-size: 0.9rem;
+        }
+
+        .assignment-progress {
+            margin-bottom: 15px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #5e6775;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #eef3f8;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            border-radius: 3px;
+        }
+
+        .assignment-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-not-started {
+            background: #ffebee;
+            color: #cc1010;
+        }
+
+        .status-in-progress {
+            background: #fff3e0;
+            color: #b86b0c;
+        }
+
+        .status-submitted {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-graded {
+            background: #e3f2fd;
+            color: #0a66c2;
+        }
+
+        .submit-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .submit-btn:hover {
+            background: #004182;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        .submit-btn.small {
+            padding: 6px 18px;
+            font-size: 0.85rem;
+        }
+
+        .view-btn {
+            background: none;
+            border: 1px solid #0a66c2;
+            color: #0a66c2;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .view-btn:hover {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .view-btn.small {
+            padding: 6px 18px;
+            font-size: 0.85rem;
+        }
+
+        /* ===== PROFESSIONAL RIGHT SIDEBAR - SLACK/DISCORD STYLE ===== */
+        .right-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header h3 i {
+            color: #0a66c2;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-title a {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .section-title a:hover {
+            text-decoration: underline;
+        }
+
+        /* Deadline items */
+        .deadline-item-prof {
+            display: flex;
+            gap: 14px;
+            padding: 12px;
+            background: #fff8e7;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f5b042;
+            transition: all 0.2s;
+        }
+
+        .deadline-item-prof:hover {
+            transform: translateX(4px);
+        }
+
+        .deadline-icon-prof {
+            color: #f5b042;
+            font-size: 1.2rem;
+        }
+
+        .deadline-content-prof {
+            flex: 1;
+        }
+
+        .deadline-title-prof {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+
+        .deadline-meta-prof {
+            font-size: 0.8rem;
+            color: #8f9bAB;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .deadline-badge {
+            background: #f5b04220;
+            color: #b86b0c;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Course items */
+        .course-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 0;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .course-item-prof:last-child {
+            border-bottom: none;
+        }
+
+        .course-item-prof:hover {
+            transform: translateX(4px);
+        }
+
+        .course-icon-prof {
+            width: 42px;
+            height: 42px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1.2rem;
+        }
+
+        .course-info-prof {
+            flex: 1;
+        }
+
+        .course-name-prof {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a2634;
+            margin-bottom: 2px;
+        }
+
+        .course-code-prof {
+            font-size: 0.8rem;
+            color: #8f9bAB;
+            font-weight: 500;
+        }
+
+        /* Tip card */
+        .tip-card {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px;
+        }
+
+        .tip-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tip-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr 280px;
+            }
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .assignments-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar, .right-sidebar {
+                display: none;
+            }
+            .assignments-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar - Professional Style -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search assignments...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="nav-item">
+                    <i class="fas fa-home"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:text="${unreadMessages}">3</span>
+                </div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" th:text="${unreadNotifications}">5</span>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                </div>
+                
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Left Sidebar - Professional LinkedIn Style -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+                <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">BSE Student | 23/BSE/BU/R/0001</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${coursesCount}">6</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${materialsCount}">12</div>
+                        <div class="stat-label-small">Materials</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${engagementPercentage}">89%</div>
+                        <div class="stat-label-small">Engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/student/dashboard}">
+                    <i class="fas fa-home"></i>
+                    <span>Home Feed</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/courses}">
+                    <i class="fas fa-book-open"></i>
+                    <span>My Courses</span>
+                </a>
+                <a class="menu-item-prof active" th:href="@{/student/assignments}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Assignments</span>
+                    <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/discussions}">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/study-groups}">
+                    <i class="fas fa-users"></i>
+                    <span>Study Groups</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/downloads}">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/saved}">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Saved</span>
+                    <span class="menu-badge" th:text="${savedItems}">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/progress}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Progress</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content - Assignments -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1>My Assignments</h1>
+                <div class="filter-tabs">
+                    <button class="filter-tab active">All</button>
+                    <button class="filter-tab">Pending</button>
+                    <button class="filter-tab">Submitted</button>
+                    <button class="filter-tab">Graded</button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-value" th:text="${totalAssignments}">12</div>
+                    <div class="summary-label">Total Assignments</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" th:text="${pendingAssignments}">4</div>
+                    <div class="summary-label">Pending</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" th:text="${submittedAssignments}">6</div>
+                    <div class="summary-label">Submitted</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" th:text="${gradedAssignments}">2</div>
+                    <div class="summary-label">Graded</div>
+                </div>
+            </div>
+
+            <!-- Assignments Grid -->
+            <div class="assignments-grid">
+                <!-- Assignment Loop -->
+                <div class="assignment-card" 
+                    th:each="assignment : ${assignments}"
+                    th:classappend="${assignment.dueDate != null and assignment.dueDate.isBefore(T(java.time.LocalDateTime).now().plusDays(2))} ? 'urgent' : ''">
+
+                   <div class="assignment-header">
+                       <span class="assignment-type"
+                            th:text="${assignment.course != null ? assignment.course.code : 'Assignment'}">
+                          ICT3101
+                        </span>
+                       <span class="assignment-points" th:text="${assignment.totalPoints} + ' pts'">100 pts</span>
+                   </div>
+
+                   <div class="assignment-title" th:text="${assignment.title}">Assignment Title</div>
+
+                   <div class="assignment-course">
+                       <i class="fas fa-book"></i>
+                       <span th:text="${assignment.course != null ? assignment.course.name : 'Unknown Course'}">Course Name</span>
+                   </div>
+
+                   <div class="assignment-description" th:text="${assignment.description}">Description here</div>
+
+                   <div class="assignment-deadline">
+                       <i class="far fa-clock" style="color:#0a66c2;"></i>
+                       <span><strong>Due:</strong> 
+                           <span th:text="${assignment.dueDate != null ? #temporals.format(assignment.dueDate, 'MMM dd, yyyy') : 'No deadline'}">Mar 15, 2026</span>
+                       </span>
+                       <span class="deadline-urgent"
+                            th:if="${assignment.dueDate != null and assignment.dueDate.isAfter(T(java.time.LocalDateTime).now())}"
+                            th:text="${assignment.daysLeftText}">
+                          3 days left
+                        </span>
+                        <span style="color:#cc1010; font-weight:600; margin-left:auto; font-size:0.9rem;"
+                            th:if="${assignment.dueDate != null and assignment.dueDate.isBefore(T(java.time.LocalDateTime).now())}">
+                          Past due
+                        </span>
+                   </div>
+
+                   <div class="assignment-footer">
+                    <span class="status-badge"
+                          th:classappend="${assignment.status == 'SUBMITTED'} ? ' status-submitted' :
+                                          (${assignment.status == 'GRADED'} ? ' status-graded' :
+                                          (${assignment.status == 'IN_PROGRESS'} ? ' status-in-progress' :
+                                          ' status-not-started'))"
+                          th:text="${assignment.status != null ? assignment.status : 'PENDING'}">
+                        PENDING
+                    </span>
+
+                    <div>
+                        <!-- Show View button if submitted or graded -->
+                        <button class="view-btn small"
+                                th:if="${assignment.status == 'SUBMITTED' or assignment.status == 'GRADED'}"
+                                th:onclick="'viewSubmission(' + ${assignment.id} + ')'">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <!-- Show Submit button otherwise -->
+                        <button class="submit-btn small"
+                                th:if="${assignment.status != 'SUBMITTED' and assignment.status != 'GRADED'}"
+                                th:onclick="'submitAssignment(' + ${assignment.id} + ')'">
+                            <i class="fas fa-upload"></i>
+                            <span th:text="${assignment.status == 'IN_PROGRESS'} ? 'Continue' : 'Submit'">Submit</span>
+                        </button>
+                    </div>
+                </div>
+               </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Professional Style -->
+        <div class="right-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-clock"></i> Upcoming Deadlines</h3>
+            </div>
+            
+            <div class="sidebar-section" th:if="${!deadlines.isEmpty()}">
+                <div th:each="deadline : ${deadlines}" class="deadline-item-prof">
+                    <div class="deadline-icon-prof">
+                        <i class="fas fa-exclamation-triangle" th:if="${#temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') <= 2}"></i>
+                        <i class="fas fa-pencil-alt" th:if="${#temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') > 2 and #temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') <= 5}"></i>
+                        <i class="fas fa-file-pdf" th:if="${#temporals.format(deadline.dueDate, 'dd') - #temporals.format(#temporals.createNow(), 'dd') > 5}"></i>
+                    </div>
+                    <div class="deadline-content-prof">
+                        <div class="deadline-title-prof" th:text="${deadline.title}">Project Proposal</div>
+                        <div class="deadline-meta-prof">
+                            <span th:text="${deadline.course.code}">ICT3101</span>
+                            <span class="deadline-badge" th:text="'Due ' + ${#temporals.format(deadline.dueDate, 'MMM dd')}">Due Mar 15</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Courses Section -->
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <h4><i class="fas fa-book-open" style="color:#0a66c2;"></i> Quick Access</h4>
+                </div>
+                
+                <div th:each="course : ${courses}" class="course-item-prof" th:if="${courses != null}" th:onclick="'window.location.href=\'/student/course/' + ${course.id} + '\''">
+                    <div class="course-icon-prof">
+                        <i th:class="'fas fa-code'"></i>
+                    </div>
+                    <div class="course-info-prof">
+                        <div class="course-name-prof" th:text="${course.name}">Software Engineering</div>
+                        <div class="course-code-prof" th:text="${course.code}">ICT 3101</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Tips -->
+            <div class="tip-card">
+                <h4><i class="fas fa-lightbulb"></i> Assignment Tips</h4>
+                <p>Submit assignments at least 2 hours before the deadline to avoid last-minute technical issues!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function submitAssignment(assignmentId) {
+            window.location.href = '/student/assignment/' + assignmentId + '/submit';
+        }
+        
+        function viewSubmission(assignmentId) {
+            window.location.href = '/student/assignment/' + assignmentId + '/view';
+        }
+    </script>
+</body>
+</html>

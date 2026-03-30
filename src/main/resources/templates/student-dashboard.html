@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Dashboard | Bugema Academic Connect'">Dashboard - Bugema Academic Connect</title>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        /* Navigation Bar - Professional */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0a66c2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 1.6rem;
+            color: #0a66c2;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #eef3f8;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px #0a66c2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5e6775;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #eef3f8;
+            color: #0a66c2;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: #cc1010;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px 4px 4px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .user-profile:hover {
+            background: #eef3f8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .logout-btn {
+            border: none;
+            background: transparent;
+            color: #5e6775;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #fee2e2;
+            color: #cc1010;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1280px;
+            margin: 88px auto 30px;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            gap: 24px;
+        }
+
+        /* ===== PROFESSIONAL LEFT SIDEBAR - LINKEDIN STYLE ===== */
+        .left-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            overflow: hidden;
+            border: 1px solid #eef0f3;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border-bottom: 1px solid #eef0f3;
+            background: linear-gradient(to bottom, #f7f9fc, white);
+        }
+
+        .profile-cover {
+            height: 60px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            margin: -16px -16px 0 -16px;
+            margin-bottom: 40px;
+        }
+
+        .profile-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: -40px auto 12px;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-name-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .profile-title-large {
+            color: #5e6775;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .stat-cell {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a2634;
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: #5e6775;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .menu-section {
+            padding: 16px 0;
+        }
+
+        .menu-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            color: #1a2634;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item-prof:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active {
+            background: #eef3f8;
+            color: #0a66c2;
+            border-left-color: #0a66c2;
+            font-weight: 600;
+        }
+
+        .menu-item-prof i {
+            font-size: 1.2rem;
+            width: 24px;
+            color: #5e6775;
+        }
+
+        .menu-item-prof:hover i {
+            color: #0a66c2;
+        }
+
+        .menu-item-prof.active i {
+            color: #0a66c2;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: #eef3f8;
+            color: #1a2634;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+            border: 1px solid #eef0f3;
+        }
+
+        /* Post Type Tabs */
+        .post-type-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .post-type-tab {
+            padding: 8px 18px;
+            border: 1px solid #e0e4e9;
+            border-radius: 24px;
+            background: none;
+            color: #5e6775;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .post-type-tab:hover { 
+            border-color: #0a66c2; 
+            color: #0a66c2; 
+            background: #f7f9fc;
+        }
+        
+        .post-type-tab.active {
+            background: #0a66c2;
+            border-color: #0a66c2;
+            color: white;
+        }
+
+        /* Create Post Section */
+        .create-post {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 0 0 20px 0;
+            border-bottom: 1px solid #eef0f3;
+            margin-bottom: 20px;
+        }
+
+        .post-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .course-selector-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+            background: #f7f9fc;
+            padding: 12px 16px;
+            border-radius: 12px;
+        }
+        
+        .course-selector-row label { 
+            font-size: 0.9rem; 
+            color: #1a2634; 
+            font-weight: 500;
+            white-space: nowrap; 
+        }
+        
+        .course-selector-row select {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #e0e4e9;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #1a2634;
+            background: white;
+            font-weight: 500;
+        }
+
+        .post-input textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #e0e4e9;
+            border-radius: 24px;
+            resize: none;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #f7f9fc;
+        }
+
+        .post-input textarea:focus {
+            outline: none;
+            border-color: #0a66c2;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(10,102,194,0.1);
+        }
+
+        /* Dynamic input panels */
+        .post-panel { 
+            display: none; 
+            margin-top: 16px; 
+        }
+        
+        .post-panel.active { 
+            display: block; 
+            animation: fadeIn 0.3s ease; 
+        }
+
+        .upload-area {
+            border: 2px dashed #ccd5e0;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f7f9fc;
+        }
+        
+        .upload-area:hover { 
+            border-color: #0a66c2; 
+            background: #eef3f8; 
+        }
+        
+        .upload-area i { 
+            font-size: 2.5rem; 
+            color: #0a66c2; 
+            margin-bottom: 12px; 
+        }
+        
+        .file-preview {
+            display: none;
+            margin-top: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            max-height: 300px;
+            text-align: center;
+        }
+        
+        .file-preview img, .file-preview video {
+            max-width: 100%;
+            max-height: 280px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+        
+        .file-preview-name {
+            display: none;
+            margin-top: 8px;
+            padding: 12px 16px;
+            background: #eef3f8;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #1a2634;
+        }
+
+        .link-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .link-input-group input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1px solid #e0e4e9;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            background: #f7f9fc;
+        }
+        
+        .link-input-group input:focus {
+            outline: none;
+            border-color: #0a66c2;
+            background: white;
+        }
+        
+        .link-preview-box {
+            display: none;
+            margin-top: 12px;
+            padding: 14px;
+            border: 1px solid #e0e4e9;
+            border-radius: 12px;
+            background: #f7f9fc;
+            font-size: 0.9rem;
+            color: #1a2634;
+        }
+
+        .submit-post-btn {
+            width: 100%;
+            padding: 14px;
+            background: #0a66c2;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .submit-post-btn:hover { 
+            background: #004182; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10,102,194,0.2);
+        }
+
+        /* Feed Filters */
+        .feed-filters {
+            display: flex;
+            gap: 12px;
+            padding: 0 0 20px 0;
+            border-bottom: 1px solid #eef0f3;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 1px solid #e0e4e9;
+            border-radius: 30px;
+            background: none;
+            color: #5e6775;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .filter-btn:hover {
+            border-color: #0a66c2;
+            color: #0a66c2;
+            background: #f7f9fc;
+        }
+
+        .filter-btn.server-active {
+            background: #0a66c2;
+            border-color: #0a66c2;
+            color: white;
+        }
+
+        /* Post Card */
+        .post-card {
+            padding: 20px;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .post-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .post-header {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .post-author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .post-author-info {
+            flex: 1;
+        }
+
+        .post-author-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .post-author-name span {
+            color: #5e6775;
+            font-weight: 400;
+            font-size: 0.9rem;
+            margin-left: 6px;
+        }
+
+        .post-meta {
+            font-size: 0.85rem;
+            color: #8f9bAB;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .post-badge {
+            background: #eef3f8;
+            color: #0a66c2;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .post-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #1a2634;
+        }
+
+        .post-text {
+            color: #2c3e50;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .post-attachment {
+            background: #f7f9fc;
+            border: 1px solid #eef0f3;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .attachment-icon {
+            width: 48px;
+            height: 48px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #0a66c2;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 24px;
+            padding: 12px 0;
+            border-top: 1px solid #eef0f3;
+            border-bottom: 1px solid #eef0f3;
+            margin-bottom: 12px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #5e6775;
+            font-size: 0.9rem;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 16px;
+            padding: 12px 0;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            border-radius: 30px;
+            color: #5e6775;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: #f7f9fc;
+            color: #0a66c2;
+        }
+
+        .action-btn.liked {
+            color: #cc1010;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .comment {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            
+        }
+
+        .comment-content {
+            flex: 1;
+            background: #f7f9fc;
+            padding: 12px 16px;
+            border-radius: 18px;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            color: #1a2634;
+        }
+
+        .add-comment {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .add-comment input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #eef0f3;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            background: #f7f9fc;
+        }
+
+        .add-comment input:focus {
+            outline: none;
+            border-color: #0a66c2;
+        }
+
+        .add-comment button {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: #0a66c2;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-comment button:hover {
+            background: #004182;
+            transform: scale(1.05);
+        }
+
+        /* ===== PROFESSIONAL RIGHT SIDEBAR - SLACK/DISCORD STYLE ===== */
+        .right-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+            border: 1px solid #eef0f3;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .sidebar-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header h3 i {
+            color: #0a66c2;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1a2634;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .section-title a {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .section-title a:hover {
+            text-decoration: underline;
+        }
+
+        /* Course items */
+        .course-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 0;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .course-item-prof:last-child {
+            border-bottom: none;
+        }
+
+        .course-item-prof:hover {
+            transform: translateX(4px);
+        }
+
+        .course-icon-prof {
+            width: 42px;
+            height: 42px;
+            background: #eef3f8;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a66c2;
+            font-size: 1.2rem;
+        }
+
+        .course-info-prof {
+            flex: 1;
+        }
+
+        .course-name-prof {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a2634;
+            margin-bottom: 2px;
+        }
+
+        .course-code-prof {
+            font-size: 0.8rem;
+            color: #8f9bAB;
+            font-weight: 500;
+        }
+
+        /* Deadline items */
+        .deadline-item-prof {
+            display: flex;
+            gap: 14px;
+            padding: 12px;
+            background: #fff8e7;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f5b042;
+        }
+
+        .deadline-icon-prof {
+            color: #f5b042;
+            font-size: 1.2rem;
+        }
+
+        .deadline-content-prof {
+            flex: 1;
+        }
+
+        .deadline-title-prof {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1a2634;
+            margin-bottom: 4px;
+        }
+
+        .deadline-meta-prof {
+            font-size: 0.8rem;
+            color: #8f9bAB;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .deadline-badge {
+            background: #f5b04220;
+            color: #b86b0c;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Peer items */
+        .peer-item-prof {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .peer-item-prof:last-child {
+            border-bottom: none;
+        }
+
+        .peer-avatar-prof {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: #31a24c;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .peer-info-prof {
+            flex: 1;
+        }
+
+        .peer-name-prof {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a2634;
+            margin-bottom: 2px;
+        }
+
+        .peer-status-prof {
+            font-size: 0.8rem;
+            color: #31a24c;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .peer-status-prof.offline {
+            color: #8f9bAB;
+        }
+
+        /* Tip card */
+        .tip-card {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            padding: 20px;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .tip-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tip-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .left-sidebar, .right-sidebar {
+                display: none;
+            }
+        }
+       
+    .avatar-upload-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #0a66c2;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        cursor: pointer;
+        border: 2px solid white;
+        font-size: 1rem;
+    }
+    
+    #avatarContainer:hover #avatarOverlay {
+        opacity: 1;
+    }
+    </style>
+</head>
+<body>
+    <div id="docViewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:9999;">
+        <iframe id="docFrame" style="width:100%; height:100%; border:none;"></iframe>
+    </div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Bugema Connect</span>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search courses, materials, people...">
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <a class="nav-item" th:href="@{/student/dashboard}" style="text-decoration:none;">
+                    <i class="fas fa-home"></i>
+                </a>
+                
+                <a class="nav-item" th:href="@{/student/dashboard}" style="text-decoration:none;">
+                    <i class="fas fa-users"></i>
+                </a>
+                
+                <div class="nav-item">
+                    <a class="nav-item" th:href="@{/student/messages}" 
+                        style="text-decoration:none;" id="messagesNavItem">
+                         <i class="fas fa-comment"></i>
+                         <span class="badge" id="messagesBadge"
+                               th:if="${unreadMessages > 0}"
+                               th:text="${unreadMessages}">3</span>
+                     </a>
+                </div>
+                
+                <div class="nav-item">
+                    <a class="nav-item" th:href="@{/student/notifications}"
+                        style="text-decoration:none;" id="notificationsNavItem">
+                         <i class="fas fa-bell"></i>
+                         <span class="badge" id="notificationsBadge"
+                               th:if="${unreadNotifications > 0}"
+                               th:text="${unreadNotifications}">5</span>
+                     </a>
+                </div>
+                
+                <div class="user-profile" style="position:relative;">
+
+                    <!-- Hidden file input -->
+                    <form id="avatarForm" th:action="@{/user/upload-avatar}" 
+                          method="post" enctype="multipart/form-data" style="display:none;">
+                        <input type="file" id="avatarInput" name="file" 
+                               accept="image/*" onchange="uploadAvatar(this)">
+                    </form>
+
+                    <!-- Avatar — hover shows camera icon overlay -->
+                    <div class="user-avatar" id="avatarContainer"
+                         onclick="document.getElementById('avatarInput').click()"
+                         style="cursor:pointer; position:relative; overflow:hidden;">
+
+                        <!-- Profile picture if set -->
+                        <img th:if="${user.profilePicture != null}"
+                             th:src="@{/user/profile-picture/{id}(id=${user.id})}"
+                             id="avatarImg"
+                             style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+
+                        <!-- Initials if no picture -->
+                        <span th:if="${user.profilePicture == null}" id="avatarInitials"
+                              th:text="${#strings.substring(user.fullName, 0, 2)}">NT</span>
+
+                        <!-- Hover overlay -->
+                        <div id="avatarOverlay"
+                             style="position:absolute; top:0; left:0; width:100%; height:100%;
+                                    background:rgba(0,0,0,0.45); border-radius:50%;
+                                    display:flex; align-items:center; justify-content:center;
+                                    opacity:0; transition:opacity 0.2s; pointer-events:none;">
+                            <i class="fas fa-camera" style="color:white; font-size:1rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <!-- Left Sidebar - Professional LinkedIn Style -->
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+                <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">BSE Student | 23/BSE/BU/R/0001</div>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${coursesCount}">6</div>
+                        <div class="stat-label-small">Courses</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${materialsCount}">12</div>
+                        <div class="stat-label-small">Materials</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-num" th:text="${engagementPercentage}">89%</div>
+                        <div class="stat-label-small">Engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <a class="menu-item-prof active" th:href="@{/student/dashboard}">
+                    <i class="fas fa-home"></i>
+                    <span>Home Feed</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/courses}">
+                    <i class="fas fa-book-open"></i>
+                    <span>My Courses</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/assignments}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Assignments</span>
+                    <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/discussions}">
+                    <i class="fas fa-comments"></i>
+                    <span>Discussions</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/study-groups}">
+                    <i class="fas fa-users"></i>
+                    <span>Study Groups</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/downloads}">
+                    <i class="fas fa-download"></i>
+                    <span>Downloads</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/saved}">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Saved</span>
+                    <span class="menu-badge" th:text="${savedItems}">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/progress}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>My Progress</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Feed -->
+        <div class="main-content">
+            <!-- Create Post Section -->
+            <div class="create-post">
+                <div class="post-type-tabs">
+                    <button class="post-type-tab active" onclick="switchPostType('TEXT', this)">
+                        <i class="fas fa-pen"></i> Text
+                    </button>
+                    <button class="post-type-tab" onclick="switchPostType('PHOTO', this)">
+                        <i class="fas fa-image"></i> Photo
+                    </button>
+                    <button class="post-type-tab" onclick="switchPostType('MATERIAL', this)">
+                        <i class="fas fa-file-pdf"></i> Material
+                    </button>
+                    <button class="post-type-tab" onclick="switchPostType('LINK', this)">
+                        <i class="fas fa-link"></i> Link
+                    </button>
+                    <button class="post-type-tab" onclick="switchPostType('VIDEO', this)">
+                        <i class="fas fa-video"></i> Video
+                    </button>
+                    <button class="post-type-tab" onclick="switchPostType('DISCUSSION', this)">
+                        <i class="fas fa-comments"></i> Discussion
+                    </button>
+                </div>
+
+                <form th:action="@{/student/post/create}" method="post" enctype="multipart/form-data" id="createPostForm">
+                    <input type="hidden" name="type" id="postTypeInput" value="TEXT">
+
+                    <div class="course-selector-row">
+                        <label><i class="fas fa-book-open"></i> Post to:</label>
+                        <select name="courseId">
+                            <option value="">— General (no course) —</option>
+                            <option th:each="course : ${courses}"
+                                    th:value="${course.id}"
+                                    th:text="${course.code} + ' — ' + ${course.name}">ICT3101 — Software Engineering</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; gap:15px; align-items:flex-start;">
+                        <div class="post-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                        <div style="flex:1;" class="post-input">
+                            <input type="text" name="title" id="postTitleInput"
+                                   placeholder="Add a title (optional)"
+                                   style="display:none; width:100%; padding:12px 16px; border:1px solid #e0e4e9;
+                                          border-radius:12px; margin-bottom:12px; font-size:0.95rem;">
+
+                            <textarea name="content" id="postContentArea"
+                                      placeholder="Share something with your classmates..."
+                                      oninput="autoGrow(this)"></textarea>
+
+                            <!-- PHOTO PANEL -->
+                            <div class="post-panel" id="panel-PHOTO">
+                                <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+                                    <i class="fas fa-image"></i>
+                                    <p>Click to upload a photo</p>
+                                    <small>JPG, PNG, GIF, WEBP • Max 10MB</small>
+                                    <input type="file" id="photoInput" name="file"
+                                           accept="image/*" onchange="previewFile(this, 'image')">
+                                </div>
+                                <div class="file-preview" id="preview-image">
+                                    <img id="preview-img" src="" alt="Preview">
+                                </div>
+                            </div>
+
+                            <!-- MATERIAL PANEL -->
+                            <div class="post-panel" id="panel-MATERIAL">
+                                <div class="upload-area" onclick="document.getElementById('materialInput').click()">
+                                    <i class="fas fa-file-upload"></i>
+                                    <p>Click to upload a document</p>
+                                    <small>PDF, DOCX, PPTX, XLSX, ZIP • Max 50MB</small>
+                                    <input type="file" id="materialInput" name="file"
+                                           accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
+                                           onchange="previewFile(this, 'document')">
+                                </div>
+                                <div class="file-preview-name" id="preview-document">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span id="preview-doc-name"></span>
+                                </div>
+                            </div>
+
+                            <!-- LINK PANEL -->
+                            <div class="post-panel" id="panel-LINK">
+                                <div class="link-input-group">
+                                    <i class="fas fa-link" style="color:#0a66c2;"></i>
+                                    <input type="url" name="linkUrl" id="linkUrlInput"
+                                           placeholder="Paste a URL e.g. https://example.com"
+                                           oninput="showLinkPreview(this.value)">
+                                </div>
+                                <div class="link-preview-box" id="linkPreviewBox">
+                                    <i class="fas fa-external-link-alt" style="color:#0a66c2;"></i>
+                                    <span id="linkPreviewText"></span>
+                                </div>
+                            </div>
+
+                            <!-- VIDEO PANEL -->
+                            <div class="post-panel" id="panel-VIDEO">
+                                <div class="upload-area" onclick="document.getElementById('videoInput').click()">
+                                    <i class="fas fa-video"></i>
+                                    <p>Click to upload a video</p>
+                                    <small>MP4, AVI, MOV, MKV • Max 200MB</small>
+                                    <input type="file" id="videoInput" name="file"
+                                           accept="video/*" onchange="previewFile(this, 'video')">
+                                </div>
+                                <div class="file-preview" id="preview-video">
+                                    <video id="preview-vid" controls></video>
+                                </div>
+                            </div>
+
+                            <!-- DISCUSSION PANEL -->
+                            <div class="post-panel" id="panel-DISCUSSION">
+                                <p style="color:#5e6775; font-size:0.9rem; padding:8px 0;">
+                                    <i class="fas fa-info-circle" style="color:#0a66c2;"></i>
+                                    Start a discussion topic. Your classmates can reply in the comments.
+                                </p>
+                            </div>
+
+                            <!-- Change the button — remove onclick -->
+                            <button type="submit" class="submit-post-btn" id="submitPostBtn">
+                                <i class="fas fa-paper-plane"></i>
+                                <span id="submitBtnText">Share Post</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Feed Filters -->
+            <div class="feed-filters">
+                <a th:href="@{/student/dashboard(filter='ALL')}"
+                   class="filter-btn" th:classappend="${activeFilter == 'ALL'} ? ' server-active'">All Activity</a>
+                <a th:href="@{/student/dashboard(filter='LECTURER')}"
+                   class="filter-btn" th:classappend="${activeFilter == 'LECTURER'} ? ' server-active'">From Lecturers</a>
+                <a th:href="@{/student/dashboard(filter='ASSIGNMENT')}"
+                   class="filter-btn" th:classappend="${activeFilter == 'ASSIGNMENT'} ? ' server-active'">Assignments</a>
+                <a th:href="@{/student/dashboard(filter='MATERIAL')}"
+                   class="filter-btn" th:classappend="${activeFilter == 'MATERIAL'} ? ' server-active'">Materials</a>
+                <a th:href="@{/student/dashboard(filter='DISCUSSION')}"
+                   class="filter-btn" th:classappend="${activeFilter == 'DISCUSSION'} ? ' server-active'">Discussions</a>
+            </div>
+
+            <!-- Dynamic Posts Loop -->
+            <div th:each="post : ${posts}" class="post-card">
+                <div class="post-header">
+                    <div class="post-author-avatar">
+                        <img th:if="${post.author.profilePicture != null}"
+                             th:src="@{/user/profile-picture/{id}(id=${post.author.id})}"
+                             style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />
+
+                        <span th:if="${post.author.profilePicture == null}"
+                              th:text="${#strings.substring(post.author.fullName, 0, 2)}">LO</span>
+                    </div>
+                    <div class="post-author-info">
+                        <div class="post-author-name">
+                            <span th:text="${post.author.fullName}">Mr. Laban Onyango</span>
+                            <span th:text="'• ' + ${post.author.role.name}">• Lecturer</span>
+                        </div>
+                        <div class="post-meta">
+                            <span><i class="far fa-clock"></i> <span th:text="${#temporals.format(post.createdAt, 'MMM dd, yyyy HH:mm')}">2 hours ago</span></span>
+                            <span class="post-badge" th:text="${post.course != null ? post.course.code : 'General'}">ICT3101</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="post-content">
+                    <div class="post-title" th:text="${post.title}">📢 Important: Software Engineering Project Guidelines</div>
+                    <div class="post-text" th:utext="${#strings.replace(post.content, '\n', '<br/>')}">
+                        Good morning class! I've uploaded the complete guidelines for your final year project.
+                    </div>
+                    
+                    <div th:if="${post.type == 'ASSIGNMENT'}"
+                        style="background:#fff8e7; border-left:4px solid #f5b042; border-radius:0 10px 10px 0;
+                               padding:14px 16px; margin-bottom:14px; display:flex; align-items:center; 
+                               justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                       <div style="display:flex; align-items:center; gap:12px;">
+                           <i class="fas fa-tasks" style="color:#f5b042; font-size:1.5rem;"></i>
+                           <div>
+                               <div style="font-weight:700; color:#b86b0c; font-size:0.9rem;">ASSIGNMENT</div>
+                               <div style="font-size:0.85rem; color:#5e6775;" 
+                                    th:utext="${#strings.replace(post.content, '\n', '<br/>')}">Details</div>
+                           </div>
+                       </div>
+                       <a th:href="@{/student/assignments}"
+                          style="background:#f5b042; color:white; padding:8px 18px; border-radius:20px;
+                                 text-decoration:none; font-weight:600; font-size:0.85rem; white-space:nowrap;">
+                           <i class="fas fa-arrow-right"></i> Go to Assignments
+                       </a>
+                   </div>
+
+                   <!-- ── MATERIAL — shown when type is MATERIAL and no attachments ── -->
+                   <div th:if="${post.type == 'MATERIAL' and (post.attachments == null or post.attachments.isEmpty())}"
+                        style="background:#e3f2fd; border-left:4px solid #0a66c2; border-radius:0 10px 10px 0;
+                               padding:14px 16px; margin-bottom:14px; display:flex; align-items:center;
+                               justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                       <div style="display:flex; align-items:center; gap:12px;">
+                           <i class="fas fa-file-upload" style="color:#0a66c2; font-size:1.5rem;"></i>
+                           <div>
+                               <div style="font-weight:700; color:#0a66c2; font-size:0.9rem;">MATERIAL UPLOADED</div>
+                               <div style="font-size:0.85rem; color:#5e6775;"
+                                    th:utext="${#strings.replace(post.content, '\n', '<br/>')}">Description</div>
+                           </div>
+                       </div>
+                       <a th:href="@{/student/courses}"
+                          style="background:#0a66c2; color:white; padding:8px 18px; border-radius:20px;
+                                 text-decoration:none; font-weight:600; font-size:0.85rem; white-space:nowrap;">
+                           <i class="fas fa-book-open"></i> View in Course
+                       </a>
+                   </div>
+
+                   <!-- ── ANNOUNCEMENT ── -->
+                   <div th:if="${post.type == 'ANNOUNCEMENT'}"
+                        style="background:#fce4ec; border-left:4px solid #e91e63; border-radius:0 10px 10px 0;
+                               padding:14px 16px; margin-bottom:14px;">
+                       <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                           <i class="fas fa-bullhorn" style="color:#e91e63; font-size:1.2rem;"></i>
+                           <span style="font-weight:700; color:#c2185b; font-size:0.9rem;">ANNOUNCEMENT</span>
+                       </div>
+                       <div style="font-size:0.95rem; color:#2c3e50; line-height:1.6;"
+                            th:utext="${#strings.replace(post.content, '\n', '<br/>')}">Content</div>
+                   </div>
+
+                   <!-- ── REGULAR TEXT/DISCUSSION/OTHER posts ── -->
+                   <div th:if="${post.type != 'ASSIGNMENT' and post.type != 'ANNOUNCEMENT'}">
+                       <div class="post-text" 
+                            th:if="${post.type != 'MATERIAL' or (post.attachments != null and !post.attachments.isEmpty())}"
+                            th:utext="${#strings.replace(post.content, '\n', '<br/>')}">
+                           Post content here.
+                       </div>
+                   </div>
+
+                    <!-- Attachments -->
+                    <div th:each="attachment : ${post.attachments}" class="post-attachment" th:if="${!post.attachments.isEmpty()}">
+                        <!-- IMAGE PREVIEW -->
+                        <div th:if="${attachment.fileType == 'jpg' or attachment.fileType == 'jpeg' or attachment.fileType == 'png'}"
+                            style="width:100%;">
+                           <img th:src="@{/student/download/{id}(id=${attachment.id})}"
+                                style="max-width:100%; border-radius:10px; margin-bottom:8px; display:block;">
+                           <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                   style="background:#0a66c2; color:white; border:none; padding:6px 14px;
+                                          border-radius:20px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                               <i class="fas fa-download"></i> Download
+                           </button>
+                       </div>
+
+                        <!-- VIDEO PREVIEW -->
+                        <div th:if="${attachment.fileType == 'mp4' or attachment.fileType == 'mov'
+                                or attachment.fileType == 'avi' or attachment.fileType == 'mkv'}"
+                         style="width:100%; margin-bottom:12px;">
+                        <video controls style="max-width:100%; border-radius:10px; display:block; margin-bottom:8px;">
+                            <source th:src="@{/student/download/{id}(id=${attachment.id})}">
+                        </video>
+                        <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                style="background:#0a66c2; color:white; border:none; padding:8px 18px;
+                                       border-radius:20px; cursor:pointer; font-size:0.85rem; font-weight:600;">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        </div>
+
+                        <!-- PDF PREVIEW -->
+                        <div th:if="${attachment.fileType == 'pdf'}"
+                                style="background:linear-gradient(135deg,#fff5f5,#fff);
+                                       border:1px solid #ffcccc; border-radius:14px; padding:18px 20px;
+                                       display:flex; align-items:center; gap:18px; margin-bottom:14px;
+                                       box-shadow:0 2px 8px rgba(210,40,40,0.06);">
+                               <!-- icon block -->
+                               <div style="width:54px; height:64px; background:#e53935; border-radius:8px;
+                                           display:flex; flex-direction:column; align-items:center;
+                                           justify-content:center; flex-shrink:0; position:relative;">
+                                   <i class="fas fa-file-pdf" style="color:white; font-size:1.6rem;"></i>
+                                   <span style="position:absolute; bottom:6px; left:0; right:0; text-align:center;
+                                                color:white; font-size:0.55rem; font-weight:700; letter-spacing:1px;">PDF</span>
+                               </div>
+                               <!-- info -->
+                               <div style="flex:1; min-width:0;">
+                                   <div th:text="${attachment.fileName}"
+                                        style="font-weight:700; font-size:0.95rem; color:#1a2634;
+                                               white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">document.pdf</div>
+                                   <div style="font-size:0.8rem; color:#8f9bab; margin-top:4px;">
+                                       <span th:text="${attachment.fileSize} + ' KB'">1.2 MB</span>
+                                       &nbsp;•&nbsp;
+                                       <span th:text="${attachment.downloadCount} + ' downloads'">10 downloads</span>
+                                   </div>
+                                   <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                                       <button th:onclick="'previewPdf(\'/student/download/' + ${attachment.id} + '\')'"
+                                               style="background:white; color:#e53935; border:1.5px solid #e53935;
+                                                      padding:6px 16px; border-radius:20px; cursor:pointer;
+                                                      font-size:0.82rem; font-weight:600;">
+                                           <i class="fas fa-eye"></i> Preview
+                                       </button>
+                                       <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                               style="background:#e53935; color:white; border:none;
+                                                      padding:6px 16px; border-radius:20px; cursor:pointer;
+                                                      font-size:0.82rem; font-weight:600;">
+                                           <i class="fas fa-download"></i> Download
+                                       </button>
+                                   </div>
+                               </div>
+                           </div>
+                           <!-- ── PPTX / PPT ── -->
+                        <div th:if="${attachment.fileType == 'ppt' or attachment.fileType == 'pptx'}"
+                             style="background:linear-gradient(135deg,#fff3ef,#fff);
+                                    border:1px solid #f5bfae; border-radius:14px; padding:18px 20px;
+                                    display:flex; align-items:center; gap:18px; margin-bottom:14px;
+                                    box-shadow:0 2px 8px rgba(208,68,35,0.06);">
+                            <div style="width:54px; height:64px; background:#d04423; border-radius:8px;
+                                        display:flex; flex-direction:column; align-items:center;
+                                        justify-content:center; flex-shrink:0; position:relative;">
+                                <i class="fas fa-file-powerpoint" style="color:white; font-size:1.6rem;"></i>
+                                <span style="position:absolute; bottom:6px; left:0; right:0; text-align:center;
+                                             color:white; font-size:0.55rem; font-weight:700; letter-spacing:1px;">PPT</span>
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div th:text="${attachment.fileName}"
+                                     style="font-weight:700; font-size:0.95rem; color:#1a2634;
+                                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">slides.pptx</div>
+                                <div style="font-size:0.8rem; color:#8f9bab; margin-top:4px;">
+                                    <span th:text="${attachment.fileSize} + ' KB'">2.4 MB</span>
+                                    &nbsp;•&nbsp;
+                                    <span th:text="${attachment.downloadCount} + ' downloads'">5 downloads</span>
+                                </div>
+                                <div style="margin-top:6px;">
+                                    <span style="background:#fff0ec; color:#d04423; font-size:0.72rem;
+                                                 font-weight:700; padding:3px 10px; border-radius:20px;">
+                                        PowerPoint Presentation
+                                    </span>
+                                </div>
+                                <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                        style="background:#d04423; color:white; border:none;
+                                               padding:6px 16px; border-radius:20px; cursor:pointer;
+                                               font-size:0.82rem; font-weight:600; margin-top:10px;">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                        
+                          <!-- ── DOCX / DOC ── -->
+                        <div th:if="${attachment.fileType == 'doc' or attachment.fileType == 'docx'}"
+                             style="background:linear-gradient(135deg,#eef4fb,#fff);
+                                    border:1px solid #b8d0ee; border-radius:14px; padding:18px 20px;
+                                    display:flex; align-items:center; gap:18px; margin-bottom:14px;
+                                    box-shadow:0 2px 8px rgba(43,87,154,0.06);">
+                            <div style="width:54px; height:64px; background:#2b579a; border-radius:8px;
+                                        display:flex; flex-direction:column; align-items:center;
+                                        justify-content:center; flex-shrink:0; position:relative;">
+                                <i class="fas fa-file-word" style="color:white; font-size:1.6rem;"></i>
+                                <span style="position:absolute; bottom:6px; left:0; right:0; text-align:center;
+                                             color:white; font-size:0.55rem; font-weight:700; letter-spacing:1px;">WORD</span>
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div th:text="${attachment.fileName}"
+                                     style="font-weight:700; font-size:0.95rem; color:#1a2634;
+                                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">document.docx</div>
+                                <div style="font-size:0.8rem; color:#8f9bab; margin-top:4px;">
+                                    <span th:text="${attachment.fileSize} + ' KB'">560 KB</span>
+                                    &nbsp;•&nbsp;
+                                    <span th:text="${attachment.downloadCount} + ' downloads'">3 downloads</span>
+                                </div>
+                                <div style="margin-top:6px;">
+                                    <span style="background:#e8f0fb; color:#2b579a; font-size:0.72rem;
+                                                 font-weight:700; padding:3px 10px; border-radius:20px;">
+                                        Word Document
+                                    </span>
+                                </div>
+                                <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                        style="background:#2b579a; color:white; border:none;
+                                               padding:6px 16px; border-radius:20px; cursor:pointer;
+                                               font-size:0.82rem; font-weight:600; margin-top:10px;">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                        
+                            <!-- ── XLSX / XLS ── -->
+                    <div th:if="${attachment.fileType == 'xls' or attachment.fileType == 'xlsx'}"
+                         style="background:linear-gradient(135deg,#edf7f0,#fff);
+                                border:1px solid #a8d5b5; border-radius:14px; padding:18px 20px;
+                                display:flex; align-items:center; gap:18px; margin-bottom:14px;
+                                box-shadow:0 2px 8px rgba(29,111,66,0.06);">
+                        <div style="width:54px; height:64px; background:#1d6f42; border-radius:8px;
+                                    display:flex; flex-direction:column; align-items:center;
+                                    justify-content:center; flex-shrink:0; position:relative;">
+                            <i class="fas fa-file-excel" style="color:white; font-size:1.6rem;"></i>
+                            <span style="position:absolute; bottom:6px; left:0; right:0; text-align:center;
+                                         color:white; font-size:0.55rem; font-weight:700; letter-spacing:1px;">EXCEL</span>
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <div th:text="${attachment.fileName}"
+                                 style="font-weight:700; font-size:0.95rem; color:#1a2634;
+                                        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">spreadsheet.xlsx</div>
+                            <div style="font-size:0.8rem; color:#8f9bab; margin-top:4px;">
+                                <span th:text="${attachment.fileSize} + ' KB'">88 KB</span>
+                                &nbsp;•&nbsp;
+                                <span th:text="${attachment.downloadCount} + ' downloads'">7 downloads</span>
+                            </div>
+                            <div style="margin-top:6px;">
+                                <span style="background:#e2f5e9; color:#1d6f42; font-size:0.72rem;
+                                             font-weight:700; padding:3px 10px; border-radius:20px;">
+                                    Excel Spreadsheet
+                                </span>
+                            </div>
+                            <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                    style="background:#1d6f42; color:white; border:none;
+                                           padding:6px 16px; border-radius:20px; cursor:pointer;
+                                           font-size:0.82rem; font-weight:600; margin-top:10px;">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+
+                         <!-- ZIP / RAR -->
+                    <div th:if="${attachment.fileType == 'zip' or attachment.fileType == 'rar'}"
+                        style="background:linear-gradient(135deg,#fffbf0,#fff);
+                               border:1px solid #f0d98a; border-radius:14px; padding:18px 20px;
+                               display:flex; align-items:center; gap:18px; margin-bottom:14px;
+                               box-shadow:0 2px 8px rgba(180,140,0,0.06);">
+                       <div style="width:54px; height:64px; background:#b48c00; border-radius:8px;
+                                   display:flex; flex-direction:column; align-items:center;
+                                   justify-content:center; flex-shrink:0; position:relative;">
+                           <i class="fas fa-file-archive" style="color:white; font-size:1.6rem;"></i>
+                           <span style="position:absolute; bottom:6px; left:0; right:0; text-align:center;
+                                        color:white; font-size:0.55rem; font-weight:700; letter-spacing:1px;"
+                                 th:text="${#strings.toUpperCase(attachment.fileType)}">ZIP</span>
+                       </div>
+                       <div style="flex:1; min-width:0;">
+                           <div th:text="${attachment.fileName}"
+                                style="font-weight:700; font-size:0.95rem; color:#1a2634;
+                                       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">archive.zip</div>
+                           <div style="font-size:0.8rem; color:#8f9bab; margin-top:4px;">
+                               <span th:text="${attachment.fileSize} + ' KB'">3.1 MB</span>
+                               &nbsp;•&nbsp;
+                               <span th:text="${attachment.downloadCount} + ' downloads'">2 downloads</span>
+                           </div>
+                           <div style="margin-top:6px;">
+                               <span style="background:#fff8e0; color:#8a6800; font-size:0.72rem;
+                                            font-weight:700; padding:3px 10px; border-radius:20px;">
+                                   Compressed Archive
+                               </span>
+                           </div>
+                           <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                   style="background:#b48c00; color:white; border:none;
+                                          padding:6px 16px; border-radius:20px; cursor:pointer;
+                                          font-size:0.82rem; font-weight:600; margin-top:10px;">
+                               <i class="fas fa-download"></i> Download
+                           </button>
+                       </div>
+                   </div>
+
+                        <!-- OTHER FILES -->
+                    <div th:if="${attachment.fileType != 'jpg' and attachment.fileType != 'jpeg' and attachment.fileType != 'png'
+                            and attachment.fileType != 'mp4' and attachment.fileType != 'avi' and attachment.fileType != 'mov'
+                            and attachment.fileType != 'pdf'}">
+
+                        <div class="attachment-icon">
+                            <i class="fas fa-file-powerpoint"
+                               th:if="${attachment.fileType == 'pptx' or attachment.fileType == 'ppt'}"></i>
+
+                            <i class="fas fa-file-word"
+                               th:if="${attachment.fileType == 'docx' or attachment.fileType == 'doc'}"></i>
+
+                            <i class="fas fa-file-excel"
+                               th:if="${attachment.fileType == 'xlsx' or attachment.fileType == 'xls'}"></i>
+
+                            <i class="fas fa-file-archive"
+                               th:if="${attachment.fileType == 'zip' or attachment.fileType == 'rar'}"></i>
+
+                            <i class="fas fa-file"
+                               th:if="${attachment.fileType != 'pptx' and attachment.fileType != 'ppt'
+                                      and attachment.fileType != 'docx' and attachment.fileType != 'doc'
+                                      and attachment.fileType != 'xlsx' and attachment.fileType != 'xls'
+                                      and attachment.fileType != 'zip' and attachment.fileType != 'rar'}"></i>
+                        </div>
+
+                        <div class="attachment-info">
+                            <div class="attachment-name" th:text="${attachment.fileName}">document.docx</div>
+                            <div class="attachment-meta" 
+                                 th:text="${attachment.fileSize} + ' KB • ' + ${attachment.downloadCount} + ' downloads'">
+                                 DOCX • 1.2 MB • 10 downloads
+                            </div>
+                        </div>
+
+                        <!-- Download button OUTSIDE attachment-icon, at the same level -->
+                        <button th:onclick="'downloadFile(' + ${attachment.id} + ')'"
+                                style="background:#0a66c2; color:white; border:none; padding:8px 18px;
+                                       border-radius:20px; cursor:pointer; font-size:0.85rem; 
+                                       font-weight:600; flex-shrink:0;">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+
+                    </div>
+                    
+                    </div>
+                </div> 
+
+                <div class="post-stats">
+                    <div class="stat"><i class="far fa-heart"></i> <span th:text="${post.likes}">24</span></div>
+                    <div class="stat"><i class="far fa-comment"></i> <span th:text="${post.comments.size()}">8</span></div>
+                    <div class="stat"><i class="far fa-eye"></i> <span th:text="${post.views}">56</span></div>
+                </div>
+
+                <div class="post-actions">
+                    <button class="action-btn" 
+                            th:classappend="${post.userLiked} ? 'liked'" 
+                            th:onclick="'likePost(' + ${post.id} + ', this)'">
+                        <i class="far fa-heart" th:classappend="${post.userLiked} ? 'fas' : 'far'"></i> Like
+                    </button>
+                    <button class="action-btn" th:onclick="'toggleComments(' + ${post.id} + ', this)'">
+                        <i class="far fa-comment"></i> Comment
+                    </button>
+                    <button class="action-btn" th:onclick="'sharePost(' + ${post.id} + ', this)'">
+                        <i class="far fa-share-square"></i> Share
+                    </button>
+                    <button class="action-btn" 
+                            th:classappend="${post.userSaved} ? 'saved'" 
+                            th:onclick="'savePost(' + ${post.id} + ', this)'">
+                        <i class="far fa-bookmark" th:classappend="${post.userSaved} ? 'fas' : 'far'"></i> Save
+                    </button>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="comments-section" th:id="'comments-' + ${post.id}" style="display: none;">
+                    <div th:each="comment : ${post.comments}" class="comment">
+                        <div class="comment-avatar" th:text="${#strings.substring(comment.author.fullName, 0, 2)}">JM</div>
+                        <div class="comment-content">
+                            <div class="comment-author" th:text="${comment.author.fullName}">John Mukasa</div>
+                            <div class="comment-text" th:text="${comment.text}">Thank you Mr. Onyango!</div>
+                            <div class="comment-meta" style="font-size:0.75rem; color:#8f9bAB; margin-top:4px;" th:text="${#temporals.format(comment.createdAt, 'MMM dd, HH:mm')}">1 hour ago</div>
+                        </div>
+                    </div>
+
+                    <div class="add-comment">
+                        <input type="text" th:placeholder="'Write a comment...'" th:id="'comment-input-' + ${post.id}">
+                        <button th:onclick="'addComment(\'' + ${post.id} + '\')'"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <!-- PDF Lightbox Modal -->
+        <div id="pdfModal"
+             style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75);
+                    z-index:10000; align-items:center; justify-content:center; padding:24px;">
+            <div style="background:white; border-radius:16px; width:100%; max-width:860px;
+                        max-height:90vh; display:flex; flex-direction:column; overflow:hidden;
+                        box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+                <!-- modal header -->
+                <div style="display:flex; align-items:center; justify-content:space-between;
+                            padding:14px 20px; border-bottom:1px solid #eef0f3;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-file-pdf" style="color:#e53935; font-size:1.2rem;"></i>
+                        <span id="pdfModalTitle"
+                              style="font-weight:700; font-size:0.95rem; color:#1a2634;">Preview</span>
+                    </div>
+                    <button onclick="closePdfModal()"
+                            style="background:none; border:none; cursor:pointer;
+                                   color:#5e6775; font-size:1.3rem; line-height:1;
+                                   padding:4px 8px; border-radius:8px;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <!-- iframe -->
+                <iframe id="pdfModalFrame"
+                        style="flex:1; border:none; min-height:520px;"
+                        src=""></iframe>
+            </div>
+            </div>
+
+            <!-- No Posts Message -->
+            <div th:if="${posts.isEmpty()}" style="text-align: center; padding: 60px 20px; color: #5e6775;">
+                <i class="fas fa-newspaper" style="font-size: 3rem; color: #0a66c2; margin-bottom: 16px;"></i>
+                <h3 style="margin-bottom: 8px;">No posts yet</h3>
+                <p style="color: #8f9bAB;">Check back later for updates from your lecturers and classmates</p>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Professional Slack/Discord Style -->
+        <div class="right-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-book-open"></i> My Courses</h3>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <h4>Current Courses</h4>
+                    <a href="#" th:href="@{/student/courses}">View all</a>
+                </div>
+                
+                <div th:each="course : ${courses}" class="course-item-prof" th:onclick="'window.location.href=\'/student/course/' + ${course.id} + '\''">
+                    <div class="course-icon-prof">
+                        <i th:class="'fas fa-code'"></i>
+                    </div>
+                    <div class="course-info-prof">
+                        <div class="course-name-prof" th:text="${course.name}">Software Engineering</div>
+                        <div class="course-code-prof" th:text="${course.code}">ICT 3101</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" th:if="${!deadlines.isEmpty()}">
+                <div class="section-title">
+                    <h4><i class="fas fa-clock" style="color:#f5b042;"></i> Upcoming Deadlines</h4>
+                    <a href="#" th:href="@{/student/assignments}">View all</a>
+                </div>
+
+                <div th:each="deadline : ${deadlines}" class="deadline-item-prof">
+                    <div class="deadline-icon-prof">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="deadline-content-prof">
+                        <div class="deadline-title-prof" th:text="${deadline.title}">Project Proposal</div>
+                        <div class="deadline-meta-prof">
+                            <span th:text="${deadline.course.code}">ICT3101</span>
+                            <span class="deadline-badge" th:text="'Due ' + ${#temporals.format(deadline.dueDate, 'MMM dd')}">Due Dec 15</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section" th:if="${!peersOnline.isEmpty()}">
+                <div class="section-title">
+                    <h4><i class="fas fa-users" style="color:#31a24c;"></i> Peers Online</h4>
+                    <a href="#" th:href="@{/student/peers}">See all</a>
+                </div>
+
+                <div th:each="status : ${peersOnline}" class="peer-item-prof">
+                    <div class="peer-avatar-prof">
+                        <img th:if="${status.user.profilePicture != null}"
+                             th:src="@{/user/profile-picture/{id}(id=${status.user.id})}"
+                             style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />
+
+                        <span th:if="${status.user.profilePicture == null}"
+                              th:text="${#strings.substring(status.user.fullName, 0, 2)}">JM</span>
+
+                        <span class="online-indicator" th:if="${status.online}"></span>
+                    </div>
+                    <div class="peer-info-prof">
+                        <div class="peer-name-prof" th:text="${status.user.fullName}">John Mukasa</div>
+                        <div class="peer-status-prof" th:if="${status.online}">
+                            <i class="fas fa-circle" style="font-size:0.5rem;"></i> Online now
+                        </div>
+                        <div class="peer-status-prof offline" th:if="${!status.online}">
+                            <i class="far fa-clock"></i> <span th:text="'Last seen ' + ${#temporals.format(status.lastSeen, 'HH:mm')}">Last seen 5 min ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-card">
+                <h4><i class="fas fa-lightbulb"></i> Quick Tip</h4>
+                <p>Save important posts by clicking the bookmark icon. Access them anytime from your Saved section!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Post Type Switching ─────────────────────────────────────────────────────
+        function switchPostType(type, btn) {
+            document.getElementById('postTypeInput').value = type;
+            document.querySelectorAll('.post-type-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.post-panel').forEach(p => p.classList.remove('active'));
+            const panel = document.getElementById('panel-' + type);
+            if (panel) panel.classList.add('active');
+            
+            const titleInput = document.getElementById('postTitleInput');
+            titleInput.style.display = (type === 'MATERIAL' || type === 'DISCUSSION') ? 'block' : 'none';
+
+            const contentArea = document.getElementById('postContentArea');
+            const placeholders = {
+                TEXT: 'Share something with your classmates...',
+                PHOTO: 'Write a caption for your photo...',
+                MATERIAL: 'Describe this material...',
+                LINK: 'Add a note about this link...',
+                VIDEO: 'Write a description for this video...',
+                DISCUSSION: 'Describe the discussion topic...'
+            };
+            contentArea.placeholder = placeholders[type] || 'Share something...';
+
+            const btnTexts = {
+                TEXT: 'Share Post', PHOTO: 'Upload Photo',
+                MATERIAL: 'Share Material', LINK: 'Share Link',
+                VIDEO: 'Upload Video', DISCUSSION: 'Start Discussion'
+            };
+            document.getElementById('submitBtnText').textContent = btnTexts[type] || 'Share Post';
+        }
+
+        // ── File Preview ────────────────────────────────────────────────────────────
+        function previewFile(input, previewType) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+
+            if (previewType === 'image') {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('preview-image').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            if (previewType === 'video') {
+                const url = URL.createObjectURL(file);
+                document.getElementById('preview-vid').src = url;
+                document.getElementById('preview-video').style.display = 'block';
+            }
+
+            if (previewType === 'document') {
+                document.getElementById('preview-doc-name').textContent =
+                    file.name + ' (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB)';
+                document.getElementById('preview-document').style.display = 'block';
+            }
+        }
+
+        // ── Link Preview ────────────────────────────────────────────────────────────
+        function showLinkPreview(url) {
+            const box = document.getElementById('linkPreviewBox');
+            const text = document.getElementById('linkPreviewText');
+            if (url && url.startsWith('http')) {
+                text.textContent = url;
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        // ── Auto-grow textarea ──────────────────────────────────────────────────────
+        function autoGrow(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        // ── Validate before submit ──────────────────────────────────────────────────
+        function validatePost() {
+            const type    = document.getElementById('postTypeInput').value;
+            const content = document.getElementById('postContentArea').value.trim();
+            const linkUrl = document.getElementById('linkUrlInput')?.value.trim();
+
+            if (!content) {
+                alert('Please write something before posting.');
+                return false;
+            }
+
+            if (type === 'LINK' && (!linkUrl || !linkUrl.startsWith('http'))) {
+                alert('Please enter a valid URL starting with http:// or https://');
+                return false;
+            }
+
+            const btn = document.getElementById('submitPostBtn');
+            btn.disabled = true;
+            document.getElementById('submitBtnText').textContent = 'Posting...';
+            return true;
+        }
+
+        // ── Comments Toggle ─────────────────────────────────────────────────────────
+        function toggleComments(postId, btn) {
+            const section = document.getElementById('comments-' + postId);
+            const isHidden = section.style.display === 'none' || !section.style.display;
+
+            section.style.display = isHidden ? 'block' : 'none';
+
+            // Visual feedback - highlight button when comments are open
+            if (isHidden) {
+                btn.style.color = '#0a66c2';
+                btn.style.background = '#eef3f8';
+            } else {
+                btn.style.color = '';
+                btn.style.background = '';
+            }
+        }
+
+        // ── Like Post ──────────────────────────────────────────────────────────────
+        function likePost(postId, btn) {
+            fetch('/student/post/' + postId + '/like', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Like response:', data);
+                const icon = btn.querySelector('i');
+                const likeCountSpan = btn.closest('.post-card')
+                                         .querySelector('.post-stats .stat:first-child span');
+
+                if (data.liked) {
+                    btn.classList.add('liked');
+                    icon.classList.replace('far', 'fas');
+                } else {
+                    btn.classList.remove('liked');
+                    icon.classList.replace('fas', 'far');
+                }
+
+                likeCountSpan.textContent = data.count;  // matches your controller's "count" key
+            })
+            .catch(err => console.error('Like error:', err));
+        }
+        // ── Save Post ───────────────────────────────────────────────────────────────
+        function savePost(postId, btn) {
+                fetch('/student/post/' + postId + '/save', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Save response:', data);
+                    const icon = btn.querySelector('i');
+                    if (data.saved) {
+                        btn.classList.add('saved');
+                        icon.classList.replace('far', 'fas');
+                    } else {
+                        btn.classList.remove('saved');
+                        icon.classList.replace('fas', 'far');
+                    }
+                })
+                .catch(err => console.error('Save error:', err));
+            }
+        // ── Add Comment ────────────────────────────────────────────────────────────
+        function addComment(postId) {
+            const input = document.getElementById('comment-input-' + postId);
+            const text  = input.value.trim();
+            if (!text) return;
+
+            fetch('/student/post/' + postId + '/comment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+
+        // ── Download ────────────────────────────────────────────────────────────────
+        function downloadFile(attachmentId) {
+            window.location.href = '/student/download/' + attachmentId;
+        }
+
+        // ── Share Post (placeholder) ───────────────────────────────────────────────
+        function sharePost(postId, btn) {
+            const url = window.location.origin + '/student/post/' + postId;
+
+            navigator.clipboard.writeText(url)
+            .then(() => {
+                // Visual feedback on the button
+                const icon = btn.querySelector('i');
+                const originalHTML = btn.innerHTML;
+
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.style.color = '#31a24c';
+
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.color = '';
+                }, 2000);
+            })
+            .catch(() => {
+                // Fallback for browsers that block clipboard
+                prompt('Copy this link:', url);
+            });
+        }
+
+        function openDocument(url){
+
+            document.getElementById("docViewer").style.display="block";
+            document.getElementById("docFrame").src=url;
+
+        }
+
+        document.getElementById("docViewer").onclick=function(){
+            this.style.display="none";
+        }
+        function openAvatarOptions() {
+            const choice = prompt("Select option:\n1. Camera\n2. Gallery/File");
+            if(choice === "1") {
+                document.getElementById('avatarCameraInput').click();
+            } else if(choice === "2") {
+                document.getElementById('avatarFileInput').click();
+            }
+        }
+
+        function previewAvatar(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileAvatar').style.backgroundImage = `url('${e.target.result}')`;
+                    document.getElementById('profileAvatar').textContent = ''; // remove initials
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function uploadAvatar(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+
+            // Preview immediately
+            const reader = new FileReader();
+            reader.onload = e => {
+                const container = document.getElementById('avatarContainer');
+                const initials   = document.getElementById('avatarInitials');
+                let img          = document.getElementById('avatarImg');
+
+                if (!img) {
+                    img = document.createElement('img');
+                    img.id = 'avatarImg';
+                    img.style.cssText = 'width:100%; height:100%; object-fit:cover; border-radius:50%;';
+                    container.insertBefore(img, container.firstChild);
+                }
+                img.src = e.target.result;
+                if (initials) initials.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+
+            // Upload to server
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/user/upload-avatar', { method: 'POST', body: formData })
+                .then(res => {
+                    if (res.ok || res.redirected) {
+                        showToast('Profile Updated', 'Your profile picture has been updated.');
+                    } else {
+                        showToast('Upload Failed', 'Could not update profile picture.');
+                    }
+                })
+                .catch(() => showToast('Upload Failed', 'Could not update profile picture.'));
+        }
+        // ── Form submit validation ──────────────────────────────────────────────────
+        document.getElementById('createPostForm').addEventListener('submit', function(e) {
+            const type    = document.getElementById('postTypeInput').value;
+            const content = document.getElementById('postContentArea').value.trim();
+            const linkUrl = document.getElementById('linkUrlInput')?.value.trim();
+
+            // Check content or file present
+            const photoFile    = document.getElementById('photoInput')?.files?.[0];
+            const materialFile = document.getElementById('materialInput')?.files?.[0];
+            const videoFile    = document.getElementById('videoInput')?.files?.[0];
+            const hasFile      = photoFile || materialFile || videoFile;
+
+            if (!content && !hasFile) {
+                e.preventDefault(); // ← stop submission
+                alert('Please write something or attach a file before posting.');
+                return;
+            }
+
+            if (type === 'LINK' && (!linkUrl || !linkUrl.startsWith('http'))) {
+                e.preventDefault();
+                alert('Please enter a valid URL starting with http:// or https://');
+                return;
+            }
+
+            // ── Only disable AFTER validation passes ─────────────────────────────
+            const btn = document.getElementById('submitPostBtn');
+            btn.disabled = true;
+            document.getElementById('submitBtnText').textContent = 'Posting...';
+
+            // ── Safety net — re-enable after 10s in case of redirect issues ──────
+            setTimeout(() => {
+                btn.disabled = false;
+                document.getElementById('submitBtnText').textContent = 'Share Post';
+            }, 10000);
+        });
+        
+        function previewPdf(url) {
+            const modal = document.getElementById('pdfModal');
+            document.getElementById('pdfModalFrame').src = url;
+            modal.style.display = 'flex';
+            // close on backdrop click
+            modal.onclick = function(e) { if (e.target === modal) closePdfModal(); };
+        }
+
+        function closePdfModal() {
+            const modal = document.getElementById('pdfModal');
+            modal.style.display = 'none';
+            document.getElementById('pdfModalFrame').src = '';   // stop loading
+        }
+    </script>
+</body>
+</html>
