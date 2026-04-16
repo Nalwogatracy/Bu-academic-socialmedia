@@ -469,9 +469,16 @@
         .message-time {
             font-size: 0.65rem;
         }
+        .message-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            margin-left: 4px;
+        }
 
         .message-status i {
             font-size: 0.65rem;
+            transition: color 0.3s ease;
         }
 
         .message-status .read {
@@ -838,11 +845,14 @@
                      onclick="openConversation(this.dataset.userId)">
                     
                     <div class="conversation-avatar">
-                        <span th:if="${conversation.key.profilePicture == null}" th:text="${#strings.substring(conversation.key.fullName,0,2)}">JD</span>
-                        <img th:src="@{/user/{id}/profile-picture(id=${conversation.key.id})}" 
+                        <img th:if="${conversation.key.profilePicture != null}"
+                            th:src="@{/user/profile-picture/{id}(id=${conversation.key.id})}"
                             style="width:100%; height:100%; border-radius:50%; object-fit:cover;"
-                            onerror="this.style.display='none'">
-                        <span class="online-indicator" th:if="${userStatusService.isOnline(conversation.key)}"></span>
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                       <!-- Fallback initials -->
+                       <span th:if="${conversation.key.profilePicture == null}"
+                             th:text="${#strings.substring(conversation.key.fullName,0,2)}">JD</span>
+                       <span class="online-indicator" th:if="${onlineUserIds.contains(conversation.key.id)}"></span>
                     </div>
                     
                     <div class="conversation-info">
@@ -854,8 +864,8 @@
                         <div class="conversation-preview">
                             <span class="preview-text" th:text="${conversation.value[0].content}">Last message...</span>
                             <span class="unread-count" 
-                                  th:if="${messageService.countUnreadFromUser(conversation.key, user) > 0}"
-                                  th:text="${messageService.countUnreadFromUser(conversation.key, user)}">2</span>
+                                th:if="${unreadPerUser[conversation.key.id] != null and unreadPerUser[conversation.key.id] > 0}"
+                                th:text="${unreadPerUser[conversation.key.id]}">2</span>
                         </div>
                     </div>
                 </div>
@@ -868,14 +878,18 @@
             <div class="chat-header">
                 <div class="chat-user-info">
                     <div class="chat-avatar">
-                        <span th:text="${#strings.substring(other.fullName,0,2)}">JD</span>
-                        <span class="online-indicator" th:if="${userStatusService.isOnline(other)}"></span>
+                        <img th:if="${other.profilePicture != null}"
+                        th:src="@{/user/profile-picture/{id}(id=${other.id})}"
+                        style="width:100%; height:100%; border-radius:50%; object-fit:cover;"
+                        onerror="this.style.display='none'">
+                        <span th:if="${other.profilePicture == null}" th:text="${#strings.substring(other.fullName,0,2)}">JD</span>
+                        <span class="online-indicator" th:if="${isOtherOnline}"></span>
                     </div>
                     <div class="chat-user-details">
                         <h3 th:text="${other.fullName}">John Doe</h3>
                         <div class="chat-user-status">
-                            <span class="status-dot" th:if="${userStatusService.isOnline(other)}"></span>
-                            <span th:text="${userStatusService.isOnline(other)} ? 'Online' : 'Offline'">Online</span>
+                            <span class="status-dot" th:if="${isOtherOnline}"></span>
+                            <span th:text="${isOtherOnline} ? 'Online' : 'Offline'">Online</span>
                             <span th:if="${other.role == 'LECTURER'}" class="role-badge">
                                 <i class="fas fa-chalkboard-teacher"></i> Lecturer
                             </span>
@@ -926,8 +940,21 @@
                             <span class="message-time" 
                                   th:text="${#temporals.format(message.sentAt, 'HH:mm')}">14:30</span>
                             <span class="message-status" th:if="${message.sender.id == user.id}">
-                                <i class="fas fa-check" th:classappend="${message.read} ? 'read' : ''"></i>
-                                <i class="fas fa-check" th:if="${message.read}" style="margin-left: -8px;"></i>
+                                <span th:if="${!message.delivered and !message.read}" title="Sent">
+                                    <i class="fas fa-check" style="color: #8f9bab;"></i>
+                                </span>
+
+                                <!-- Double grey tick = delivered but not read -->
+                                <span th:if="${message.delivered and !message.read}" title="Delivered">
+                                    <i class="fas fa-check" style="color: #8f9bab; margin-right: -6px;"></i>
+                                    <i class="fas fa-check" style="color: #8f9bab;"></i>
+                                </span>
+
+                                <!-- Double blue tick = read -->
+                                <span th:if="${message.read}" title="Read">
+                                    <i class="fas fa-check" style="color: #0a66c2; margin-right: -6px;"></i>
+                                    <i class="fas fa-check" style="color: #0a66c2;"></i>
+                                </span>
                             </span>
                         </div>
                     </div>
@@ -999,20 +1026,26 @@
         <div id="newChatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:2000;">
 
         <div style="background:white; width:400px; margin:100px auto; padding:20px; border-radius:12px;">
-            <h3>Select User</h3>
-            <input type="text" placeholder="Search users..." onkeyup="filterUsers(this.value)" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ccc;">
+            <h3>Start a Chat</h3>
+            <p style="color:#5e6775; font-size:0.85rem; margin-bottom:10px;">Students in your courses</p>
+            <input type="text" placeholder="Search coursemates..." onkeyup="filterUsers(this.value)" 
+                   style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ccc;">
+            <div th:each="u : ${allUsers}" 
+                class="user-item"
+                th:attr="data-name=${u.fullName}, data-id=${u.id}"
+                style="padding:12px; cursor:pointer; border-bottom:1px solid #eee; display:flex; align-items:center; gap:10px; transition: background 0.2s;"
+                onmouseover="this.style.background='#f0f2f5'"
+                onmouseout="this.style.background='white'"
+                onclick="openConversation(this.getAttribute('data-id'))">
 
-            <div id="userList" style="max-height:300px; overflow-y:auto;">
-                <div th:each="u : ${allUsers}" 
-                     class="user-item"
-                     style="padding:10px; cursor:pointer; border-bottom:1px solid #eee;"
-                     th:attr="data-name=${u.fullName}"
-                     onclick="openConversation([[${u.id}]])">
-
-                    <span th:text="${u.fullName}">User Name</span>
-                </div>
+               <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#0a66c2,#004182); display:flex; align-items:center; justify-content:center; color:white; font-weight:600; font-size:0.85rem; flex-shrink:0;">
+                   <span th:text="${#strings.substring(u.fullName, 0, 2)}">JD</span>
+               </div>
+               <span th:text="${u.fullName}" style="font-size:0.95rem; color:#1a2634; font-weight:500;">User Name</span>
+           </div>
+            <div th:if="${#lists.isEmpty(allUsers)}" style="padding:20px; text-align:center; color:#5e6775;">
+                No coursemates found
             </div>
-
             <button onclick="closeModal()" style="margin-top:10px;">Close</button>
         </div>
     </div>
@@ -1020,8 +1053,8 @@
     <!-- SSE Connection Script -->
     <script>
         let eventSource;
-        let currentUserId = [[${user.id}]];
-        let currentChatId = [[${other != null ? other.id : null}]];
+        let currentUserId = /*[[${user.id}]]*/ 0;
+        let currentChatId = /*[[${other != null ? other.id : null}]]*/ null;
 
         // Initialize SSE connection
         function connectSSE() {
@@ -1211,12 +1244,14 @@
             scrollToBottom();
             observeMessages();
             
-            // Close emoji picker when clicking outside
+           // Close emoji picker when clicking outside
             document.addEventListener('click', function(e) {
                 const picker = document.getElementById('emojiPicker');
-                const btn = document.querySelector('.input-action-btn .fa-smile').parentElement;
-                
-                if (!picker.contains(e.target) && !btn.contains(e.target)) {
+                if (!picker) return;
+                const smileIcon = document.querySelector('.input-action-btn .fa-smile');
+                const btn = smileIcon ? smileIcon.parentElement : null;
+
+                if (!picker.contains(e.target) && (!btn || !btn.contains(e.target))) {
                     picker.classList.remove('show');
                 }
             });

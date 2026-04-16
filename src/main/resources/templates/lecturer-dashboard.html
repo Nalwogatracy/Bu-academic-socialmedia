@@ -1323,13 +1323,21 @@
     <div class="left-sidebar">
         <div class="profile-card">
             <div class="profile-cover"></div>
-            <div class="profile-avatar-large">LO
-            <img th:if="${user.profilePicture != null}"
-                th:src="@{/user/profile-picture/{id}(id=${user.id})}"
-                style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />
+            <div class="profile-avatar-large" style="position: relative; overflow: hidden;">
+                <!-- Profile picture if exists -->
+                <img th:if="${user.profilePicture != null}"
+                     th:src="@{/user/profile-picture/{id}(id=${user.id})}"
+                     style="width:100%; height:100%; border-radius:50%; object-fit:cover;" 
+                     id="sidebarAvatarImg" />
 
-           <span th:if="${user.profilePicture == null}"
-                 th:text="${#strings.substring(user.fullName, 0, 2)}">NT</span></div>
+                <!-- Initials if no picture -->
+                <span th:if="${user.profilePicture == null}" 
+                      id="sidebarAvatarInitials"
+                      th:text="${#strings.substring(user.fullName, 0, 2)}"
+                      style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                </span>
+            </div>
+            
             <div class="profile-name-large" th:text="${user.fullName}">Laban Onyango</div>
             <div class="profile-title-large" th:text="'Senior Lecturer'">Senior Lecturer</div>
             
@@ -1995,6 +2003,20 @@
         }
         img.src = e.target.result;
         if (initials) initials.style.display = 'none';
+        
+        // Update sidebar avatar
+        const sidebarContainer = document.querySelector('.profile-avatar-large');
+        const sidebarInitials = document.getElementById('sidebarAvatarInitials');
+        let sidebarImg = document.getElementById('sidebarAvatarImg');
+
+        if (!sidebarImg) {
+            sidebarImg = document.createElement('img');
+            sidebarImg.id = 'sidebarAvatarImg';
+            sidebarImg.style.cssText = 'width:100%; height:100%; border-radius:50%; object-fit:cover;';
+            sidebarContainer.insertBefore(sidebarImg, sidebarContainer.firstChild);
+        }
+        sidebarImg.src = e.target.result;
+        if (sidebarInitials) sidebarInitials.style.display = 'none';
     };
     reader.readAsDataURL(file);
 
@@ -2011,7 +2033,7 @@
             }
         })
         .catch(() => showToast('Upload Failed', 'Could not update profile picture.'));
-}
+} 
 </script>
 
 </body>

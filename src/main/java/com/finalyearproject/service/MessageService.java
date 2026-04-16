@@ -60,6 +60,7 @@ public class MessageService {
         message.setSubject(subject);
         message.setSentAt(LocalDateTime.now());
         message.setRead(false);
+        message.setDelivered(true);
         Message savedMessage = messageRepository.save(message);
 
         //return messageRepository.save(message);
@@ -88,6 +89,14 @@ public class MessageService {
                 m.setRead(true);
                 messageRepository.save(m);
             });
+        sseController.pushBadgeUpdate(other);
+    }
+    public int countUnreadFromUser(User sender, User recipient) {
+        return (int) messageRepository
+            .findBySenderAndRecipientOrSenderAndRecipientOrderBySentAtAsc(sender, recipient, recipient, sender)
+            .stream()
+            .filter(m -> m.getRecipient().equals(recipient) && !m.isRead())
+            .count();
     }
 
     

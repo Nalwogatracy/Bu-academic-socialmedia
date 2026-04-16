@@ -3,6 +3,8 @@ package com.finalyearproject.config;
 import com.finalyearproject.model.User;
 import com.finalyearproject.repository.UserRepository;
 import com.finalyearproject.service.OAuth2UserService;
+import com.finalyearproject.service.UserService;
+import com.finalyearproject.service.UserStatusService;
 import java.util.Collections;
 import javax.sql.DataSource;
 
@@ -25,17 +27,21 @@ public class SecurityConfig {
 
     private final DataSource dataSource;
     private final OAuth2UserService oAuth2UserService;
+    private final UserStatusService userStatusService;
+    private final UserService userService;
 
-    public SecurityConfig(DataSource dataSource, OAuth2UserService oAuth2UserService) {
+    public SecurityConfig(DataSource dataSource, OAuth2UserService oAuth2UserService,UserStatusService userStatusService,UserService userService) {
         this.dataSource = dataSource;
         this.oAuth2UserService = oAuth2UserService;
+        this.userStatusService = userStatusService;
+        this.userService = userService;
     }
 
     // Password Encoder
-    @Bean
+   /* @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
+    } */
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
                                                        PasswordEncoder passwordEncoder) {
@@ -124,6 +130,14 @@ public class SecurityConfig {
             })
         )
             .logout(logout -> logout
+                    .addLogoutHandler((request, response, authentication) -> {
+                if (authentication != null) {
+                    User user = userService.findByEmail(authentication.getName());
+                    if (user != null) {
+                        userStatusService.markOffline(user);
+                    }
+                }
+            })
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
             )

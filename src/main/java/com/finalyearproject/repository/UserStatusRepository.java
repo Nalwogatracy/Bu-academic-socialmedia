@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserStatusRepository extends JpaRepository<UserStatus, Long> {
 
@@ -23,4 +24,5 @@ public interface UserStatusRepository extends JpaRepository<UserStatus, Long> {
     List<UserStatus> findOnlinePeersForUser(User user);
     
     List<UserStatus> findByOnlineTrue();
+    Optional<UserStatus> findByUser(User user);
 }

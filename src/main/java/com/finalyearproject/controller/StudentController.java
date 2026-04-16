@@ -8,6 +8,7 @@ import com.finalyearproject.repository.PostRepository;
 import com.finalyearproject.service.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -244,62 +246,68 @@ public class StudentController {
 
         String email = authentication.getName();
         User user = userService.findByEmail(email);
-        
+
         dashboardService.populateDashboardModel(user, model);
-        
+
+        // ── User's own courses (for sidebar + dropdown) ──────────────────────
+        List<Course> userCourses = courseService.getCoursesForUser(user);
+        model.addAttribute("courses", userCourses);         // ← fixes sidebar/dropdown
+        model.addAttribute("activeFilter", filter);         // ← fixes filter tab highlighting
+        model.addAttribute("selectedCourse", courseId);     // ← fixes course dropdown selection
+
+        // ── Unread counts (only for user's courses) ──────────────────────────
         Map<Long, Integer> unreadCounts = new HashMap<>();
-        List<Course> courses = courseRepository.findAll();
-        for (Course course : courses) {
-            int count = messageRepository.countUnreadByConversation(
-                    user,
-                    course.getId()
-            );
+        for (Course course : userCourses) {
+            int count = messageRepository.countUnreadByConversation(user, course.getId());
             unreadCounts.put(course.getId(), count);
         }
-        
-        // Add to discussions() method in controller
-        List<User> coursemates = courses.stream()
-            .flatMap(c -> c.getStudents() != null ? c.getStudents().stream() :
-                    java.util.stream.Stream.empty())
+        model.addAttribute("unreadCounts", unreadCounts);
+
+        // ── Coursemates (deduplicated by ID) ─────────────────────────────────
+        List<User> coursemates = userCourses.stream()
+            .flatMap(c -> c.getStudents() != null
+                    ? c.getStudents().stream()
+                    : java.util.stream.Stream.empty())
             .filter(u -> !u.getId().equals(user.getId()))
-            .distinct()
+            .collect(Collectors.toMap(
+                User::getId,
+                u -> u,
+                (a, b) -> a
+            ))
+            .values()
+            .stream()
             .collect(Collectors.toList());
         model.addAttribute("allCoursemates", coursemates);
 
-         List<Question> allTopics = questionService.getAllQuestionsForUser(user);
+        // ── Filter topics ────────────────────────────────────────────────────
+        List<Question> allTopics = questionService.getAllQuestionsForUser(user);
 
-    List<Question> filtered = allTopics.stream()
-        .filter(q -> {
-             if (courseId != null) {  // ← was 'course', now 'courseId'
-                return q.getCourse() != null && q.getCourse().getId().equals(courseId);
-            }
-            return true;
-        })
-        .filter(q -> switch (filter) {
-            case "POPULAR"    -> q.isPopular();
-            case "UNANSWERED" -> !q.isAnswered();
-            case "PINNED"     -> q.isPinned();
-            case "MINE"       -> q.getAuthor() != null &&
-                                 q.getAuthor().getId().equals(user.getId());
-            default           -> true; // ALL
-        })
-        .collect(Collectors.toList());
+        List<Question> filtered = allTopics.stream()
+            .filter(q -> {
+                if (courseId != null) {
+                    return q.getCourse() != null && q.getCourse().getId().equals(courseId);
+                }
+                return true;
+            })
+            .filter(q -> switch (filter) {
+                case "POPULAR"    -> q.isPopular();
+                case "UNANSWERED" -> !q.isAnswered();
+                case "PINNED"     -> q.isPinned();
+                case "MINE"       -> q.getAuthor() != null &&
+                                     q.getAuthor().getId().equals(user.getId());
+                default           -> true;
+            })
+            .collect(Collectors.toList());
 
-        model.addAttribute("unreadCounts", unreadCounts);
-        List<Question> myQuestions = questionService.getUserQuestions(user);
-        model.addAttribute("myQuestions", myQuestions);
-
-        // Popular topics
-        List<Question> popularTopics = questionService.getPopularQuestions();
-        model.addAttribute("popularTopics", popularTopics);
-
+        model.addAttribute("pinnedTopics",
+            filtered.stream().filter(Question::isPinned).collect(Collectors.toList()));
         model.addAttribute("discussionTopics",
             filtered.stream().filter(q -> !q.isPinned()).collect(Collectors.toList()));
-    model.addAttribute("pinnedTopics",
-            filtered.stream().filter(Question::isPinned).collect(Collectors.toList()));
-        //model.addAttribute("myQuestions", discussionService.getUserTopics(user));
-        //model.addAttribute("popularTopics", discussionService.getPopularTopics());
-        //model.addAttribute("unreadDiscussions", discussionService.countUnread(user));
+
+        // ── Sidebar extras ───────────────────────────────────────────────────
+        model.addAttribute("myQuestions", questionService.getUserQuestions(user));
+        model.addAttribute("popularTopics", questionService.getPopularQuestions());
+
         return "dashboard-discussions";
     }
     
@@ -708,21 +716,40 @@ public class StudentController {
 
         return "student-view-submission";
     }
-    @GetMapping("/messages")
+   @GetMapping("/messages")
     @Transactional(readOnly = true)
     public String messages(Model model, Authentication authentication) {
         User user = userService.findByEmail(authentication.getName());
 
+        List<Course> myCourses = courseService.getCoursesForUser(user);
+        List<User> coursemates = myCourses.isEmpty()
+            ? new ArrayList<>()
+            : courseRepository.findCoursematesInCourses(myCourses, user);
+
+        // ✅ Add these — the template needs them
+        Set<Long> onlineUserIds = messageService.getConversationsForUser(user)
+            .keySet().stream()
+            .filter(u -> userStatusService.isOnline(u))
+            .map(User::getId)
+            .collect(Collectors.toSet());
+
+        Map<Long, Integer> unreadPerUser = new HashMap<>();
+        messageService.getConversationsForUser(user).keySet().forEach(u ->
+            unreadPerUser.put(u.getId(), messageService.countUnreadFromUser(u, user))
+        );
+
+        model.addAttribute("onlineUserIds", onlineUserIds);
+        model.addAttribute("unreadPerUser", unreadPerUser);
         model.addAttribute("user", user);
+        model.addAttribute("other", null); // ✅ explicitly null so th:if="${other != null}" works
         model.addAttribute("conversations", messageService.getConversationsForUser(user));
         model.addAttribute("unreadMessages", messageService.countUnread(user));
         model.addAttribute("unreadNotifications", notificationService.countUnread(user));
-        
-        model.addAttribute("allUsers", userService.getAllUsersExcept(user));
+        model.addAttribute("allUsers", coursemates);
 
         return "student-messages";
     }
-
+    
     @GetMapping("/messages/{userId}")
     @Transactional
     public String conversation(@PathVariable Long userId, Model model,
@@ -732,15 +759,28 @@ public class StudentController {
 
         messageService.markConversationAsRead(user, other);
 
+        Set<Long> onlineUserIds = messageService.getConversationsForUser(user)
+            .keySet().stream()
+            .filter(u -> userStatusService.isOnline(u))
+            .map(User::getId)
+            .collect(Collectors.toSet());
+
+        Map<Long, Integer> unreadPerUser = new HashMap<>();
+        messageService.getConversationsForUser(user).keySet().forEach(u ->
+            unreadPerUser.put(u.getId(), messageService.countUnreadFromUser(u, user))
+        );
+
+        model.addAttribute("onlineUserIds", onlineUserIds);
+        model.addAttribute("unreadPerUser", unreadPerUser);
         model.addAttribute("user", user);
         model.addAttribute("other", other);
         model.addAttribute("messages", messageService.getConversation(user, other));
         model.addAttribute("unreadMessages", messageService.countUnread(user));
         model.addAttribute("unreadNotifications", notificationService.countUnread(user));
-
+        model.addAttribute("isOtherOnline", userStatusService.isOnline(other)); // ✅ fixes line 898
         return "student-conversation";
     }
-
+    
     @PostMapping("/messages/send")
     public String sendMessage(Authentication authentication,
                               @RequestParam Long recipientId,
@@ -749,7 +789,7 @@ public class StudentController {
                               RedirectAttributes redirectAttributes) {
         User user = userService.findByEmail(authentication.getName());
         User recipient = userService.getUserById(recipientId);
-        messageService.sendMessage(user, recipient, subject, content);
+        messageService.sendMessage(user, recipient, content, subject);
         redirectAttributes.addFlashAttribute("success", "Message sent!");
         return "redirect:/student/messages/" + recipientId;
     }

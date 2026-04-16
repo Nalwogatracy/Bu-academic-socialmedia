@@ -24,6 +24,14 @@ public class Message {
     @JoinColumn(name = "question_id")
     private Question question;
 
+    public Question getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
     public Long getConversationId() {
         return conversationId;
     }
@@ -36,6 +44,17 @@ public class Message {
     @Column(length = 255)
     private String subject;
 
+    @Column(nullable = false)
+    private boolean delivered = false;
+
+    public boolean isDelivered() {
+        return delivered;
+    }
+
+    public void setDelivered(boolean delivered) {
+        this.delivered = delivered;
+    }
+    
     public String getSubject() {
         return subject;
     }

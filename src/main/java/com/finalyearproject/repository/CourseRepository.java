@@ -34,4 +34,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     // Count courses for a student — used by CourseService.countCoursesForUser()
     @Query("SELECT COUNT(c) FROM Course c WHERE :student MEMBER OF c.students")
     int countByStudentsContains(@Param("student") User student);
+    
+    // In CourseRepository.java
+    @Query("SELECT DISTINCT u FROM Course c JOIN c.students u WHERE c IN :courses AND u != :user")
+    List<User> findCoursematesInCourses(@Param("courses") List<Course> courses, @Param("user") User user);
 }
