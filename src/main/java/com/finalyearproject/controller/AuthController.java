@@ -104,6 +104,11 @@ public class AuthController {
         return "Login-registration";
         
     }
+    @GetMapping("/")
+    public String index(Model model) {
+        return showLogin(model);
+    }
+
     @GetMapping("/login")
     public String showLogin(Model model) {
         model.addAttribute("showLogin", true);

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="messages">
+    <div th:each="msg : ${messages}" th:classappend="${msg.sender.id == user.id} ? 'msg-row sent' : 'msg-row received'">
+        <div class="bubble">
+            <div class="message-text" th:text="${msg.content}">Hello</div>
+            <div class="message-meta-wa">
+                <span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">14:30</span>
+                <span class="double-tick" th:if="${msg.sender.id == user.id}">
+                    <span th:if="${!msg.delivered and !msg.read}"><i class="fas fa-check"></i></span>
+                    <span th:if="${msg.delivered and !msg.read}"><i class="fas fa-check"></i><i class="fas fa-check"></i></span>
+                    <span th:if="${msg.read}" style="color:#53bdeb;"><i class="fas fa-check"></i><i class="fas fa-check"></i></span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

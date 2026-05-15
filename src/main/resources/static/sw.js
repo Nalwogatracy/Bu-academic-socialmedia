@@ -4,14 +4,19 @@
 const CACHE_NAME = 'bugema-connect-v1';
 const STATIC_ASSETS = [
     '/',
-    '/student/dashboard',
-    '/student/messages',
-    '/student/assignments',
-    '/css/app.css',          // add your actual CSS paths
-    '/js/app.js',            // add your actual JS paths
+    '/login',
+    '/register',
+    '/offline.html',
     '/css/all.min.css',
     '/css/inter.css',
-    '/offline.html'
+    '/css/bootstrap.min.css',
+    '/css/bootstrap-icons.css',
+    '/css/flatpickr.min.css',
+    '/js/app.js',
+    '/js/chart.umd.min.js',
+    '/js/flatpickr.min.js',
+    '/js/bootstrap.bundle.min.js',
+    '/js/offline.js'
 ];
 
 // ─── Install: cache static assets ────────────────────────────────────────────

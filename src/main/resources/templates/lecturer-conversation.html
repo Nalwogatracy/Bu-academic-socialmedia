@@ -852,9 +852,9 @@
     </div>
 </div>
 
-<script>
-    let currentUserId = /*[[${user.id}]]*/ 0;
-    let currentChatUserId = /*[[${other != null ? other.id : null}]]*/ null;
+<script th:inline="javascript">
+    let currentUserId = [[${user.id}]];
+    let currentChatUserId = [[${other != null ? other.id : 'null'}]];
     let eventSourceWa = null;
     let typingTimeout;
     let lastTypingSent = 0;
@@ -890,6 +890,7 @@
                     eventSourceWa.close();
                     eventSourceWa = null;
                 }
+
                 // DO NOTHING ELSE (this is key)
                 enablePollingFallback();
             };
@@ -903,6 +904,7 @@
         }
     }
 
+
     function openChatWindow(userId) { 
         window.location.href = '/lecturer/messages/' + userId; 
     }
@@ -914,7 +916,7 @@
             .then(html=>{
                 document.getElementById('messagesPane').innerHTML = html;
                 scrollToBottom();
-            }).catch(e=>console.log); 
+            }).catch(e=>console.log(e)); 
     }
     
     function scrollToBottom() { 
@@ -935,7 +937,6 @@
         } 
     }
     
-   
     function sendTyping() { 
         if(!currentChatUserId) return;
         const now = Date.now();
@@ -969,11 +970,12 @@
     function closeMobileSidebar() { 
         document.getElementById('chatsSidebar')?.classList.remove('mobile-open'); 
     }
+    
     let fallbackInterval = null;
 
     function enablePollingFallback() {
         if (fallbackInterval) return;
-        
+
         console.log("Polling fallback enabled");
 
         fallbackInterval = setInterval(() => {
@@ -982,6 +984,7 @@
             }
         }, 5000); // every 5 seconds
     }
+
 
     document.addEventListener('DOMContentLoaded', () => {
         connectSSE();
@@ -997,38 +1000,59 @@
         
         const sendBtn = document.getElementById('waSendBtn');
         const msgInput = document.getElementById('waMessageInput');
-        
-        if(sendBtn && msgInput && currentChatUserId){
-            const sendMessage = () => {
-                const content = msgInput.value.trim();
-                if(!content) return;
-                //sendBtn.disabled = true;
 
+        if (msgInput && sendBtn) {
+
+            const updateButton = () => {
+                sendBtn.disabled = !msgInput.value.trim();
+            };
+
+            msgInput.addEventListener('input', () => {
+                updateButton();
+                sendTyping();
+            });
+
+            updateButton(); // initialize
+
+            const sendMessage = () => {
+                if (!currentChatUserId) {
+                    console.log('No chat user ID');
+                    return;
+                }
+
+                const content = msgInput.value.trim();
+                    if (!content) {
+                        console.log('No content to send');
+                        return;
+                    }
+                console.log('Sending message to:', currentChatUserId, 'Content:', content);
+                
                 const formData = new URLSearchParams();
                 formData.append('recipientId', currentChatUserId);
                 formData.append('content', content);
                 formData.append('subject', 'Message');
+
                 fetch('/lecturer/messages/send', {
-                    method:'POST', 
-                    headers:{'Content-Type':'application/x-www-form-urlencoded'}, 
+                    method:'POST',
+                    headers:{'Content-Type':'application/x-www-form-urlencoded'},
                     body:formData
                 }).then(res => {
                     if(res.redirected) window.location.href = res.url;
                     else refreshMessages();
+
                     msgInput.value = '';
-                    toggleSendBtn();
-                }).catch(err => console.log);
+                    updateButton();
+                });
             };
-            sendBtn.onclick = sendMessage;
+
+           // sendBtn.onclick = sendMessage;
+           sendBtn.addEventListener('click', sendMessage);
+
             msgInput.addEventListener('keypress', e => {
-                if(e.key === 'Enter' && !e.shiftKey && !sendBtn.disabled) {
+                if (e.key === 'Enter' && !sendBtn.disabled) {
                     e.preventDefault();
                     sendMessage();
                 }
-            });
-            msgInput.addEventListener('input', () => {
-                toggleSendBtn();
-                sendTyping();
             });
         }
         

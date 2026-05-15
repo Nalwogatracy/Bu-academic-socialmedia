@@ -41,8 +41,11 @@ public class LecturerController {
     private final MaterialService     materialService;
     private final NotificationService notificationService;
     private final MessageService      messageService;
-    private final FileStorageService  fileStorageService;
-    private final PostRepository      postRepository;
+    private final FileStorageService    fileStorageService;
+    private final PostRepository        postRepository;
+    private final UserStatusService     userStatusService;
+    private final CourseRepository      courseRepository;
+    private final SseController         sseController;
     @Autowired
     private SubmissionRepository submissionRepository;
     @Autowired 
@@ -60,7 +63,10 @@ public class LecturerController {
                                NotificationService notificationService,
                                MessageService messageService,
                                FileStorageService fileStorageService,
-                               PostRepository postRepository) {
+                               PostRepository postRepository,
+                               UserStatusService userStatusService,
+                               CourseRepository courseRepository,
+                               SseController sseController) {
         this.userService         = userService;
         this.courseService       = courseService;
         this.postService         = postService;
@@ -70,6 +76,9 @@ public class LecturerController {
         this.messageService      = messageService;
         this.fileStorageService  = fileStorageService;
         this.postRepository      = postRepository;
+        this.userStatusService   = userStatusService;
+        this.courseRepository    = courseRepository;
+        this.sseController       = sseController;
     }
 
     @GetMapping("/dashboard")
@@ -1032,13 +1041,95 @@ public class LecturerController {
     @GetMapping("/messages")
     public String messages(Model model, Authentication authentication) {
         User lecturer = userService.findByEmail(authentication.getName());
-        
+
+        List<Course> myCourses = courseService.getCoursesForLecturer(lecturer);
+        List<User> coursemates = myCourses.isEmpty()
+            ? new ArrayList<>()
+            : courseRepository.findCoursematesInCourses(myCourses, lecturer);
+
+        Set<Long> onlineUserIds = messageService.getConversationsForUser(lecturer)
+            .keySet().stream()
+            .filter(u -> userStatusService.isOnline(u))
+            .map(User::getId)
+            .collect(Collectors.toSet());
+
+        Map<Long, Integer> unreadPerUser = new HashMap<>();
+        messageService.getConversationsForUser(lecturer).keySet().forEach(u ->
+            unreadPerUser.put(u.getId(), messageService.countUnreadFromUser(u, lecturer))
+        );
+
+        model.addAttribute("onlineUserIds", onlineUserIds);
+        model.addAttribute("unreadPerUser", unreadPerUser);
         model.addAttribute("user", lecturer);
+        model.addAttribute("other", null);
         model.addAttribute("conversations", messageService.getConversationsForUser(lecturer));
         model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
         model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
-        
+        model.addAttribute("allUsersExceptCurrent", userService.getAllUsersExcept(lecturer));
+
         return "lecturer-messages";
+    }
+
+    @GetMapping("/messages/{userId}")
+    @Transactional
+    public String conversation(@PathVariable Long userId, Model model,
+                               Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        User other = userService.getUserById(userId);
+
+        messageService.markConversationAsRead(lecturer, other);
+
+        Set<Long> onlineUserIds = messageService.getConversationsForUser(lecturer)
+            .keySet().stream()
+            .filter(u -> userStatusService.isOnline(u))
+            .map(User::getId)
+            .collect(Collectors.toSet());
+
+        Map<Long, Integer> unreadPerUser = new HashMap<>();
+        messageService.getConversationsForUser(lecturer).keySet().forEach(u ->
+            unreadPerUser.put(u.getId(), messageService.countUnreadFromUser(u, lecturer))
+        );
+
+        model.addAttribute("onlineUserIds", onlineUserIds);
+        model.addAttribute("conversations", messageService.getConversationsForUser(lecturer));
+        model.addAttribute("unreadPerUser", unreadPerUser);
+        model.addAttribute("user", lecturer);
+        model.addAttribute("other", other);
+        model.addAttribute("messages", messageService.getConversation(lecturer, other));
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        model.addAttribute("isOtherOnline", userStatusService.isOnline(other));
+        model.addAttribute("allUsersExceptCurrent", userService.getAllUsersExcept(lecturer));
+
+        return "lecturer-conversation";
+    }
+
+    @GetMapping("/messages/{id}/refresh")
+    @ResponseBody
+    public String refresh(@PathVariable Long id, Authentication auth, Model model) {
+        User lecturer = userService.findByEmail(auth.getName());
+        User other = userService.getUserById(id);
+
+        model.addAttribute("messages", messageService.getConversation(lecturer, other));
+
+        return "fragments/message-list :: messages";
+    }
+
+    @PostMapping("/messages/{id}/read")
+    @ResponseBody
+    public void markRead(@PathVariable Long id, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        User other = userService.getUserById(id);
+        messageService.markConversationAsRead(lecturer, other);
+    }
+
+    @PostMapping("/messages/typing")
+    @ResponseBody
+    public void typing(@RequestBody Map<String, Object> body,
+                       Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        Long recipientId = Long.valueOf(body.get("recipientId").toString());
+        sseController.pushTyping(recipientId, lecturer.getId());
     }
 
     @GetMapping("/messages/new")
@@ -1058,16 +1149,16 @@ public class LecturerController {
     @PostMapping("/messages/send")
     public String sendMessage(Authentication authentication,
                               @RequestParam Long recipientId,
-                              @RequestParam String subject,
+                              @RequestParam(required = false, defaultValue = "Message") String subject,
                               @RequestParam String content,
                               RedirectAttributes redirectAttributes) {
         User lecturer = userService.findByEmail(authentication.getName());
         User recipient = userService.getUserById(recipientId);
         
-        messageService.sendMessage(lecturer, recipient, subject, content);
+        messageService.sendMessage(lecturer, recipient, content, subject);
         redirectAttributes.addFlashAttribute("success", "Message sent successfully");
         
-        return "redirect:/lecturer/messages";
+        return "redirect:/lecturer/messages/" + recipientId;
     }
 
     @GetMapping("/notifications")
