@@ -1120,10 +1120,18 @@
                     <i class="fas fa-book-open"></i>
                     <span>My Courses</span>
                 </a>
+                <a class="menu-item-prof" th:href="@{/student/courses/enroll}">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Enroll in Courses</span>
+                </a>
                 <a class="menu-item-prof" th:href="@{/student/assignments}">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Assignments</span>
                     <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/grades}">
+                    <i class="fas fa-trophy"></i>
+                    <span>My Grades</span>
                 </a>
                 <a class="menu-item-prof active" th:href="@{/student/discussions}">
                     <i class="fas fa-comments"></i>
@@ -1146,6 +1154,10 @@
                 <a class="menu-item-prof" th:href="@{/student/progress}">
                     <i class="fas fa-chart-line"></i>
                     <span>My Progress</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/profile}">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Profile</span>
                 </a>
             </div>
         </div>

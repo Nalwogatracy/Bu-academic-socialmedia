@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error — Bugema Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .error-card {
+            background: white;
+            border-radius: 16px;
+            padding: 64px 48px;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        .error-code {
+            font-size: 96px;
+            font-weight: 800;
+            color: #fecaca;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .error-card h1 { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 12px; }
+        .error-card p { font-size: 15px; color: #64748b; line-height: 1.6; margin-bottom: 28px; }
+        .btn {
+            display: inline-block; padding: 12px 32px;
+            background: #dc2626; color: white; border: none;
+            border-radius: 10px; font-size: 15px; font-weight: 600;
+            cursor: pointer; text-decoration: none; transition: background 0.2s;
+        }
+        .btn:hover { background: #b91c1c; }
+        .btn i { margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="error-code">500</div>
+        <h1>Something Went Wrong</h1>
+        <p>An unexpected error occurred. Our team has been notified.</p>
+        <a class="btn" th:href="@{/}"><i class="fas fa-home"></i> Go Home</a>
+    </div>
+</body>
+</html>

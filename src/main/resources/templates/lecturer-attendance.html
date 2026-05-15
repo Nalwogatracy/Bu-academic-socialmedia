@@ -441,14 +441,14 @@
             row.innerHTML = `
                 <td>
                     <div class="student-info">
-                        <div class="student-avatar">${getInitials(student.name)}</div>
+                        <div class="student-avatar">${getInitials(student.fullName)}</div>
                         <div>
-                            <div><strong>${student.name}</strong></div>
+                            <div><strong>${student.fullName}</strong></div>
                             <div style="font-size: 0.85rem; color: #5e6775;">${student.email}</div>
                         </div>
                     </div>
                 </td>
-                <td>${student.studentId}</td>
+                <td>${student.universityId}</td>
                 <td>
                     <div class="attendance-actions" data-student-id="${student.id}">
                         <button class="attendance-btn btn-present active" onclick="setStatus(${student.id}, 'PRESENT', this)">Present</button>

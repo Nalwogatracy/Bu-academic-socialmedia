@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Announcements | Bugema Academic Connect'">Announcements - Bugema Academic Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        body { overflow-x:hidden; background:#f0f2f5; }
+        .navbar {
+            background:white; box-shadow:0 1px 3px rgba(0,0,0,0.08);
+            position:fixed; width:100%; top:0; z-index:1000; border-bottom:1px solid #eef0f3;
+        }
+        .nav-container {
+            max-width:1400px; margin:0 auto; padding:0 24px;
+            height:64px; display:flex; align-items:center; justify-content:space-between;
+        }
+        .nav-left { display:flex; align-items:center; gap:32px; }
+        .logo { font-size:1.4rem; font-weight:700; color:#0a66c2; display:flex; align-items:center; gap:8px; }
+        .logo i { font-size:1.6rem; color:#0a66c2; }
+        .logo span { background:linear-gradient(135deg,#0a66c2,#7b2eda); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .search-bar { position:relative; width:320px; }
+        .search-bar i { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#5e6775; font-size:0.9rem; }
+        .search-bar input { width:100%; padding:10px 16px 10px 44px; border:none; border-radius:24px; font-size:0.95rem; background:#eef3f8; transition:all 0.2s; }
+        .search-bar input:focus { outline:none; background:white; box-shadow:0 0 0 2px #0a66c2; }
+        .nav-right { display:flex; align-items:center; gap:8px; }
+        .nav-item { position:relative; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#5e6775; transition:all 0.2s; cursor:pointer; text-decoration:none; }
+        .nav-item:hover { background:#eef3f8; color:#0a66c2; }
+        .nav-item.active { background:#eef3f8; color:#0a66c2; }
+        .nav-item i { font-size:1.3rem; }
+        .badge { position:absolute; top:6px; right:8px; background:#cc1010; color:white; font-size:0.65rem; font-weight:600; min-width:18px; height:18px; border-radius:18px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid white; }
+        .user-profile { display:flex; align-items:center; gap:8px; padding:4px 8px 4px 4px; border-radius:40px; cursor:pointer; transition:all 0.2s; margin-left:8px; }
+        .user-profile:hover { background:#eef3f8; }
+        .user-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#0a66c2,#7b2eda); display:flex; align-items:center; justify-content:center; color:white; font-weight:600; font-size:1rem; }
+        .logout-btn { border:none; background:transparent; color:#5e6775; font-size:0.9rem; display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:40px; cursor:pointer; transition:all 0.2s; }
+        .logout-btn:hover { background:#fee2e2; color:#cc1010; }
+
+        .main-container { max-width:1400px; margin:88px auto 30px; padding:0 24px; display:grid; grid-template-columns:280px minmax(0,1fr); gap:24px; }
+
+        .left-sidebar { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); height:fit-content; position:sticky; top:88px; overflow:hidden; border:1px solid #eef0f3; }
+        .profile-card { padding:20px; border-bottom:1px solid #eef0f3; background:linear-gradient(to bottom,#f7f9fc,white); }
+        .profile-cover { height:80px; background:linear-gradient(135deg,#0a66c2,#7b2eda); margin:-20px -20px 0 -20px; margin-bottom:30px; position:relative; overflow:hidden; }
+        .profile-cover::after { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><path d="M0 0 L100 100 M100 0 L0 100" stroke="white" stroke-width="1"/></svg>'); background-size:20px 20px; }
+        .profile-avatar-large { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,#0a66c2,#7b2eda); display:flex; align-items:center; justify-content:center; color:white; font-size:2.2rem; font-weight:600; margin:-45px auto 12px; border:4px solid white; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+        .profile-name-large { font-weight:700; font-size:1.3rem; text-align:center; margin-bottom:4px; color:#1a2634; }
+        .profile-title-large { color:#5e6775; font-size:0.9rem; text-align:center; margin-bottom:16px; background:#eef3f8; padding:4px 12px; border-radius:30px; display:inline-block; margin-left:auto; margin-right:auto; width:fit-content; }
+        .profile-stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 0 8px; border-top:1px solid #eef0f3; }
+        .stat-cell { text-align:center; background:#f7f9fc; padding:12px; border-radius:10px; }
+        .stat-num { font-weight:700; font-size:1.3rem; color:#0a66c2; margin-bottom:4px; }
+        .stat-label-small { font-size:0.75rem; color:#5e6775; text-transform:uppercase; letter-spacing:0.3px; }
+        .menu-section { padding:16px 0; }
+        .menu-item-prof { display:flex; align-items:center; gap:14px; padding:12px 20px; color:#1a2634; transition:all 0.2s; cursor:pointer; text-decoration:none; font-weight:500; font-size:0.95rem; border-left:3px solid transparent; }
+        .menu-item-prof:hover { background:#f7f9fc; color:#0a66c2; }
+        .menu-item-prof.active { background:#eef3f8; color:#0a66c2; border-left-color:#0a66c2; font-weight:600; }
+        .menu-item-prof i { font-size:1.2rem; width:24px; color:#5e6775; }
+        .menu-item-prof:hover i { color:#0a66c2; }
+        .menu-item-prof.active i { color:#0a66c2; }
+        .menu-badge { margin-left:auto; background:#eef3f8; color:#1a2634; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+        .menu-badge.warning { background:#ffd966; color:#b86b0c; }
+        .menu-badge.danger { background:#f8d7da; color:#cc1010; }
+
+        .main-content { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:24px; border:1px solid #eef0f3; min-width:0; }
+        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px; }
+        .page-header h1 { font-size:1.8rem; font-weight:700; color:#1a2634; }
+
+        .section-card { background:white; border:1px solid #eef0f3; border-radius:12px; padding:24px; margin-bottom:24px; }
+        .section-title { font-size:1.2rem; font-weight:700; color:#1a2634; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+        .section-title i { color:#0a66c2; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:6px; color:#1a2634; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:12px; border:1px solid #e0e4e9; border-radius:8px; font-size:0.95rem; transition:all 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:#0a66c2; box-shadow:0 0 0 3px rgba(10,102,194,0.1); }
+        .form-group textarea { min-height:100px; resize:vertical; }
+        .radio-group { display:flex; gap:20px; flex-wrap:wrap; }
+        .radio-group label { display:flex; align-items:center; gap:6px; font-weight:500; cursor:pointer; }
+        .radio-group input[type="radio"] { width:auto; }
+        .checkbox-group { display:flex; align-items:center; gap:8px; }
+        .checkbox-group input[type="checkbox"] { width:auto; }
+        .btn { padding:10px 20px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:8px; }
+        .btn-primary { background:#0a66c2; color:white; }
+        .btn-primary:hover { background:#004182; }
+        .btn-outline { background:white; border:1px solid #e0e4e9; color:#1a2634; }
+        .btn-outline:hover { background:#f7f9fc; border-color:#0a66c2; }
+
+        .announcement-card { background:white; border:1px solid #eef0f3; border-radius:12px; padding:20px; margin-bottom:16px; transition:all 0.2s; }
+        .announcement-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.05); }
+        .annc-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; gap:12px; }
+        .annc-title { font-size:1.1rem; font-weight:700; color:#1a2634; }
+        .annc-badges { display:flex; gap:8px; flex-shrink:0; }
+        .annc-badge { padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+        .annc-badge.course { background:#eef3f8; color:#0a66c2; }
+        .annc-badge.visibility { background:#e0f2fe; color:#0369a1; }
+        .annc-badge.visibility.platform { background:#fef3c7; color:#b45309; }
+        .annc-content { color:#5e6775; font-size:0.9rem; line-height:1.6; margin-bottom:12px; }
+        .annc-meta { display:flex; gap:16px; font-size:0.85rem; color:#8f9bab; flex-wrap:wrap; }
+        .annc-meta span { display:flex; align-items:center; gap:4px; }
+
+        .empty-state { text-align:center; padding:60px 20px; }
+        .empty-state i { font-size:3rem; color:#e0e4e9; margin-bottom:16px; display:block; }
+        .empty-state h3 { color:#1a2634; margin-bottom:8px; }
+        .empty-state p { color:#5e6775; }
+
+        .flash { padding:12px 16px; border-radius:8px; margin-bottom:16px; font-weight:500; display:flex; align-items:center; gap:8px; }
+        .flash.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+        .flash.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+
+        @media (max-width:1200px) { .main-container { grid-template-columns:240px 1fr; } }
+        @media (max-width:768px) { .main-container { grid-template-columns:1fr; } .left-sidebar { display:none; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Bugema Connect</span>
+                <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Lecturer</span>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search courses, materials...">
+            </div>
+        </div>
+        <div class="nav-right">
+            <a class="nav-item" th:href="@{/lecturer/dashboard}"><i class="fas fa-home"></i></a>
+            <a class="nav-item" th:href="@{/lecturer/messages}">
+                <i class="fas fa-comment"></i>
+                <span class="badge" th:text="${unreadMessages}">0</span>
+            </a>
+            <a class="nav-item" th:href="@{/lecturer/notifications}">
+                <i class="fas fa-bell"></i>
+                <span class="badge" th:text="${unreadNotifications}">0</span>
+            </a>
+            <div class="user-profile" onclick="location.href='/lecturer/profile'">
+                <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div>
+            </div>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="main-container">
+    <div class="left-sidebar">
+        <div class="profile-card">
+            <div class="profile-cover"></div>
+            <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div>
+            <div class="profile-name-large" th:text="${user.fullName}">John Doe</div>
+            <div class="profile-title-large" th:text="'Lecturer'">Lecturer</div>
+            <div class="profile-stats-grid">
+                <div class="stat-cell">
+                    <div class="stat-num" th:text="${courses.size()}">5</div>
+                    <div class="stat-label-small">Courses</div>
+                </div>
+            </div>
+        </div>
+        <div class="menu-section">
+            <a class="menu-item-prof" th:href="@{/lecturer/dashboard}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a class="menu-item-prof" th:href="@{/lecturer/courses}"><i class="fas fa-book"></i><span>Courses</span><span class="menu-badge" th:text="${courses.size()}">5</span></a>
+            <a class="menu-item-prof" th:href="@{/lecturer/materials}"><i class="fas fa-file-upload"></i><span>Materials</span></a>
+            <a class="menu-item-prof" th:href="@{/lecturer/assignments}"><i class="fas fa-tasks"></i><span>Assignments</span></a>
+            <a class="menu-item-prof" th:href="@{/lecturer/discussions}"><i class="fas fa-comments"></i><span>Discussions</span></a>
+            <a class="menu-item-prof active" th:href="@{/lecturer/announcements}"><i class="fas fa-bullhorn"></i><span>Announcements</span></a>
+            <a class="menu-item-prof" th:href="@{/lecturer/analytics}"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a class="menu-item-prof" th:href="@{/lecturer/profile}"><i class="fas fa-user-cog"></i><span>Profile</span></a>
+            <a class="menu-item-prof" th:href="@{/lecturer/messages}"><i class="fas fa-envelope"></i><span>Messages</span></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Announcements</h1>
+                <p style="color:#5e6775; margin-top:4px;">Create and manage course announcements</p>
+            </div>
+        </div>
+
+        <div th:if="${success != null}" class="flash success"><i class="fas fa-check-circle"></i><span th:text="${success}">Success</span></div>
+        <div th:if="${error != null}" class="flash error"><i class="fas fa-exclamation-circle"></i><span th:text="${error}">Error</span></div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-plus-circle"></i> Create Announcement</div>
+            <form th:action="@{/lecturer/announcement/create}" method="post">
+                <div class="form-group">
+                    <label>Course</label>
+                    <select name="courseId" required>
+                        <option value="">Select a course...</option>
+                        <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.code + ' - ' + course.name}">ICT3101 - Software Engineering</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" name="title" required placeholder="Announcement title">
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea name="content" rows="4" required placeholder="Write your announcement..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Visibility</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="visibility" value="COURSE" checked> Course Only</label>
+                        <label><input type="radio" name="visibility" value="PLATFORM"> Platform-wide</label>
+                    </div>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="sendEmail" id="sendEmail">
+                    <label for="sendEmail">Send email notification to students</label>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Post Announcement</button>
+            </form>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-history"></i> Previous Announcements</div>
+
+            <div th:if="${announcements != null and !announcements.isEmpty()}">
+                <div th:each="annc : ${announcements}" class="announcement-card">
+                    <div class="annc-header">
+                        <div class="annc-title" th:text="${annc.title}">Exam Reminder</div>
+                        <div class="annc-badges">
+                            <span th:if="${annc.course != null}" class="annc-badge course" th:text="${annc.course.code}">ICT3101</span>
+                            <span class="annc-badge visibility"
+                                  th:classappend="${annc.visibility == 'PLATFORM'} ? 'platform' : ''"
+                                  th:text="${annc.visibility}">COURSE</span>
+                        </div>
+                    </div>
+                    <div class="annc-content" th:text="${annc.content}">Announcement content preview...</div>
+                    <div class="annc-meta">
+                        <span><i class="fas fa-user"></i> <span th:text="${annc.author != null ? annc.author.fullName : 'Unknown'}">John Doe</span></span>
+                        <span><i class="far fa-calendar"></i> <span th:text="${annc.createdAt != null ? #temporals.format(annc.createdAt, 'MMM dd, yyyy HH:mm') : ''}">Mar 19, 2026</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-state" th:if="${announcements == null or announcements.isEmpty()}">
+                <i class="fas fa-bullhorn"></i>
+                <h3>No announcements yet</h3>
+                <p>Create your first announcement using the form above</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

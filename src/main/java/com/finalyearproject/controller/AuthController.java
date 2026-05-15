@@ -7,9 +7,15 @@ import com.finalyearproject.model.Role.RoleType;
 import com.finalyearproject.model.User;
 import com.finalyearproject.repository.UserRepository;
 import com.finalyearproject.service.PasswordResetTokenService;
+import com.finalyearproject.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.UUID;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +35,12 @@ public class AuthController {
     
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private UserService userService;
+
+    @Value("${app.base-url:}")
+    private String baseUrl;
 
     @PostMapping("/register")
     public String registerUser(@RequestParam String fullName,
@@ -121,16 +133,89 @@ public class AuthController {
         return "Login-registration";
     }
     @PostMapping("/forgot-password")
-    public String forgotPassword(@RequestParam String email, Model model) {
+    public String forgotPassword(@RequestParam String email, Model model, HttpServletRequest request) {
         Optional<User> user = userRepository.findByEmail(email);
         if(user.isPresent()) {
             User u = user.get();
             String token = UUID.randomUUID().toString();
             passwordResetTokenService.createToken(u, token);
-            String link = "https://yourdomain.com/reset-password?token=" + token;
+            String linkBase;
+            if (!baseUrl.isBlank()) {
+                linkBase = baseUrl;
+            } else {
+                String lanIp = getLanIp();
+                if (lanIp != null) {
+                    linkBase = request.getScheme() + "://" + lanIp + ":" + request.getServerPort();
+                } else {
+                    linkBase = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+                }
+            }
+            String link = linkBase + "/reset-password?token=" + token;
             emailService.sendEmail(u.getEmail(), "Reset Password", "Click link: " + link);
         }
         model.addAttribute("message", "If the email exists, a reset link has been sent");
+        model.addAttribute("showLogin", true);
+        return "Login-registration";
+    }
+
+    private String getLanIp() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface ni = interfaces.nextElement();
+                if (ni.isLoopback() || !ni.isUp()) continue;
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    if (addr instanceof java.net.Inet4Address && !addr.isLoopbackAddress()) {
+                        String ip = addr.getHostAddress();
+                        if (ip != null && (ip.startsWith("192.168.") || ip.startsWith("10.") || ip.startsWith("172."))) {
+                            return ip;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // fallback to request-based detection
+        }
+        return null;
+    }
+
+    @GetMapping("/reset-password")
+    public String showResetForm(@RequestParam String token, Model model) {
+        User user = passwordResetTokenService.validateToken(token);
+        if (user == null) {
+            model.addAttribute("error", "Invalid or expired reset link. Please request a new one.");
+            model.addAttribute("showLogin", true);
+            return "Login-registration";
+        }
+        model.addAttribute("token", token);
+        return "reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String token,
+                                @RequestParam String password,
+                                @RequestParam String confirmPassword,
+                                Model model) {
+        User user = passwordResetTokenService.validateToken(token);
+        if (user == null) {
+            model.addAttribute("error", "Invalid or expired reset link. Please request a new one.");
+            model.addAttribute("showLogin", true);
+            return "Login-registration";
+        }
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("error", "Passwords do not match.");
+            model.addAttribute("token", token);
+            return "reset-password";
+        }
+        if (password.length() < 6) {
+            model.addAttribute("error", "Password must be at least 6 characters.");
+            model.addAttribute("token", token);
+            return "reset-password";
+        }
+        userService.updatePassword(user, password);
+        model.addAttribute("success", "Password reset successful. Please login with your new password.");
         model.addAttribute("showLogin", true);
         return "Login-registration";
     }

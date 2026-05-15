@@ -667,13 +667,13 @@
 <nav class="navbar">
     <div class="nav-container">
         <div class="logo">
-            <i class="fas fa-chalkboard-user"></i>
-            <span>Bugema Connect | Lecturer</span>
+            <i class="fas fa-shield-alt"></i>
+            <span>Bugema Connect | Admin</span>
         </div>
         <div class="nav-right">
-            <a class="nav-item" th:href="@{/lecturer/dashboard}"><i class="fas fa-home"></i></a>
-            <a class="nav-item active" th:href="@{/lecturer/messages}"><i class="fas fa-comment"></i><span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">2</span></a>
-            <a class="nav-item" th:href="@{/lecturer/notifications}"><i class="fas fa-bell"></i><span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">3</span></a>
+            <a class="nav-item" th:href="@{/admin/dashboard}"><i class="fas fa-home"></i></a>
+            <a class="nav-item active" th:href="@{/admin/messages}"><i class="fas fa-comment"></i><span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">2</span></a>
+            <a class="nav-item" th:href="@{/admin/notifications}"><i class="fas fa-bell"></i><span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">3</span></a>
             <div class="user-avatar">
                 <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}" style="width:100%; height:100%; object-fit:cover;">
                 <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName,0,2)}">JD</span>
@@ -772,7 +772,7 @@
                         <h4 th:text="${other.fullName}">Contact Name</h4>
                         <div class="target-status">
                             <span th:text="${isOtherOnline} ? 'Online' : 'Offline'"></span>
-                            <span th:if="${other.role != null and other.role.name() == 'LECTURER'}"> • Lecturer</span>
+                            <span th:if="${other.role != null}"> • <span th:text="${other.role.name() == 'LECTURER' ? 'Lecturer' : 'Student'}">Lecturer</span></span>
                         </div>
                     </div>
                 </div>
@@ -844,7 +844,7 @@
     <!-- Empty State -->
     <div class="chat-window" th:if="${other == null}" id="emptyChatState">
         <div class="empty-chat">
-            <i class="fas fa-chalkboard-user"></i>
+            <i class="fas fa-shield-alt"></i>
             <h3>Bugema Connect Messenger</h3>
             <p>Select a contact from the left panel to start chatting</p>
             <button onclick="document.getElementById('chatsSidebar')?.classList.add('mobile-open')">View Contacts</button>
@@ -852,9 +852,9 @@
     </div>
 </div>
 
-<script th:inline="javascript">
-    let currentUserId = [[${user.id}]];
-    let currentChatUserId = [[${other != null ? other.id : 'null'}]];
+<script>
+    let currentUserId = /*[[${user.id}]]*/ 0;
+    let currentChatUserId = /*[[${other != null ? other.id : null}]]*/ null;
     let eventSourceWa = null;
     let typingTimeout;
     let lastTypingSent = 0;
@@ -890,7 +890,6 @@
                     eventSourceWa.close();
                     eventSourceWa = null;
                 }
-
                 // DO NOTHING ELSE (this is key)
                 enablePollingFallback();
             };
@@ -904,19 +903,18 @@
         }
     }
 
-
     function openChatWindow(userId) { 
-        window.location.href = '/lecturer/messages/' + userId; 
+        window.location.href = '/admin/messages/' + userId; 
     }
     
     function refreshMessages() { 
         if(!currentChatUserId) return;
-        fetch('/lecturer/messages/'+currentChatUserId+'/refresh')
+        fetch('/admin/messages/'+currentChatUserId+'/refresh')
             .then(r=>r.text())
             .then(html=>{
                 document.getElementById('messagesPane').innerHTML = html;
                 scrollToBottom();
-            }).catch(e=>console.log(e)); 
+            }).catch(e=>console.log); 
     }
     
     function scrollToBottom() { 
@@ -925,7 +923,7 @@
     }
     
     function markRead() { 
-        if(currentChatUserId) fetch('/lecturer/messages/'+currentChatUserId+'/read',{method:'POST'}); 
+        if(currentChatUserId) fetch('/admin/messages/'+currentChatUserId+'/read',{method:'POST'}); 
     }
     
     function showTyping() { 
@@ -937,12 +935,13 @@
         } 
     }
     
+   
     function sendTyping() { 
         if(!currentChatUserId) return;
         const now = Date.now();
         if(now - lastTypingSent < 2000) return;
         lastTypingSent = now;
-        fetch('/lecturer/messages/typing',{
+        fetch('/admin/messages/typing',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({recipientId:currentChatUserId})
@@ -983,12 +982,11 @@
     function closeMobileSidebar() { 
         document.getElementById('chatsSidebar')?.classList.remove('mobile-open'); 
     }
-    
     let fallbackInterval = null;
 
     function enablePollingFallback() {
         if (fallbackInterval) return;
-
+        
         console.log("Polling fallback enabled");
 
         fallbackInterval = setInterval(() => {
@@ -998,7 +996,6 @@
         }, 5000); // every 5 seconds
     }
 
-
     document.addEventListener('DOMContentLoaded', () => {
         connectSSE();
         scrollToBottom();
@@ -1007,47 +1004,26 @@
         document.getElementById('allChatsList').addEventListener('click', function(e) {
             const item = e.target.closest('[data-user-id]');
             if (item) {
-                window.location.href = '/lecturer/messages/' + item.getAttribute('data-user-id');
+                window.location.href = '/admin/messages/' + item.getAttribute('data-user-id');
             }
         });
         
         const sendBtn = document.getElementById('waSendBtn');
         const msgInput = document.getElementById('waMessageInput');
-
-        if (msgInput && sendBtn) {
-
-            const updateButton = () => {
-                sendBtn.disabled = !msgInput.value.trim();
-            };
-
-            msgInput.addEventListener('input', () => {
-                updateButton();
-                sendTyping();
-            });
-
-            updateButton(); // initialize
-
+        
+        if(sendBtn && msgInput && currentChatUserId){
             const sendMessage = () => {
-                if (!currentChatUserId) {
-                    console.log('No chat user ID');
-                    return;
-                }
-
                 const content = msgInput.value.trim();
-                    if (!content) {
-                        console.log('No content to send');
-                        return;
-                    }
-                console.log('Sending message to:', currentChatUserId, 'Content:', content);
-                
+                if(!content) return;
+                //sendBtn.disabled = true;
+
                 const formData = new URLSearchParams();
                 formData.append('recipientId', currentChatUserId);
                 formData.append('content', content);
                 formData.append('subject', 'Message');
-
-                fetch('/lecturer/messages/send', {
-                    method:'POST',
-                    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                fetch('/admin/messages/send', {
+                    method:'POST', 
+                    headers:{'Content-Type':'application/x-www-form-urlencoded'}, 
                     body:formData
                 }).then(res => {
                     if(res.redirected) { window.location.href = res.url; return; }
@@ -1056,18 +1032,19 @@
                         else refreshMessages();
                     }).catch(() => refreshMessages());
                     msgInput.value = '';
-                    updateButton();
-                });
+                    toggleSendBtn();
+                }).catch(err => console.log);
             };
-
-           // sendBtn.onclick = sendMessage;
-           sendBtn.addEventListener('click', sendMessage);
-
+            sendBtn.onclick = sendMessage;
             msgInput.addEventListener('keypress', e => {
-                if (e.key === 'Enter' && !sendBtn.disabled) {
+                if(e.key === 'Enter' && !e.shiftKey && !sendBtn.disabled) {
                     e.preventDefault();
                     sendMessage();
                 }
+            });
+            msgInput.addEventListener('input', () => {
+                toggleSendBtn();
+                sendTyping();
             });
         }
         

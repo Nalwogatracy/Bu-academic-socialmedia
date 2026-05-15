@@ -79,6 +79,8 @@ async function handleGet(request) {
 
     // For message/assignment pages: try network, cache response, serve cache on fail
     const isAppPage = url.pathname.startsWith('/student/') ||
+                      url.pathname.startsWith('/lecturer/') ||
+                      url.pathname.startsWith('/admin/') ||
                       url.pathname.startsWith('/user/');
 
     try {

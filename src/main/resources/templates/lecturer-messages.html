@@ -960,7 +960,20 @@
         document.getElementById('emojiPanelWA')?.classList.remove('show'); 
     }
 
-    function toggleSendBtn() { 
+    function toggleSendBtn() {
+    function addOptimisticMessage(content) {
+        const pane = document.getElementById('messagesPane');
+        if(!pane) return;
+        const div = document.createElement('div');
+        div.className = 'msg-row sent';
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        const safe = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        div.innerHTML = '<div class="bubble"><div class="message-text">' + safe + '</div><div class="message-meta-wa"><span>' + time + '</span><span class="double-tick" style="color:#94a3b8;"><i class="fas fa-clock"></i></span></div></div>';
+        pane.appendChild(div);
+        pane.scrollTop = pane.scrollHeight;
+    }
+ 
         const input = document.getElementById('waMessageInput'); 
         const btn = document.getElementById('waSendBtn'); 
         if(btn && input) btn.disabled = !input.value.trim(); 
@@ -1013,8 +1026,11 @@
                     headers:{'Content-Type':'application/x-www-form-urlencoded'}, 
                     body:formData
                 }).then(res => {
-                    if(res.redirected) window.location.href = res.url;
-                    else refreshMessages();
+                    if(res.redirected) { window.location.href = res.url; return; }
+                    res.json().then(data => {
+                        if(data.queued) addOptimisticMessage(content);
+                        else refreshMessages();
+                    }).catch(() => refreshMessages());
                     msgInput.value = '';
                     toggleSendBtn();
                 }).catch(err => console.log);

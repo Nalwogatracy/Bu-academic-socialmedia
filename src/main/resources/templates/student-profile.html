@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.fullName} + ' - Profile | Bugema Academic Connect'">Profile - Bugema Academic Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        body { overflow-x:hidden; background:#f0f2f5; }
+        .navbar { background:white; box-shadow:0 1px 3px rgba(0,0,0,0.08); position:fixed; width:100%; top:0; z-index:1000; border-bottom:1px solid #eef0f3; }
+        .nav-container { max-width:1400px; margin:0 auto; padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+        .nav-left { display:flex; align-items:center; gap:32px; }
+        .logo { font-size:1.4rem; font-weight:700; color:#0a66c2; display:flex; align-items:center; gap:8px; }
+        .logo i { font-size:1.6rem; color:#0a66c2; }
+        .logo span { background:linear-gradient(135deg,#0a66c2,#7b2eda); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .search-bar { position:relative; width:320px; }
+        .search-bar i { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#5e6775; font-size:0.9rem; }
+        .search-bar input { width:100%; padding:10px 16px 10px 44px; border:none; border-radius:24px; font-size:0.95rem; background:#eef3f8; transition:all 0.2s; }
+        .search-bar input:focus { outline:none; background:white; box-shadow:0 0 0 2px #0a66c2; }
+        .nav-right { display:flex; align-items:center; gap:8px; }
+        .nav-item { position:relative; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#5e6775; transition:all 0.2s; cursor:pointer; text-decoration:none; }
+        .nav-item:hover { background:#eef3f8; color:#0a66c2; }
+        .nav-item i { font-size:1.3rem; }
+        .badge { position:absolute; top:6px; right:8px; background:#cc1010; color:white; font-size:0.65rem; font-weight:600; min-width:18px; height:18px; border-radius:18px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid white; }
+        .user-profile { display:flex; align-items:center; gap:8px; padding:4px 8px 4px 4px; border-radius:40px; cursor:pointer; transition:all 0.2s; margin-left:8px; }
+        .user-profile:hover { background:#eef3f8; }
+        .user-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#0a66c2,#004182); display:flex; align-items:center; justify-content:center; color:white; font-weight:600; font-size:1rem; overflow:hidden; }
+        .user-avatar img { width:100%; height:100%; object-fit:cover; }
+        .logout-btn { border:none; background:transparent; color:#5e6775; font-size:0.9rem; display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:40px; cursor:pointer; transition:all 0.2s; text-decoration:none; }
+        .logout-btn:hover { background:#fee2e2; color:#cc1010; }
+
+        .main-container { max-width:1280px; margin:88px auto 30px; padding:0 24px; display:grid; grid-template-columns:260px minmax(0,1fr); gap:24px; }
+
+        .left-sidebar { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); height:fit-content; position:sticky; top:88px; overflow:hidden; border:1px solid #eef0f3; }
+        .profile-card { padding:16px; border-bottom:1px solid #eef0f3; background:linear-gradient(to bottom,#f7f9fc,white); }
+        .profile-cover { height:60px; background:linear-gradient(135deg,#0a66c2,#004182); margin:-16px -16px 0 -16px; margin-bottom:40px; }
+        .profile-avatar-large { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#0a66c2,#004182); display:flex; align-items:center; justify-content:center; color:white; font-size:2rem; font-weight:600; margin:-40px auto 12px; border:4px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.1); overflow:hidden; }
+        .profile-avatar-large img { width:100%; height:100%; object-fit:cover; }
+        .profile-name-large { font-weight:700; font-size:1.2rem; text-align:center; margin-bottom:4px; color:#1a2634; }
+        .profile-title-large { color:#5e6775; font-size:0.9rem; text-align:center; margin-bottom:16px; }
+        .profile-stats-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:12px 0; border-top:1px solid #eef0f3; }
+        .stat-cell { text-align:center; }
+        .stat-num { font-weight:700; font-size:1.1rem; color:#1a2634; }
+        .stat-label-small { font-size:0.75rem; color:#5e6775; text-transform:uppercase; letter-spacing:0.3px; }
+        .menu-section { padding:16px 0; }
+        .menu-item-prof { display:flex; align-items:center; gap:14px; padding:12px 20px; color:#1a2634; transition:all 0.2s; cursor:pointer; text-decoration:none; font-weight:500; font-size:0.95rem; border-left:3px solid transparent; }
+        .menu-item-prof:hover { background:#f7f9fc; color:#0a66c2; }
+        .menu-item-prof.active { background:#eef3f8; color:#0a66c2; border-left-color:#0a66c2; font-weight:600; }
+        .menu-item-prof i { font-size:1.2rem; width:24px; color:#5e6775; }
+        .menu-item-prof:hover i { color:#0a66c2; }
+        .menu-item-prof.active i { color:#0a66c2; }
+        .menu-badge { margin-left:auto; background:#eef3f8; color:#1a2634; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+
+        .main-content { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:24px; border:1px solid #eef0f3; min-width:0; }
+        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px; }
+        .page-header h1 { font-size:1.8rem; font-weight:700; color:#1a2634; }
+
+        .profile-header { display:flex; align-items:center; gap:24px; padding:24px; background:linear-gradient(135deg,#f7f9fc,white); border:1px solid #eef0f3; border-radius:12px; margin-bottom:24px; flex-wrap:wrap; }
+        .profile-avatar-big { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,#0a66c2,#004182); display:flex; align-items:center; justify-content:center; color:white; font-size:2.5rem; font-weight:600; flex-shrink:0; overflow:hidden; }
+        .profile-avatar-big img { width:100%; height:100%; object-fit:cover; }
+        .profile-info-big { flex:1; }
+        .profile-info-big h2 { font-size:1.6rem; font-weight:700; color:#1a2634; margin-bottom:4px; }
+        .profile-info-big .role-tag { display:inline-block; background:#eef3f8; color:#0a66c2; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:600; }
+        .profile-info-big p { color:#5e6775; margin-top:6px; }
+
+        .section-card { background:white; border:1px solid #eef0f3; border-radius:12px; padding:24px; margin-bottom:24px; }
+        .section-title { font-size:1.2rem; font-weight:700; color:#1a2634; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+        .section-title i { color:#0a66c2; }
+
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .form-grid .full-width { grid-column:1/-1; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:6px; color:#1a2634; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:12px; border:1px solid #e0e4e9; border-radius:8px; font-size:0.95rem; transition:all 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:#0a66c2; box-shadow:0 0 0 3px rgba(10,102,194,0.1); }
+        .form-group textarea { min-height:100px; resize:vertical; }
+        .form-group input:readonly { background:#f7f9fc; color:#8f9bab; cursor:not-allowed; }
+
+        .file-upload-area { border:2px dashed #e0e4e9; border-radius:8px; padding:24px; text-align:center; cursor:pointer; transition:all 0.2s; }
+        .file-upload-area:hover { border-color:#0a66c2; background:#f7f9fc; }
+        .file-upload-area i { font-size:2rem; color:#0a66c2; margin-bottom:8px; }
+        .file-upload-area p { color:#1a2634; margin-bottom:4px; }
+        .file-upload-area small { color:#5e6775; }
+
+        .btn { padding:10px 20px; border-radius:8px; border:none; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:8px; }
+        .btn-primary { background:#0a66c2; color:white; }
+        .btn-primary:hover { background:#004182; }
+
+        .flash { padding:12px 16px; border-radius:8px; margin-bottom:16px; font-weight:500; display:flex; align-items:center; gap:8px; }
+        .flash.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+        .flash.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+
+        .course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+        .course-card { background:white; border:1px solid #eef0f3; border-radius:12px; padding:20px; transition:all 0.2s; }
+        .course-card:hover { border-color:#0a66c2; box-shadow:0 4px 12px rgba(10,102,194,0.1); transform:translateY(-2px); }
+        .course-card-icon { width:48px; height:48px; border-radius:12px; background:#eef3f8; display:flex; align-items:center; justify-content:center; color:#0a66c2; font-size:1.3rem; margin-bottom:12px; }
+        .course-card h4 { font-weight:600; color:#1a2634; margin-bottom:4px; }
+        .course-card .course-code { font-size:0.85rem; color:#5e6775; }
+
+        .stat-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:16px; margin-bottom:24px; }
+        .stat-box { background:#f7f9fc; border-radius:12px; padding:16px; text-align:center; border:1px solid #eef0f3; }
+        .stat-box .stat-value { font-size:1.5rem; font-weight:700; color:#0a66c2; }
+        .stat-box .stat-label { font-size:0.8rem; color:#5e6775; margin-top:4px; text-transform:uppercase; letter-spacing:0.3px; }
+
+        .activity-item { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid #f0f2f5; }
+        .activity-item:last-child { border-bottom:none; }
+        .activity-icon { width:40px; height:40px; border-radius:10px; background:#eef3f8; display:flex; align-items:center; justify-content:center; color:#0a66c2; }
+        .activity-details { flex:1; }
+        .activity-text { font-weight:500; color:#1a2634; margin-bottom:4px; }
+        .activity-time { font-size:0.8rem; color:#8f9bab; }
+        .empty-state { text-align:center; padding:40px 20px; }
+        .empty-state i { font-size:2.5rem; color:#e0e4e9; margin-bottom:12px; display:block; }
+        .empty-state p { color:#5e6775; }
+
+        @media (max-width:1200px) { .main-container { grid-template-columns:240px 1fr; } }
+        @media (max-width:768px) { .main-container { grid-template-columns:1fr; } .left-sidebar { display:none; } .form-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Bugema Connect</span>
+                <span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Student</span>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search courses, materials...">
+            </div>
+        </div>
+        <div class="nav-right">
+            <a class="nav-item" th:href="@{/student/dashboard}" style="text-decoration:none;"><i class="fas fa-home"></i></a>
+            <a class="nav-item" th:href="@{/student/messages}" style="text-decoration:none;">
+                <i class="fas fa-comment"></i>
+                <span class="badge" th:text="${unreadMessages}">0</span>
+            </a>
+            <a class="nav-item" th:href="@{/student/notifications}" style="text-decoration:none;">
+                <i class="fas fa-bell"></i>
+                <span class="badge" th:text="${unreadNotifications}">0</span>
+            </a>
+            <div class="user-profile" onclick="location.href='/student/profile'">
+                <div class="user-avatar">
+                    <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}" alt="Profile">
+                    <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</span>
+                </div>
+            </div>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="main-container">
+    <div class="left-sidebar">
+        <div class="profile-card">
+            <div class="profile-cover"></div>
+            <div class="profile-avatar-large">
+                <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}" alt="Profile">
+                <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</span>
+            </div>
+            <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+            <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">Student | 23/BSE/BU/R/0001</div>
+            <div class="profile-stats-grid">
+                <div class="stat-cell">
+                    <div class="stat-num" th:text="${courses != null ? courses.size() : 0}">6</div>
+                    <div class="stat-label-small">Courses</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="stat-num" th:text="${unreadMessages}">0</div>
+                    <div class="stat-label-small">Messages</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="stat-num" th:text="${unreadNotifications}">0</div>
+                    <div class="stat-label-small">Alerts</div>
+                </div>
+            </div>
+        </div>
+        <div class="menu-section">
+            <a class="menu-item-prof" th:href="@{/student/dashboard}"><i class="fas fa-home"></i><span>Home Feed</span></a>
+            <a class="menu-item-prof" th:href="@{/student/courses}"><i class="fas fa-book-open"></i><span>My Courses</span></a>
+            <a class="menu-item-prof" th:href="@{/student/assignments}"><i class="fas fa-calendar-alt"></i><span>Assignments</span></a>
+            <a class="menu-item-prof" th:href="@{/student/discussions}"><i class="fas fa-comments"></i><span>Discussions</span></a>
+            <a class="menu-item-prof" th:href="@{/student/study-groups}"><i class="fas fa-users"></i><span>Study Groups</span></a>
+            <a class="menu-item-prof" th:href="@{/student/downloads}"><i class="fas fa-download"></i><span>Downloads</span></a>
+            <a class="menu-item-prof" th:href="@{/student/saved}"><i class="fas fa-bookmark"></i><span>Saved</span></a>
+            <a class="menu-item-prof" th:href="@{/student/progress}"><i class="fas fa-chart-line"></i><span>My Progress</span></a>
+            <a class="menu-item-prof active" th:href="@{/student/profile}"><i class="fas fa-user-cog"></i><span>Profile</span></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>My Profile</h1>
+        </div>
+
+        <div th:if="${success != null}" class="flash success"><i class="fas fa-check-circle"></i><span th:text="${success}">Profile updated</span></div>
+        <div th:if="${error != null}" class="flash error"><i class="fas fa-exclamation-circle"></i><span th:text="${error}">Error</span></div>
+
+        <div class="profile-header">
+            <div class="profile-avatar-big">
+                <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}" alt="Profile">
+                <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</span>
+            </div>
+            <div class="profile-info-big">
+                <h2 th:text="${user.fullName}">Nalwoga Tracy</h2>
+                <span class="role-tag"><i class="fas fa-user-graduate"></i> Student</span>
+                <p th:text="${user.universityId}">23/BSE/BU/R/0001</p>
+                <p th:if="${user.department != null}" th:text="${user.department}">Department of Computing</p>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-user-edit"></i> Edit Profile</div>
+            <form th:action="@{/student/profile/update}" method="post" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="fullName" th:value="${user.fullName}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" th:value="${user.email}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" name="phoneNumber" th:value="${user.phoneNumber}" placeholder="Enter phone number">
+                    </div>
+                    <div class="form-group">
+                        <label>University ID</label>
+                        <input type="text" th:value="${user.universityId}" readonly>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Bio</label>
+                        <textarea name="bio" rows="4" placeholder="Tell us about yourself...">${user.bio}</textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Profile Picture</label>
+                        <div class="file-upload-area" onclick="document.getElementById('profilePicInput').click()">
+                            <i class="fas fa-camera"></i>
+                            <p>Click to upload a profile picture</p>
+                            <small>PNG, JPG up to 5MB</small>
+                            <input type="file" id="profilePicInput" name="profilePicture" accept="image/*" style="display:none;" onchange="updateFileName(this)">
+                        </div>
+                        <div id="fileName" style="margin-top:8px; color:#0a66c2; font-size:0.85rem;"></div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            </form>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-book"></i> Enrolled Courses</div>
+            <div class="course-grid" th:if="${courses != null and !courses.isEmpty()}">
+                <div class="course-card" th:each="course : ${courses}">
+                    <div class="course-card-icon"><i class="fas fa-book-open"></i></div>
+                    <h4 th:text="${course.name}">Software Engineering</h4>
+                    <div class="course-code" th:text="${course.code}">ICT 3101</div>
+                </div>
+            </div>
+            <div class="empty-state" th:if="${courses == null or courses.isEmpty()}">
+                <i class="fas fa-book"></i>
+                <p>Not enrolled in any courses yet</p>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-chart-bar"></i> Activity Stats</div>
+            <div class="stat-bar">
+                <div class="stat-box">
+                    <div class="stat-value" th:text="${courses != null ? courses.size() : 0}">6</div>
+                    <div class="stat-label">Courses Enrolled</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" th:text="${#temporals.format(user.createdAt, 'MMM yyyy')}">Jan 2026</div>
+                    <div class="stat-label">Joined</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateFileName(input) {
+    const nameDiv = document.getElementById('fileName');
+    if (input.files && input.files[0]) {
+        nameDiv.textContent = input.files[0].name;
+    } else {
+        nameDiv.textContent = '';
+    }
+}
+</script>
+</body>
+</html>

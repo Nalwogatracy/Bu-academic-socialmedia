@@ -462,13 +462,17 @@
                 </div>
             </div>
             <div class="nav-right">
-                <div class="nav-item" onclick="window.location='/admin/dashboard'">
+                <a class="nav-item" th:href="@{/admin/dashboard}">
                     <i class="fas fa-home"></i>
-                </div>
-                <div class="nav-item">
+                </a>
+                <a class="nav-item" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">0</span>
+                </a>
+                <a class="nav-item" th:href="@{/admin/notifications}">
                     <i class="fas fa-bell"></i>
-                    <span class="badge">0</span>
-                </div>
+                    <span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">0</span>
+                </a>
                 <div class="user-profile">
                     <div class="user-avatar" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
                 </div>

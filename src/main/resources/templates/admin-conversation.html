@@ -667,13 +667,13 @@
 <nav class="navbar">
     <div class="nav-container">
         <div class="logo">
-            <i class="fas fa-chalkboard-user"></i>
-            <span>Bugema Connect | Lecturer</span>
+            <i class="fas fa-shield-alt"></i>
+            <span>Bugema Connect | Admin</span>
         </div>
         <div class="nav-right">
-            <a class="nav-item" th:href="@{/lecturer/dashboard}"><i class="fas fa-home"></i></a>
-            <a class="nav-item active" th:href="@{/lecturer/messages}"><i class="fas fa-comment"></i><span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">2</span></a>
-            <a class="nav-item" th:href="@{/lecturer/notifications}"><i class="fas fa-bell"></i><span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">3</span></a>
+            <a class="nav-item" th:href="@{/admin/dashboard}"><i class="fas fa-home"></i></a>
+            <a class="nav-item active" th:href="@{/admin/messages}"><i class="fas fa-comment"></i><span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">2</span></a>
+            <a class="nav-item" th:href="@{/admin/notifications}"><i class="fas fa-bell"></i><span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">3</span></a>
             <div class="user-avatar">
                 <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}" style="width:100%; height:100%; object-fit:cover;">
                 <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName,0,2)}">JD</span>
@@ -772,7 +772,7 @@
                         <h4 th:text="${other.fullName}">Contact Name</h4>
                         <div class="target-status">
                             <span th:text="${isOtherOnline} ? 'Online' : 'Offline'"></span>
-                            <span th:if="${other.role != null and other.role.name() == 'LECTURER'}"> • Lecturer</span>
+                            <span th:if="${other.role != null}"> • <span th:text="${other.role.name() == 'LECTURER' ? 'Lecturer' : 'Student'}">Student</span></span>
                         </div>
                     </div>
                 </div>
@@ -844,7 +844,7 @@
     <!-- Empty State -->
     <div class="chat-window" th:if="${other == null}" id="emptyChatState">
         <div class="empty-chat">
-            <i class="fas fa-chalkboard-user"></i>
+            <i class="fas fa-shield-alt"></i>
             <h3>Bugema Connect Messenger</h3>
             <p>Select a contact from the left panel to start chatting</p>
             <button onclick="document.getElementById('chatsSidebar')?.classList.add('mobile-open')">View Contacts</button>
@@ -906,12 +906,12 @@
 
 
     function openChatWindow(userId) { 
-        window.location.href = '/lecturer/messages/' + userId; 
+        window.location.href = '/admin/messages/' + userId; 
     }
     
     function refreshMessages() { 
         if(!currentChatUserId) return;
-        fetch('/lecturer/messages/'+currentChatUserId+'/refresh')
+        fetch('/admin/messages/'+currentChatUserId+'/refresh')
             .then(r=>r.text())
             .then(html=>{
                 document.getElementById('messagesPane').innerHTML = html;
@@ -925,7 +925,7 @@
     }
     
     function markRead() { 
-        if(currentChatUserId) fetch('/lecturer/messages/'+currentChatUserId+'/read',{method:'POST'}); 
+        if(currentChatUserId) fetch('/admin/messages/'+currentChatUserId+'/read',{method:'POST'}); 
     }
     
     function showTyping() { 
@@ -942,7 +942,7 @@
         const now = Date.now();
         if(now - lastTypingSent < 2000) return;
         lastTypingSent = now;
-        fetch('/lecturer/messages/typing',{
+        fetch('/admin/messages/typing',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({recipientId:currentChatUserId})
@@ -1007,7 +1007,7 @@
         document.getElementById('allChatsList').addEventListener('click', function(e) {
             const item = e.target.closest('[data-user-id]');
             if (item) {
-                window.location.href = '/lecturer/messages/' + item.getAttribute('data-user-id');
+                window.location.href = '/admin/messages/' + item.getAttribute('data-user-id');
             }
         });
         
@@ -1045,7 +1045,7 @@
                 formData.append('content', content);
                 formData.append('subject', 'Message');
 
-                fetch('/lecturer/messages/send', {
+                fetch('/admin/messages/send', {
                     method:'POST',
                     headers:{'Content-Type':'application/x-www-form-urlencoded'},
                     body:formData

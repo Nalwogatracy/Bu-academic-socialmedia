@@ -270,6 +270,13 @@ public class AssignmentService {
             .map(Submission::getGraded)
             .orElse(false);
     }
+    public List<Submission> getSubmissionsForStudent(Course course, User student) {
+        return submissionRepository.findByAssignmentCourseIn(List.of(course))
+            .stream()
+            .filter(s -> s.getStudent().getId().equals(student.getId()))
+            .collect(Collectors.toList());
+    }
+
     public void saveSubmission(Submission submission) {
         submissionRepository.save(submission);
     }

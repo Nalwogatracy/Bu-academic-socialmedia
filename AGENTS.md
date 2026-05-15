@@ -42,12 +42,43 @@ No linter, formatter, or typecheck config exists.
 
 ## Routes
 
-| Prefix | Role |
+| Prefix / Path | Role |
 |---|---|
 | `/admin/**` | ADMIN |
 | `/lecturer/**` | LECTURER |
 | `/student/**` | STUDENT |
-| `/login`, `/register`, `/forgot-password` | public |
+| `/login`, `/register`, `/forgot-password`, `/reset-password` | public |
+| `/` | redirects to `/login` |
+
+## Password reset flow
+
+1. User enters email on `POST /forgot-password` → generates UUID token (stored in-memory `PasswordResetTokenService`, 1hr expiry) → sends email with `http://host:port/reset-password?token=...` link
+2. `GET /reset-password?token=...` validates token → renders `reset-password.html`
+3. `POST /reset-password` validates token, checks passwords match (min 6 chars) → updates password via `UserService.updatePassword()` → redirects to login
+- **CSRF is disabled** (`csrf.disable()`) — forms need no CSRF token
+- **Admin-initiated reset**: `POST /admin/users/{id}/reset-password` generates temp password and emails it via `UserService.sendPasswordResetEmail()`
+
+## Message patterns (all 3 roles)
+
+Each role has the same message endpoints (replace `{role}` with `admin`, `lecturer`, or `student`):
+
+| Endpoint | Template |
+|---|---|
+| `GET /{role}/messages` | `{role}-messages` (sidebar + empty chat) |
+| `GET /{role}/messages/{userId}` | `{role}-conversation` (sidebar + active chat) |
+| `POST /{role}/messages/send` | redirects to conversation |
+| `GET /{role}/messages/{id}/refresh` | returns `fragments/message-list :: messages` |
+| `POST /{role}/messages/{id}/read` | marks conversation read |
+| `POST /{role}/messages/typing` | SSE typing indicator |
+
+Key model attributes all 3 message pages load: `conversations`, `onlineUserIds`, `unreadPerUser`, `allUsersExceptCurrent`, `other`, `isOtherOnline`.
+
+## Error handling
+
+- Custom error pages: `error/404.html`, `error/500.html`
+- `GlobalExceptionHandler` in `config/` catches unhandled exceptions
+- `server.error.whitelabel.enabled=false` (in `application.properties`)
+- Stack traces are NOT exposed to users (`include-stacktrace` removed from properties)
 
 ## Testing
 

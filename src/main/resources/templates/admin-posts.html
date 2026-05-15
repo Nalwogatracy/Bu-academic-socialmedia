@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Moderation - Bugema Academic Connect</title>
+                <a class="menu-item-prof" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Messages</span>
+                </a>
     
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" th:href="@{/css/all.min.css}">
@@ -741,13 +745,17 @@
             </div>
             
             <div class="nav-right">
-                <div class="nav-item">
+                <a class="nav-item" th:href="@{/admin/dashboard}">
                     <i class="fas fa-home"></i>
-                </div>
-                <div class="nav-item">
+                </a>
+                <a class="nav-item" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">0</span>
+                </a>
+                <a class="nav-item" th:href="@{/admin/notifications}">
                     <i class="fas fa-bell"></i>
-                    <span class="badge" th:text="${notifications}">5</span>
-                </div>
+                    <span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">5</span>
+                </a>
                 <div class="user-profile">
                     <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
                 </div>
@@ -798,6 +806,10 @@
                 <a class="menu-item-prof active" th:href="@{/admin/posts}">
                     <i class="fas fa-newspaper"></i>
                     <span>Content Moderation</span>
+                <a class="menu-item-prof" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Messages</span>
+                </a>
                     <span class="menu-badge danger" th:text="${pendingReports}">5</span>
                 </a>
                 <a class="menu-item-prof" th:href="@{/admin/analytics}">
@@ -826,6 +838,10 @@
                 <h1>
                     <i class="fas fa-newspaper"></i>
                     Content Moderation
+                <a class="menu-item-prof" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Messages</span>
+                </a>
                 </h1>
                 <div class="header-actions">
                     <button class="btn btn-outline" onclick="openModal('announcementModal')">

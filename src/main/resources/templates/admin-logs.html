@@ -460,13 +460,17 @@
             </div>
             
             <div class="nav-right">
-                <div class="nav-item">
+                <a class="nav-item" th:href="@{/admin/dashboard}">
                     <i class="fas fa-home"></i>
-                </div>
-                <div class="nav-item">
+                </a>
+                <a class="nav-item" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment"></i>
+                    <span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">0</span>
+                </a>
+                <a class="nav-item" th:href="@{/admin/notifications}">
                     <i class="fas fa-bell"></i>
-                    <span class="badge" th:text="${notifications}">1</span>
-                </div>
+                    <span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">1</span>
+                </a>
                 <div class="user-profile">
                     <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
                 </div>
@@ -517,6 +521,10 @@
                 <a class="menu-item-prof" th:href="@{/admin/posts}">
                     <i class="fas fa-newspaper"></i>
                     <span>Content Moderation</span>
+                <a class="menu-item-prof" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Messages</span>
+                </a>
                 </a>
                 <a class="menu-item-prof" th:href="@{/admin/analytics}">
                     <i class="fas fa-chart-bar"></i>

@@ -4,18 +4,22 @@ import com.finalyearproject.model.Course;
 import com.finalyearproject.model.Post;
 import com.finalyearproject.model.User;
 import com.finalyearproject.service.CourseService;
+import com.finalyearproject.service.MessageService;
+import com.finalyearproject.service.NotificationService;
 import com.finalyearproject.service.PostService;
 import com.finalyearproject.service.SystemSettingsService;
 import com.finalyearproject.service.UserService;
+import com.finalyearproject.service.UserStatusService;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +30,10 @@ public class AdminController {
     @Autowired private CourseService courseService;
     @Autowired private PostService postService;
     @Autowired private SystemSettingsService systemSettingsService;
+    @Autowired private MessageService messageService;
+    @Autowired private NotificationService notificationService;
+    @Autowired private UserStatusService userStatusService;
+    @Autowired private SseController sseController;
 
     private void addSidebarData(Model model) {
         List<User> all = userService.getAllUsers();
@@ -264,6 +272,128 @@ public class AdminController {
     public String deleteCourse(@PathVariable Long id) {
         courseService.deleteCourse(id);
         return "redirect:/admin/courses";
+    }
+
+    // ═══════════════ MESSAGES ═══════════════
+    @GetMapping("/admin/messages")
+    @Transactional(readOnly = true)
+    public String messages(Model model, Authentication authentication) {
+        User admin = userService.findByEmail(authentication.getName());
+
+        Set<Long> onlineUserIds = messageService.getConversationsForUser(admin)
+            .keySet().stream()
+            .filter(u -> userStatusService.isOnline(u))
+            .map(User::getId)
+            .collect(Collectors.toSet());
+
+        Map<Long, Integer> unreadPerUser = new HashMap<>();
+        messageService.getConversationsForUser(admin).keySet().forEach(u ->
+            unreadPerUser.put(u.getId(), messageService.countUnreadFromUser(u, admin))
+        );
+
+        model.addAttribute("onlineUserIds", onlineUserIds);
+        model.addAttribute("unreadPerUser", unreadPerUser);
+        model.addAttribute("user", admin);
+        model.addAttribute("other", null);
+        model.addAttribute("conversations", messageService.getConversationsForUser(admin));
+        model.addAttribute("unreadMessages", messageService.countUnread(admin));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(admin));
+        model.addAttribute("allUsersExceptCurrent", userService.getAllUsersExcept(admin));
+
+        return "admin-messages";
+    }
+
+    @GetMapping("/admin/messages/{userId}")
+    @Transactional
+    public String conversation(@PathVariable Long userId, Model model,
+                               Authentication authentication) {
+        User admin = userService.findByEmail(authentication.getName());
+        User other = userService.getUserById(userId);
+
+        messageService.markConversationAsRead(admin, other);
+
+        Set<Long> onlineUserIds = messageService.getConversationsForUser(admin)
+            .keySet().stream()
+            .filter(u -> userStatusService.isOnline(u))
+            .map(User::getId)
+            .collect(Collectors.toSet());
+
+        Map<Long, Integer> unreadPerUser = new HashMap<>();
+        messageService.getConversationsForUser(admin).keySet().forEach(u ->
+            unreadPerUser.put(u.getId(), messageService.countUnreadFromUser(u, admin))
+        );
+
+        model.addAttribute("onlineUserIds", onlineUserIds);
+        model.addAttribute("conversations", messageService.getConversationsForUser(admin));
+        model.addAttribute("unreadPerUser", unreadPerUser);
+        model.addAttribute("user", admin);
+        model.addAttribute("other", other);
+        model.addAttribute("messages", messageService.getConversation(admin, other));
+        model.addAttribute("unreadMessages", messageService.countUnread(admin));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(admin));
+        model.addAttribute("isOtherOnline", userStatusService.isOnline(other));
+        model.addAttribute("allUsersExceptCurrent", userService.getAllUsersExcept(admin));
+
+        return "admin-conversation";
+    }
+
+    @GetMapping("/admin/messages/{id}/refresh")
+    @ResponseBody
+    public String refresh(@PathVariable Long id, Authentication auth, Model model) {
+        User admin = userService.findByEmail(auth.getName());
+        User other = userService.getUserById(id);
+        model.addAttribute("messages", messageService.getConversation(admin, other));
+        return "fragments/message-list :: messages";
+    }
+
+    @PostMapping("/admin/messages/{id}/read")
+    @ResponseBody
+    public void markRead(@PathVariable Long id, Authentication authentication) {
+        User admin = userService.findByEmail(authentication.getName());
+        User other = userService.getUserById(id);
+        messageService.markConversationAsRead(admin, other);
+    }
+
+    @PostMapping("/admin/messages/typing")
+    @ResponseBody
+    public void typing(@RequestBody Map<String, Object> body,
+                       Authentication authentication) {
+        User admin = userService.findByEmail(authentication.getName());
+        Long recipientId = Long.valueOf(body.get("recipientId").toString());
+        sseController.pushTyping(recipientId, admin.getId());
+    }
+
+    @PostMapping("/admin/messages/send")
+    public String sendMessage(Authentication authentication,
+                              @RequestParam Long recipientId,
+                              @RequestParam(required = false, defaultValue = "Message") String subject,
+                              @RequestParam String content,
+                              RedirectAttributes redirectAttributes) {
+        User admin = userService.findByEmail(authentication.getName());
+        User recipient = userService.getUserById(recipientId);
+        messageService.sendMessage(admin, recipient, content, subject);
+        redirectAttributes.addFlashAttribute("success", "Message sent successfully");
+        return "redirect:/admin/messages/" + recipientId;
+    }
+
+    // ═══════════════ NOTIFICATIONS ═══════════════
+    @GetMapping("/admin/notifications")
+    @Transactional(readOnly = true)
+    public String notifications(Model model, Authentication authentication) {
+        User admin = userService.findByEmail(authentication.getName());
+        model.addAttribute("notifications", notificationService.getNotificationsForUser(admin));
+        model.addAttribute("user", admin);
+        model.addAttribute("unreadMessages", messageService.countUnread(admin));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(admin));
+        return "admin-notifications";
+    }
+
+    @PostMapping("/admin/notifications/mark-read")
+    @ResponseBody
+    public String markNotificationsRead(Authentication authentication) {
+        User admin = userService.findByEmail(authentication.getName());
+        notificationService.markAllAsRead(admin);
+        return "ok";
     }
 
     // ═══════════════ USER CRUD ═══════════════

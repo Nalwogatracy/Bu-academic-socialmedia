@@ -17,8 +17,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -390,6 +392,54 @@ public class StudentController {
             .limit(5)
             .collect(Collectors.toList()));
         return "dashboard-saved";
+    }
+
+    // Grades
+    @GetMapping("/grades")
+    @Transactional(readOnly = true)
+    public String grades(Model model, Authentication authentication) {
+        User student = userService.findByEmail(authentication.getName());
+        List<Course> courses = student.getCourses();
+
+        Map<Course, List<Submission>> courseSubmissions = new LinkedHashMap<>();
+        Map<Course, Double> courseAverages = new LinkedHashMap<>();
+        int totalGraded = 0;
+        int totalUngraded = 0;
+
+        for (Course course : courses) {
+            List<Submission> submissions = assignmentService.getSubmissionsForStudent(course, student);
+            courseSubmissions.put(course, submissions);
+            courseAverages.put(course, assignmentService.getAverageScoreForCourse(course));
+
+            for (Submission s : submissions) {
+                if (s.getGraded()) totalGraded++;
+                else totalUngraded++;
+            }
+        }
+
+        double overallAverage = courseAverages.values().stream()
+            .filter(Objects::nonNull)
+            .mapToDouble(Double::doubleValue)
+            .average()
+            .orElse(0.0);
+
+        model.addAttribute("user", student);
+        model.addAttribute("courses", courses);
+        model.addAttribute("courseSubmissions", courseSubmissions);
+        model.addAttribute("courseAverages", courseAverages);
+        model.addAttribute("overallAverage", overallAverage);
+        model.addAttribute("totalGraded", totalGraded);
+        model.addAttribute("totalUngraded", totalUngraded);
+        model.addAttribute("unreadMessages", messageService.countUnread(student));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(student));
+        model.addAttribute("coursesCount", courses.size());
+        model.addAttribute("materialsCount", materialService.countMaterialsForUser(student));
+        model.addAttribute("engagementPercentage", (int) userService.calculateEngagement(student) + "%");
+        model.addAttribute("pendingAssignments", assignmentService.countPending(student));
+        model.addAttribute("savedItems", savedService != null ? savedService.countSaved(student) : 0);
+        model.addAttribute("deadlines", deadlineService.getUpcomingDeadlinesForUser(student));
+
+        return "student-grades";
     }
 
     // Progress
@@ -829,6 +879,86 @@ public class StudentController {
         notificationService.markAllAsRead(user);
         return Map.of("success", true);
     }
+    // ═══════════════ COURSE ENROLLMENT ═══════════════
+
+    @GetMapping("/courses/enroll")
+    @Transactional(readOnly = true)
+    public String enrollCourses(Authentication authentication, Model model) {
+        String email = authentication.getName();
+        User user = userService.findByEmail(email);
+
+        List<Course> allCourses = courseService.getAllCourses();
+        List<Course> enrolledCourses = courseService.getCoursesForUser(user);
+        Set<Long> enrolledIds = enrolledCourses.stream().map(Course::getId).collect(Collectors.toSet());
+        List<Course> availableCourses = allCourses.stream()
+            .filter(c -> !enrolledIds.contains(c.getId()))
+            .collect(Collectors.toList());
+
+        model.addAttribute("user", user);
+        model.addAttribute("availableCourses", availableCourses);
+        model.addAttribute("enrolledCourses", enrolledCourses);
+        model.addAttribute("unreadMessages", messageService.countUnread(user));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(user));
+        model.addAttribute("pendingAssignments", assignmentService.countPending(user));
+        model.addAttribute("savedItems", savedService != null ? savedService.countSaved(user) : 0);
+
+        return "student-enroll-courses";
+    }
+
+    @PostMapping("/courses/{id}/enroll")
+    @Transactional
+    public String enrollCourse(@PathVariable Long id,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+        String email = authentication.getName();
+        User user = userService.findByEmail(email);
+        Course course = courseService.getCourseById(id);
+
+        if (course == null) {
+            redirectAttributes.addFlashAttribute("error", "Course not found.");
+            return "redirect:/student/courses/enroll";
+        }
+
+        if (user.getCourses() != null && user.getCourses().contains(course)) {
+            redirectAttributes.addFlashAttribute("error", "You are already enrolled in this course.");
+            return "redirect:/student/courses/enroll";
+        }
+
+        if (user.getCourses() == null) {
+            user.setCourses(new ArrayList<>());
+        }
+        user.getCourses().add(course);
+        course.getStudents().add(user);
+        userService.saveUser(user);
+
+        redirectAttributes.addFlashAttribute("success", "Successfully enrolled in " + course.getName());
+        return "redirect:/student/courses/enroll";
+    }
+
+    @PostMapping("/courses/{id}/drop")
+    @Transactional
+    public String dropCourse(@PathVariable Long id,
+                              Authentication authentication,
+                              RedirectAttributes redirectAttributes) {
+        String email = authentication.getName();
+        User user = userService.findByEmail(email);
+        Course course = courseService.getCourseById(id);
+
+        if (course == null) {
+            redirectAttributes.addFlashAttribute("error", "Course not found.");
+            return "redirect:/student/courses/enroll";
+        }
+
+        if (user.getCourses() != null) {
+            user.getCourses().remove(course);
+            course.getStudents().remove(user);
+            userService.saveUser(user);
+        }
+
+        redirectAttributes.addFlashAttribute("success", "Successfully dropped " + course.getName());
+        return "redirect:/student/courses/enroll";
+    }
+
     @GetMapping("/badges")
     @ResponseBody
     @Transactional(readOnly = true)
@@ -863,6 +993,47 @@ public class StudentController {
             "totalMaterials",    materialService.countMaterialsForUser(user),
             "totalCourses",      courses.size()
         );
+    }
+
+    // ── STUDENT PROFILE ──────────────────────────────────────────────────────────
+
+    @GetMapping("/profile")
+    public String profile(Model model, Authentication authentication) {
+        User student = userService.findByEmail(authentication.getName());
+
+        model.addAttribute("user", student);
+        model.addAttribute("unreadMessages", messageService.countUnread(student));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(student));
+        model.addAttribute("courses", student.getCourses());
+
+        return "student-profile";
+    }
+
+    @PostMapping("/profile/update")
+    public String updateProfile(Authentication authentication,
+                                @RequestParam String fullName,
+                                @RequestParam(required = false) String phoneNumber,
+                                @RequestParam(required = false) String bio,
+                                @RequestParam(required = false) MultipartFile profilePicture,
+                                RedirectAttributes redirectAttributes) {
+        User student = userService.findByEmail(authentication.getName());
+
+        student.setFullName(fullName);
+        student.setPhoneNumber(phoneNumber);
+        student.setBio(bio);
+
+        if (profilePicture != null && !profilePicture.isEmpty()) {
+            try {
+                student.setProfilePicture(profilePicture.getBytes());
+            } catch (IOException e) {
+                redirectAttributes.addFlashAttribute("error", "Failed to upload profile picture");
+            }
+        }
+
+        userService.saveUser(student);
+        redirectAttributes.addFlashAttribute("success", "Profile updated successfully");
+
+        return "redirect:/student/profile";
     }
     
 }

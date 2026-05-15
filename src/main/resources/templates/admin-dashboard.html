@@ -1038,23 +1038,23 @@
             </div>
             
             <div class="nav-right">
-                <div class="nav-item">
+                <a class="nav-item" th:href="@{/admin/dashboard}">
                     <i class="fas fa-home"></i>
-                </div>
+                </a>
                 
-                <div class="nav-item">
+                <a class="nav-item" th:href="@{/admin/analytics}">
                     <i class="fas fa-chart-line"></i>
-                </div>
+                </a>
                 
-                <div class="nav-item">
+                <a class="nav-item" th:href="@{/admin/messages}">
                     <i class="fas fa-comment"></i>
-                    <span class="badge" th:text="${unreadNotifications}">3</span>
-                </div>
+                    <span class="badge" th:text="${unreadMessages}">3</span>
+                </a>
                 
-                <div class="nav-item">
+                <a class="nav-item" th:href="@{/admin/notifications}">
                     <i class="fas fa-bell"></i>
-                    <span class="badge" th:text="${systemAlerts != null ? systemAlerts.size() : 2}">2</span>
-                </div>
+                    <span class="badge" th:text="${unreadNotifications}">2</span>
+                </a>
                 
                 <div class="user-profile">
                     <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
@@ -1109,6 +1109,10 @@
                 <a class="menu-item-prof" th:href="@{/admin/posts}">
                     <i class="fas fa-newspaper"></i>
                     <span>Content Moderation</span>
+                <a class="menu-item-prof" th:href="@{/admin/messages}">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Messages</span>
+                </a>
                     <span class="menu-badge danger">5</span>
                 </a>
                 <a class="menu-item-prof" th:href="@{/admin/analytics}">

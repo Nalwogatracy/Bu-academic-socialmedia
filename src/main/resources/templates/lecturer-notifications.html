@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Notifications | Bugema Academic Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        body { background:#f0f2f5; }
+        .navbar {
+            background:white; position:fixed; width:100%; top:0; z-index:1000;
+            border-bottom:1px solid #eef0f3; box-shadow:0 1px 3px rgba(0,0,0,0.08);
+        }
+        .nav-container {
+            max-width:1400px; margin:0 auto; padding:0 24px;
+            height:64px; display:flex; align-items:center; justify-content:space-between;
+        }
+        .logo { font-size:1.4rem; font-weight:700; color:#0a66c2; display:flex; align-items:center; gap:8px; }
+        .nav-right { display:flex; align-items:center; gap:8px; }
+        .nav-item { position:relative; width:48px; height:48px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; color:#5e6775;
+            text-decoration:none; transition:all 0.2s; }
+        .nav-item:hover { background:#eef3f8; color:#0a66c2; }
+        .nav-item.active { background:#eef3f8; color:#0a66c2; }
+        .badge { position:absolute; top:6px; right:8px; background:#cc1010; color:white;
+            font-size:0.65rem; font-weight:600; min-width:18px; height:18px;
+            border-radius:18px; display:flex; align-items:center; justify-content:center;
+            padding:0 4px; border:2px solid white; }
+        .user-avatar { width:40px; height:40px; border-radius:50%;
+            background:linear-gradient(135deg,#0a66c2,#004182);
+            display:flex; align-items:center; justify-content:center;
+            color:white; font-weight:600; }
+        .logout-btn { border:none; background:transparent; color:#5e6775;
+            padding:8px 12px; border-radius:40px; cursor:pointer; }
+        .logout-btn:hover { background:#fee2e2; color:#cc1010; }
+        .main-container { max-width:700px; margin:88px auto 30px; padding:0 24px; }
+        .page-header {
+            background:white; border-radius:12px; padding:20px 24px;
+            margin-bottom:16px; border:1px solid #eef0f3;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .page-header h1 { font-size:1.5rem; font-weight:700; color:#1a2634; }
+        .mark-all-btn {
+            background:none; border:1px solid #e0e4e9; color:#5e6775;
+            padding:8px 16px; border-radius:20px; cursor:pointer;
+            font-size:0.85rem; font-weight:600; transition:all 0.2s;
+        }
+        .mark-all-btn:hover { border-color:#0a66c2; color:#0a66c2; }
+        .notification-item {
+            background:white; border-radius:12px; padding:16px 20px;
+            margin-bottom:10px; border:1px solid #eef0f3;
+            display:flex; align-items:flex-start; gap:14px; transition:all 0.2s;
+        }
+        .notification-item:hover { box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .notification-item.unread {
+            border-left:4px solid #0a66c2; background:#f7fbff;
+        }
+        .notif-icon {
+            width:44px; height:44px; border-radius:50%; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+            background:#eef3f8; color:#0a66c2;
+        }
+        .notif-body { flex:1; }
+        .notif-sender {
+            font-weight:600; color:#1a2634; margin-bottom:4px; font-size:0.95rem;
+        }
+        .notif-message { color:#5e6775; font-size:0.9rem; line-height:1.5; margin-bottom:6px; }
+        .notif-time { font-size:0.8rem; color:#8f9bab; }
+        .unread-dot {
+            width:10px; height:10px; background:#0a66c2; border-radius:50%;
+            flex-shrink:0; margin-top:8px;
+        }
+        .empty-state {
+            text-align:center; padding:60px 20px; background:white;
+            border-radius:12px; border:1px solid #eef0f3;
+        }
+        .empty-state i { font-size:3rem; color:#e0e4e9; margin-bottom:16px; display:block; }
+        .empty-state h3 { color:#1a2634; margin-bottom:8px; }
+        .empty-state p { color:#5e6775; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span></div>
+        <div class="nav-right">
+            <a class="nav-item" th:href="@{/lecturer/dashboard}"><i class="fas fa-home"></i></a>
+            <a class="nav-item" th:href="@{/lecturer/messages}">
+                <i class="fas fa-comment"></i>
+                <span class="badge" th:if="${unreadMessages != null and unreadMessages > 0}" th:text="${unreadMessages}">3</span>
+            </a>
+            <a class="nav-item active" th:href="@{/lecturer/notifications}">
+                <i class="fas fa-bell"></i>
+            </a>
+            <div class="user-avatar" th:text="${#strings.substring(user.fullName,0,2)}">NT</div>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="main-container">
+    <div class="page-header">
+        <h1><i class="fas fa-bell" style="color:#0a66c2; margin-right:8px;"></i> Notifications</h1>
+        <button class="mark-all-btn" onclick="markAllRead()">
+            <i class="fas fa-check-double"></i> Mark all as read
+        </button>
+    </div>
+
+    <div th:if="${notifications != null and !notifications.isEmpty()}">
+        <div th:each="notif : ${notifications}"
+             class="notification-item"
+             th:classappend="${!notif.read} ? ' unread' : ''">
+
+            <div class="notif-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+
+            <div class="notif-body">
+                <div class="notif-sender"
+                     th:if="${notif.sender != null}"
+                     th:text="${notif.sender.fullName}">Sender Name</div>
+                <div class="notif-message" th:text="${notif.message}">Notification message.</div>
+                <div class="notif-time"
+                     th:text="${notif.createdAt != null ?
+                         #temporals.format(notif.createdAt, 'MMM dd, yyyy HH:mm') : ''}">
+                    Mar 19, 2026 14:30
+                </div>
+            </div>
+
+            <div class="unread-dot" th:if="${!notif.read}"></div>
+        </div>
+    </div>
+
+    <div class="empty-state" th:if="${notifications == null or notifications.isEmpty()}">
+        <i class="fas fa-bell-slash"></i>
+        <h3>No notifications yet</h3>
+        <p>You'll be notified about student submissions, questions, and updates here</p>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+        <a th:href="@{/lecturer/dashboard}"
+           style="color:#0a66c2; text-decoration:none; font-weight:600;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+function markAllRead() {
+    fetch('/lecturer/notifications/mark-read', {
+        method: 'POST'
+    }).then(() => {
+        document.querySelectorAll('.notification-item.unread').forEach(el => {
+            el.classList.remove('unread');
+            const dot = el.querySelector('.unread-dot');
+            if (dot) dot.remove();
+        });
+    });
+}
+</script>
+</body>
+</html>

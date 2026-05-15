@@ -1,5 +1,6 @@
 package com.finalyearproject.service;
 
+import com.finalyearproject.config.EmailService;
 import com.finalyearproject.model.Role.RoleType;
 import com.finalyearproject.model.User;
 import com.finalyearproject.model.UserStatus;
@@ -22,11 +23,12 @@ public class UserService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
 
-    public UserService(UserRepository userRepository ) {
+    @Autowired
+    private EmailService emailService;
+
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        
     }
 
     @Transactional(readOnly = true)
@@ -137,14 +139,13 @@ public class UserService {
     }
 
     public void updatePassword(User user, String rawPassword) {
-        // Hash password before saving
         user.setPassword(passwordEncoder.encode(rawPassword));
-        createUser(user); // or updateUser(user)
+        userRepository.save(user);
     }
 
     public void sendPasswordResetEmail(User user, String tempPassword) {
-        // Optional: implement email sending here
-        // e.g., emailService.send(user.getEmail(), "Your new password", "Password: " + tempPassword);
+        emailService.sendEmail(user.getEmail(), "Password Reset",
+                "Your temporary password is: " + tempPassword + "\n\nPlease login and change your password.");
     }
     public User saveUser(User user) {
         return userRepository.save(user);

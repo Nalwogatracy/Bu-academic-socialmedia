@@ -54,6 +54,8 @@ public class LecturerController {
     private CourseEnrollmentRepository enrollmentRepository;
     @Autowired 
     private AttachmentRepository attachmentRepository;
+    @Autowired
+    private AttendanceService attendanceService;
 
     public LecturerController(UserService userService,
                                CourseService courseService,
@@ -1039,6 +1041,7 @@ public class LecturerController {
     // ==================== MESSAGES & NOTIFICATIONS ====================
 
     @GetMapping("/messages")
+    @Transactional
     public String messages(Model model, Authentication authentication) {
         User lecturer = userService.findByEmail(authentication.getName());
 
@@ -1406,8 +1409,57 @@ public class LecturerController {
         return "lecturer-create-assignment";
     }
     @GetMapping("/attendance/take")
-    public String takeAttendancePage() {
+    public String takeAttendance(Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        List<Course> courses = courseService.getCoursesForLecturer(lecturer);
+
+        model.addAttribute("user", lecturer);
+        model.addAttribute("courses", courses);
+        model.addAttribute("today", LocalDate.now());
+        model.addAttribute("recentAttendance", new ArrayList<>());
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+
         return "lecturer-attendance";
+    }
+
+    @PostMapping("/attendance/save")
+    @ResponseBody
+    public String saveAttendance(@RequestBody Map<String, Object> body,
+                                 Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+
+        Long courseId = Long.valueOf(body.get("courseId").toString());
+        String dateStr = (String) body.get("date");
+        LocalDate date = LocalDate.parse(dateStr);
+
+        Course course = courseService.getCourseById(courseId);
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> records = (List<Map<String, Object>>) body.get("records");
+
+        for (Map<String, Object> record : records) {
+            Long studentId = Long.valueOf(record.get("studentId").toString());
+            String status = (String) record.get("status");
+            User student = userService.getUserById(studentId);
+            attendanceService.markAttendance(student, course, lecturer, status, date);
+        }
+
+        return "{\"success\":true}";
+    }
+
+    @GetMapping("/courses/{courseId}/students")
+    @ResponseBody
+    public List<Map<String, Object>> getCourseStudents(@PathVariable Long courseId) {
+        Course course = courseService.getCourseById(courseId);
+        return course.getStudents().stream().map(s -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", s.getId());
+            m.put("fullName", s.getFullName());
+            m.put("universityId", s.getUniversityId());
+            m.put("email", s.getEmail());
+            return m;
+        }).collect(Collectors.toList());
     }
    /* @PostMapping("/materials/upload")
     public String uploadCourseMaterial(
@@ -1461,7 +1513,7 @@ public class LecturerController {
 
         userService.saveUser(user);
 
-        return "redirect:/student/profile";
+        return "redirect:/lecturer/profile";
     }
     @GetMapping("/user/{id}/profile-picture")
     @ResponseBody
