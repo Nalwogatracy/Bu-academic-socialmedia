@@ -746,6 +746,9 @@ public class StudentController {
         model.addAttribute("unreadMessages", messageService.countUnread(user));
         model.addAttribute("unreadNotifications", notificationService.countUnread(user));
         model.addAttribute("allUsers", coursemates);
+        
+        model.addAttribute("allUsersExceptCurrent", 
+        userService.getAllUsersExcept(user));
 
         return "student-messages";
     }
@@ -771,6 +774,7 @@ public class StudentController {
         );
 
         model.addAttribute("onlineUserIds", onlineUserIds);
+        model.addAttribute("conversations", messageService.getConversationsForUser(user));
         model.addAttribute("unreadPerUser", unreadPerUser);
         model.addAttribute("user", user);
         model.addAttribute("other", other);
@@ -778,6 +782,8 @@ public class StudentController {
         model.addAttribute("unreadMessages", messageService.countUnread(user));
         model.addAttribute("unreadNotifications", notificationService.countUnread(user));
         model.addAttribute("isOtherOnline", userStatusService.isOnline(other)); // ✅ fixes line 898
+        model.addAttribute("allUsersExceptCurrent", 
+        userService.getAllUsersExcept(user));
         return "student-conversation";
     }
     
@@ -792,6 +798,16 @@ public class StudentController {
         messageService.sendMessage(user, recipient, content, subject);
         redirectAttributes.addFlashAttribute("success", "Message sent!");
         return "redirect:/student/messages/" + recipientId;
+    }
+    @GetMapping("/messages/{id}/refresh")
+    @ResponseBody
+    public String refresh(@PathVariable Long id, Authentication auth, Model model) {
+        User user = userService.findByEmail(auth.getName());
+        User other = userService.getUserById(id);
+
+        model.addAttribute("messages", messageService.getConversation(user, other));
+
+        return "fragments/message-list :: messages";
     }
 
     @GetMapping("/notifications")

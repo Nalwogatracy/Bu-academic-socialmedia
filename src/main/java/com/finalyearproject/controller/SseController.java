@@ -49,7 +49,10 @@ public class SseController {
         // Clean up on complete/timeout/error
         emitter.onCompletion(() -> emitters.remove(user.getId()));
         emitter.onTimeout(()    -> emitters.remove(user.getId()));
-        emitter.onError(e       -> emitters.remove(user.getId()));
+        //emitter.onError(e       -> emitters.remove(user.getId()));
+        emitter.onError(e -> {
+            System.out.println("SSE error for user " + user.getId() + ": " + e.getMessage());
+        });
 
         // Send initial counts immediately on connect
         try {
@@ -78,14 +81,14 @@ public class SseController {
     }
 
     // ── Push a toast notification to a specific user ──────────────────────────
-    public void pushNotification(User user, String title, String message) {
+    public void pushNotification(User user, String title, String message,User sender) {
         SseEmitter emitter = emitters.get(user.getId());
         if (emitter == null) return;
 
         try {
             emitter.send(SseEmitter.event()
                 .name("notification")
-                .data(Map.of("title", title, "message", message)));
+                .data(Map.of("title", title, "message", message, "senderId", sender.getId())));
         } catch (IOException e) {
             emitters.remove(user.getId());
         }
@@ -97,5 +100,17 @@ public class SseController {
             "unreadNotifications", notificationService.countUnread(user),
             "pendingAssignments",  assignmentService.countPending(user)
         );
+    }
+    public void pushTyping(Long recipientId, Long senderId) {
+        SseEmitter emitter = emitters.get(recipientId);
+        if (emitter == null) return;
+
+        try {
+            emitter.send(SseEmitter.event()
+                .name("typing")
+                .data(Map.of("senderId", senderId)));
+        } catch (IOException e) {
+            emitters.remove(recipientId);
+        }
     }
 }

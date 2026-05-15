@@ -55,17 +55,22 @@ public class AdminController {
         model.addAttribute("pendingApprovals", pendingUsers.size());
 
         List<Course> courses = courseService.getAllCourses();
+        model.addAttribute("courses",     courses);
         Map<Long, Integer> studentCounts = new HashMap<>();
         for (Course c : courses) {
             // students is Set<User>
             studentCounts.put(c.getId(), c.getStudents() != null ? c.getStudents().size() : 0);
         }
+        List<User> lecturers = allUsers.stream()
+                .filter(u -> u.getRole() != null && u.getRole().name().equals("LECTURER")).toList();
+        model.addAttribute("lecturers",       lecturers);
         model.addAttribute("studentCounts", studentCounts);
         model.addAttribute("topCourses",   courseService.getTopCourses());
         model.addAttribute("totalCourses", courses.size());
         model.addAttribute("coursesWithPostCount", courses.stream()
             .map(c -> Map.of("course", c, "postCount", c.getPosts() != null ? c.getPosts().size() : 0))
             .collect(Collectors.toList()));
+        
 
         return "admin-dashboard";
     }

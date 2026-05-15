@@ -2,1309 +2,1085 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Messages | Bugema Connect</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bugema Connect | Messages</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            background: #f0f2f5;
+            background: #e5ddd5;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Navbar */
+        /* Navbar - Light Theme */
         .navbar {
-            background: white;
+            background: #075e54;
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid #eef0f3;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .nav-container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
-            padding: 0 24px;
-            height: 64px;
+            padding: 0 20px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .logo {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #0a66c2;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: white;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: white;
+            font-size: 1.5rem;
         }
 
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .nav-item {
-            position: relative;
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #5e6775;
+            color: white;
             text-decoration: none;
             transition: all 0.2s;
+            position: relative;
         }
 
-        .nav-item:hover {
-            background: #eef3f8;
-            color: #0a66c2;
-        }
-
-        .nav-item.active {
-            color: #0a66c2;
-            background: #eef3f8;
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
         }
 
         .badge {
             position: absolute;
-            top: 6px;
-            right: 8px;
-            background: #cc1010;
-            color: white;
-            font-size: 0.65rem;
-            font-weight: 600;
+            top: 4px;
+            right: 4px;
+            background: #25D366;
+            color: #075e54;
+            font-size: 0.6rem;
+            font-weight: 700;
             min-width: 18px;
             height: 18px;
             border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 4px;
-            border: 2px solid white;
+            padding: 0 5px;
+            border: 2px solid #075e54;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0a66c2, #004182);
+            background: rgba(255,255,255,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
-            cursor: pointer;
             overflow: hidden;
+            cursor: pointer;
         }
 
         .logout-btn {
-            border: none;
             background: transparent;
-            color: #5e6775;
-            padding: 8px 12px;
-            border-radius: 40px;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
             cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: 0.2s;
         }
 
         .logout-btn:hover {
-            background: #fee2e2;
-            color: #cc1010;
+            background: rgba(255,255,255,0.15);
         }
 
-        /* Main Chat Container */
-        .chat-container {
-            max-width: 1400px;
-            margin: 80px auto 0;
-            height: calc(100vh - 80px);
-            background: white;
+        /* Main Container */
+        .wa-container {
+            max-width: 1500px;
+            margin: 60px auto 0;
+            height: calc(100vh - 60px);
             display: flex;
-            border-radius: 12px 12px 0 0;
+            background: #f0f2f5;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
 
-        /* Conversations Sidebar */
-        .conversations-sidebar {
-            width: 350px;
-            border-right: 1px solid #eef0f3;
+        /* Sidebar - Light Theme */
+        .chats-sidebar {
+            width: 380px;
+            background: white;
+            border-right: 1px solid #e9edef;
             display: flex;
             flex-direction: column;
-            background: white;
+            flex-shrink: 0;
         }
 
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid #eef0f3;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #1a2634;
-            margin-bottom: 4px;
-        }
-
-        .sidebar-header p {
-            color: #5e6775;
-            font-size: 0.85rem;
-        }
-
-        .search-box {
-            padding: 12px 20px;
-            border-bottom: 1px solid #eef0f3;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 16px;
+        .chats-header {
             background: #f0f2f5;
-            border: none;
-            border-radius: 24px;
-            font-size: 0.9rem;
-            outline: none;
-            transition: all 0.2s;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e9edef;
         }
 
-        .search-input:focus {
-            background: #eef3f8;
-            box-shadow: 0 0 0 2px rgba(10,102,194,0.2);
-        }
-
-        .conversations-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-        }
-
-        .conversation-item {
+        .profile-preview {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 4px;
-            position: relative;
         }
 
-        .conversation-item:hover {
-            background: #f0f2f5;
-        }
-
-        .conversation-item.active {
-            background: #eef3f8;
-        }
-
-        .conversation-item.unread {
-            background: #f7fbff;
-        }
-
-        .conversation-avatar {
-            width: 56px;
-            height: 56px;
+        .chats-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0a66c2, #004182);
+            background: #25D366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .chats-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .chats-user-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111b21;
+        }
+
+        .chats-user-info p {
+            font-size: 0.7rem;
+            color: #667781;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 12px;
+            color: #54656f;
+        }
+
+        .header-icons i {
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Search */
+        .search-section {
+            background: white;
+            padding: 8px 12px;
+        }
+
+        .search-box-wa {
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #667781;
+        }
+
+        .search-box-wa i {
+            font-size: 0.9rem;
+        }
+
+        .search-input-wa {
+            background: transparent;
+            border: none;
+            width: 100%;
+            color: #111b21;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .search-input-wa::placeholder {
+            color: #8696a0;
+        }
+
+        /* Chat List - Light */
+        .chats-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            background: white;
+        }
+
+        .contact-item, .conversation-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .contact-item:hover, .conversation-item:hover {
+            background: #f5f6f6;
+        }
+
+        .contact-item.active, .conversation-item.active {
+            background: #e9f0eb;
+        }
+
+        .contact-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #25D366;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
             font-size: 1.2rem;
-            flex-shrink: 0;
             position: relative;
+            flex-shrink: 0;
             overflow: hidden;
         }
 
-        .online-indicator {
+        .online-dot {
             position: absolute;
             bottom: 2px;
             right: 2px;
             width: 12px;
             height: 12px;
-            background: #31a24c;
+            background: #25D366;
             border: 2px solid white;
             border-radius: 50%;
         }
 
-        .conversation-info {
+        .contact-info {
             flex: 1;
             min-width: 0;
         }
 
-        .conversation-header {
+        .contact-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: baseline;
             margin-bottom: 4px;
         }
 
-        .conversation-name {
-            font-weight: 600;
-            color: #1a2634;
-            font-size: 0.95rem;
+        .contact-name {
+            font-weight: 500;
+            color: #111b21;
+            font-size: 1rem;
         }
 
-        .conversation-time {
+        .message-time {
             font-size: 0.7rem;
-            color: #8f9bab;
+            color: #8696a0;
         }
 
-        .conversation-preview {
+        .message-preview {
             display: flex;
             align-items: center;
-            gap: 4px;
-        }
-
-        .preview-text {
-            font-size: 0.85rem;
-            color: #5e6775;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #667781;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 180px;
         }
 
-        .unread-count {
-            background: #0a66c2;
-            color: white;
+        .unread-badge-wa {
+            background: #25D366;
+            color: #075e54;
+            font-weight: 700;
             font-size: 0.7rem;
-            font-weight: 600;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 18px;
-            display: flex;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 20px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0 4px;
-            margin-left: 4px;
+            padding: 0 5px;
+            margin-left: 6px;
         }
 
-        /* Chat Area */
-        .chat-area {
+        /* Chat Window - Light */
+        .chat-window {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: white;
+            background: #efeae2;
+            position: relative;
         }
 
-        .chat-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid #eef0f3;
+        .chat-window-header {
+            background: #f0f2f5;
+            padding: 8px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            border-left: 1px solid #e9edef;
         }
 
-        .chat-user-info {
+        .chat-target-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .chat-avatar {
-            width: 48px;
-            height: 48px;
+        .target-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0a66c2, #004182);
+            background: #25D366;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            position: relative;
+            overflow: hidden;
         }
 
-        .chat-user-details h3 {
+        .target-details h4 {
+            color: #111b21;
             font-size: 1rem;
-            font-weight: 600;
-            color: #1a2634;
-            margin-bottom: 4px;
+            font-weight: 500;
         }
 
-        .chat-user-status {
-            font-size: 0.8rem;
-            color: #5e6775;
+        .target-status {
+            font-size: 0.7rem;
+            color: #667781;
+        }
+
+        .chat-actions-wa {
             display: flex;
-            align-items: center;
-            gap: 6px;
+            gap: 16px;
+            color: #54656f;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #31a24c;
-            display: inline-block;
-        }
-
-        .chat-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .chat-action-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: none;
-            background: transparent;
-            color: #5e6775;
+        .chat-actions-wa i {
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 1.2rem;
         }
 
-        .chat-action-btn:hover {
-            background: #f0f2f5;
-            color: #0a66c2;
-        }
-
-        /* Messages Container */
-        .messages-container {
+        /* Messages Container - Light */
+        .messages-pane {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
+            padding: 20px 12px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            background: #f8fafd;
-        }
-
-        .message-date-divider {
-            text-align: center;
-            margin: 16px 0;
-            position: relative;
-        }
-
-        .date-divider-text {
-            background: #eef0f3;
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 0.75rem;
-            color: #5e6775;
-            display: inline-block;
-        }
-
-        .message-wrapper {
-            display: flex;
-            align-items: flex-start;
             gap: 8px;
-            max-width: 70%;
+            background-image: radial-gradient(circle at 10% 30%, rgba(0,0,0,0.02) 1.5px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        .message-wrapper.sent {
-            margin-left: auto;
-            flex-direction: row-reverse;
-        }
-
-        .message-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0a66c2, #004182);
+        /* Message Bubbles - Light */
+        .msg-row {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.8rem;
-            flex-shrink: 0;
+            margin: 4px 0;
         }
 
-        .message-content {
+        .msg-row.sent {
+            justify-content: flex-end;
+        }
+
+        .msg-row.received {
+            justify-content: flex-start;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.08);
+        }
+
+        .sent .bubble {
+            background: #d9fdd3;
+            color: #111b21;
+            border-top-right-radius: 4px;
+        }
+
+        .received .bubble {
             background: white;
-            padding: 12px 16px;
-            border-radius: 18px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-            position: relative;
+            color: #111b21;
+            border-top-left-radius: 4px;
         }
 
-        .message-wrapper.sent .message-content {
-            background: #0a66c2;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-wrapper.received .message-content {
-            background: white;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-text {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 4px;
-        }
-
-        .message-meta {
+        .message-meta-wa {
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 4px;
+            margin-top: 4px;
             font-size: 0.65rem;
+            color: #667781;
         }
 
-        .message-wrapper.sent .message-meta {
-            color: rgba(255,255,255,0.8);
+        .sent .message-meta-wa {
+            color: #667781;
         }
 
-        .message-wrapper.received .message-meta {
-            color: #8f9bab;
+        .double-tick {
+            font-size: 0.7rem;
         }
 
-        .message-time {
-            font-size: 0.65rem;
+        .double-tick.read {
+            color: #53bdeb;
         }
-        .message-status {
+
+        /* Typing Indicator - Light */
+        .typing-wa {
+            background: white;
+            border-radius: 16px;
+            padding: 8px 14px;
             display: inline-flex;
             align-items: center;
-            gap: 0;
-            margin-left: 4px;
+            gap: 4px;
+            width: fit-content;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.08);
         }
 
-        .message-status i {
-            font-size: 0.65rem;
-            transition: color 0.3s ease;
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #8696a0;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
         }
 
-        .message-status .read {
-            color: #0a66c2;
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
-        /* Attachment Message */
-        .message-attachment {
+        /* Input Area - Light */
+        .input-area {
+            background: #f0f2f5;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255,255,255,0.1);
-            padding: 8px 12px;
-            border-radius: 12px;
-            margin-top: 8px;
+            border-top: 1px solid #e9edef;
+        }
+
+        .input-icon-btn {
+            background: transparent;
+            border: none;
+            color: #54656f;
+            font-size: 1.3rem;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .message-attachment:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .attachment-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .attachment-info {
-            flex: 1;
-        }
-
-        .attachment-name {
-            font-weight: 500;
-            font-size: 0.85rem;
-            margin-bottom: 2px;
-        }
-
-        .attachment-size {
-            font-size: 0.7rem;
-            opacity: 0.7;
-        }
-
-        /* Message Input */
-        .message-input-container {
-            padding: 20px 24px;
-            border-top: 1px solid #eef0f3;
-            background: white;
-        }
-
-        .message-form {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .input-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .input-action-btn {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: none;
-            background: #f0f2f5;
-            color: #5e6775;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1.1rem;
+            transition: 0.2s;
         }
 
-        .input-action-btn:hover {
-            background: #0a66c2;
-            color: white;
+        .input-icon-btn:hover {
+            background: #e0e4e9;
         }
 
-        .message-input-wrapper {
+        .message-input-wa {
             flex: 1;
-            position: relative;
-        }
-
-        .message-input {
-            width: 100%;
-            padding: 12px 18px;
-            border: 1px solid #eef0f3;
-            border-radius: 24px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: #111b21;
             font-size: 0.95rem;
             outline: none;
-            transition: all 0.2s;
-            background: #f8fafd;
         }
 
-        .message-input:focus {
-            border-color: #0a66c2;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(10,102,194,0.1);
-        }
-
-        .send-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
+        .send-btn-wa {
+            background: #075e54;
             border: none;
-            background: #0a66c2;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             color: white;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1.1rem;
+            transition: 0.2s;
         }
 
-        .send-btn:hover {
-            background: #004182;
-            transform: scale(1.05);
+        .send-btn-wa:disabled {
+            background: #ced0d1;
+            cursor: default;
         }
 
-        .send-btn:disabled {
-            background: #e0e4e9;
-            cursor: not-allowed;
-            transform: none;
+        /* Emoji Picker - Light */
+        .emoji-panel {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            display: none;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            z-index: 200;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-width: 320px;
         }
 
-        /* Empty States */
-        .empty-chat-state {
+        .emoji-panel.show {
+            display: grid;
+        }
+
+        .emoji-item {
+            font-size: 1.3rem;
+            cursor: pointer;
+            text-align: center;
+            padding: 6px;
+            border-radius: 8px;
+            transition: 0.1s;
+        }
+
+        .emoji-item:hover {
+            background: #f0f2f5;
+            transform: scale(1.1);
+        }
+
+        /* Empty State - Light */
+        .empty-chat {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px;
+            background: #f8f9fa;
             text-align: center;
-            background: #f8fafd;
         }
 
-        .empty-chat-icon {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: #eef3f8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
+        .empty-chat i {
+            font-size: 4rem;
+            color: #d1d7db;
+            margin-bottom: 20px;
         }
 
-        .empty-chat-icon i {
-            font-size: 3rem;
-            color: #0a66c2;
+        .empty-chat h3 {
+            color: #41525d;
+            font-weight: 500;
         }
 
-        .empty-chat-state h3 {
-            font-size: 1.25rem;
-            color: #1a2634;
-            margin-bottom: 8px;
+        .empty-chat p {
+            color: #667781;
+            font-size: 0.9rem;
+            max-width: 280px;
         }
 
-        .empty-chat-state p {
-            color: #5e6775;
-            max-width: 300px;
+        .empty-chat button {
+            margin-top: 20px;
+            background: #075e54;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
         }
 
-        /* Scrollbar */
+        /* Responsive */
+        @media (max-width: 780px) {
+            .chats-sidebar {
+                width: 100%;
+                position: absolute;
+                left: -100%;
+                z-index: 1100;
+                transition: left 0.2s;
+                height: calc(100vh - 60px);
+            }
+            .chats-sidebar.mobile-open {
+                left: 0;
+            }
+            .chat-window {
+                width: 100%;
+            }
+            .back-chats-btn {
+                display: block;
+            }
+        }
+
+        .back-chats-btn {
+            display: none;
+            margin-right: 10px;
+            background: transparent;
+            border: none;
+            color: #075e54;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
-
         ::-webkit-scrollbar-track {
-            background: #f0f2f5;
+            background: #f1f1f1;
         }
-
         ::-webkit-scrollbar-thumb {
             background: #cbd5e0;
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a0aec0;
-        }
-
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 9999;
-        }
-
-        .toast {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 300px;
-            animation: slideIn 0.3s ease;
-            border-left: 4px solid #0a66c2;
-        }
-
-        .toast.success {
-            border-left-color: #31a24c;
-        }
-
-        .toast.error {
-            border-left-color: #cc1010;
-        }
-
-        .toast-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #eef3f8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #0a66c2;
-        }
-
-        .toast.success .toast-icon {
-            color: #31a24c;
-        }
-
-        .toast.error .toast-icon {
-            color: #cc1010;
-        }
-
-        .toast-content {
-            flex: 1;
-        }
-
-        .toast-title {
-            font-weight: 600;
-            color: #1a2634;
-            margin-bottom: 2px;
-        }
-
-        .toast-message {
-            font-size: 0.85rem;
-            color: #5e6775;
-        }
-
-        .toast-close {
-            background: none;
-            border: none;
-            color: #8f9bab;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Emoji Picker (simplified) */
-        .emoji-picker {
-            position: absolute;
-            bottom: 70px;
-            left: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            padding: 12px;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 8px;
-            z-index: 100;
-            display: none;
-        }
-
-        .emoji-picker.show {
-            display: grid;
-        }
-
-        .emoji {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s;
-            font-size: 1.2rem;
-        }
-
-        .emoji:hover {
-            background: #f0f2f5;
-            transform: scale(1.2);
+            border-radius: 6px;
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <i class="fas fa-graduation-cap"></i>
-                <span>Bugema Connect</span>
-            </div>
-            <div class="nav-right">
-                <a class="nav-item" th:href="@{/student/dashboard}">
-                    <i class="fas fa-home"></i>
-                </a>
-                <a class="nav-item active" th:href="@{/student/messages}">
-                    <i class="fas fa-comment"></i>
-                    <span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">3</span>
-                </a>
-                <a class="nav-item" th:href="@{/student/notifications}">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">5</span>
-                </a>
-                <div class="user-avatar">
-                    <img th:if="${user.profilePicture != null}"
-                         th:src="@{/user/profile-picture/{id}(id=${user.id})}"
-                         style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />
 
-                    <span th:if="${user.profilePicture == null}"
-                          th:text="${#strings.substring(user.fullName, 0, 2)}">NT</span>
+<!-- Navbar - Light Theme -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Bugema Connect</span>
+        </div>
+        <div class="nav-right">
+            <a class="nav-item" th:href="@{/student/dashboard}"><i class="fas fa-home"></i></a>
+            <a class="nav-item active" th:href="@{/student/messages}"><i class="fas fa-comment"></i><span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">2</span></a>
+            <a class="nav-item" th:href="@{/student/notifications}"><i class="fas fa-bell"></i><span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">3</span></a>
+            <div class="user-avatar">
+                <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}" style="width:100%; height:100%; object-fit:cover;">
+                <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName,0,2)}">JD</span>
+            </div>
+            <form th:action="@{/logout}" method="post"><button class="logout-btn" type="submit"><i class="fas fa-sign-out-alt"></i></button></form>
+        </div>
+    </div>
+</nav>
+
+<div class="wa-container">
+    <!-- Sidebar - Light -->
+    <div class="chats-sidebar" id="chatsSidebar">
+        <div class="chats-header">
+            <div class="profile-preview">
+                <div class="chats-avatar">
+                    <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}">
+                    <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName,0,2)}">ME</span>
                 </div>
-                
-                <form th:action="@{/logout}" method="post" style="display: inline;">
-                    <button type="submit" class="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </form>
+                <div class="chats-user-info">
+                    <h3 th:text="${user.fullName}">Student Name</h3>
+                    <p>Bugema University</p>
+                </div>
+            </div>
+            <div class="header-icons">
+                <i class="fas fa-user-friends"></i>
+                <i class="fas fa-ellipsis-v"></i>
             </div>
         </div>
-    </nav>
-
-    <!-- Main Chat Container -->
-    <div class="chat-container">
-        <!-- Conversations Sidebar -->
-        <div class="conversations-sidebar">
-            <div class="sidebar-header">
-                <h2>Messages</h2>
-                <p th:text="${user.fullName}">John Doe</p>
+        
+        <div class="search-section">
+            <div class="search-box-wa">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-input-wa" id="globalSearchPeople" placeholder="Search name or message...">
+            </div>
+        </div>
+        
+        <div class="chats-list" id="allChatsList">
+            <!-- Existing conversations -->
+            <div th:each="conv : ${conversations}" th:with="lastMsg=${conv.value != null && !conv.value.isEmpty() ? conv.value[0] : null}"
+                 class="conversation-item" th:classappend="${conv.key.id == other?.id ? 'active' : ''}"
+                 th:attr="data-user-id=${conv.key.id}">
+                <div class="contact-avatar">
+                    <span th:if="${conv.key.profilePicture == null}" th:text="${#strings.substring(conv.key.fullName,0,2)}">JD</span>
+                    <img th:if="${conv.key.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${conv.key.id})}" style="width:100%; height:100%; object-fit:cover;">
+                    <span class="online-dot" th:if="${onlineUserIds.contains(conv.key.id)}"></span>
+                </div>
+                <div class="contact-info">
+                    <div class="contact-row">
+                        <span class="contact-name" th:text="${conv.key.fullName}">John Doe</span>
+                        <span class="message-time" th:if="${lastMsg != null}" th:text="${#temporals.format(lastMsg.sentAt, 'HH:mm')}">14:30</span>
+                    </div>
+                    <div class="message-preview">
+                        <span th:if="${lastMsg != null}" th:text="${lastMsg.sender.id == user.id ? 'You: ' + lastMsg.content : lastMsg.content}">Last message</span>
+                        <span th:if="${lastMsg == null}">Tap to start chatting</span>
+                        <span class="unread-badge-wa" th:if="${(unreadPerUser[conv.key.id] ?: 0) > 0}" th:text="${unreadPerUser[conv.key.id] ?: 0}"></span>
+                    </div>
+                </div>
             </div>
             
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="Search messages..." id="searchConversations">
-            </div>
-
-            <div class="conversations-list" id="conversationsList">
-                <!-- Conversations will be populated here -->
-                <div th:each="conversation : ${conversations}" 
-                     class="conversation-item"
-                     th:classappend="${conversation.key.id == currentChatId ? 'active' : ''}"
-                     th:attr="data-user-id=${conversation.key.id}"
-                     onclick="openConversation(this.dataset.userId)">
-                    
-                    <div class="conversation-avatar">
-                        <img th:if="${conversation.key.profilePicture != null}"
-                            th:src="@{/user/profile-picture/{id}(id=${conversation.key.id})}"
-                            style="width:100%; height:100%; border-radius:50%; object-fit:cover;"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                       <!-- Fallback initials -->
-                       <span th:if="${conversation.key.profilePicture == null}"
-                             th:text="${#strings.substring(conversation.key.fullName,0,2)}">JD</span>
-                       <span class="online-indicator" th:if="${onlineUserIds.contains(conversation.key.id)}"></span>
+            <!-- Other people (no conversation yet) -->
+            <div th:each="person : ${allUsersExceptCurrent}" th:if="${!conversations.containsKey(person)}" class="contact-item" th:attr="data-user-id=${person.id}">
+                <div class="contact-avatar">
+                    <span th:if="${person.profilePicture == null}" th:text="${#strings.substring(person.fullName,0,2)}">JD</span>
+                    <img th:if="${person.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${person.id})}">
+                    <span class="online-dot" th:if="${onlineUserIds.contains(person.id)}"></span>
+                </div>
+                <div class="contact-info">
+                    <div class="contact-row">
+                        <span class="contact-name" th:text="${person.fullName}">Jane Lecturer</span>
+                        <span class="message-time"></span>
                     </div>
-                    
-                    <div class="conversation-info">
-                        <div class="conversation-header">
-                            <span class="conversation-name" th:text="${conversation.key.fullName}">John Doe</span>
-                            <span class="conversation-time" 
-                                  th:text="${#temporals.format(conversation.value[0].sentAt, 'HH:mm')}">14:30</span>
-                        </div>
-                        <div class="conversation-preview">
-                            <span class="preview-text" th:text="${conversation.value[0].content}">Last message...</span>
-                            <span class="unread-count" 
-                                th:if="${unreadPerUser[conversation.key.id] != null and unreadPerUser[conversation.key.id] > 0}"
-                                th:text="${unreadPerUser[conversation.key.id]}">2</span>
-                        </div>
+                    <div class="message-preview">
+                        <span>No messages yet — start chat</span>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Chat Area -->
-        <div class="chat-area" th:if="${other != null}">
-            <!-- Chat Header -->
-            <div class="chat-header">
-                <div class="chat-user-info">
-                    <div class="chat-avatar">
-                        <img th:if="${other.profilePicture != null}"
-                        th:src="@{/user/profile-picture/{id}(id=${other.id})}"
-                        style="width:100%; height:100%; border-radius:50%; object-fit:cover;"
-                        onerror="this.style.display='none'">
-                        <span th:if="${other.profilePicture == null}" th:text="${#strings.substring(other.fullName,0,2)}">JD</span>
-                        <span class="online-indicator" th:if="${isOtherOnline}"></span>
-                    </div>
-                    <div class="chat-user-details">
-                        <h3 th:text="${other.fullName}">John Doe</h3>
-                        <div class="chat-user-status">
-                            <span class="status-dot" th:if="${isOtherOnline}"></span>
-                            <span th:text="${isOtherOnline} ? 'Online' : 'Offline'">Online</span>
-                            <span th:if="${other.role == 'LECTURER'}" class="role-badge">
-                                <i class="fas fa-chalkboard-teacher"></i> Lecturer
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="chat-action-btn" onclick="showUserProfile()">
-                        <i class="fas fa-info-circle"></i>
-                    </button>
-                    <button class="chat-action-btn" onclick="toggleSearch()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Messages Container -->
-            <div class="messages-container" id="messagesContainer">
-                <!-- Date divider example -->
-                <div class="message-date-divider">
-                    <span class="date-divider-text">Today</span>
-                </div>
-
-                <!-- Messages loop -->
-                <div th:each="message : ${messages}" 
-                     th:classappend="${message.sender.id == user.id} ? 'message-wrapper sent' : 'message-wrapper received'">
-                    
-                    <div class="message-avatar" th:if="${message.sender.id != user.id}">
-                        <span th:text="${#strings.substring(message.sender.fullName,0,2)}">JD</span>
-                    </div>
-                    
-                    <div class="message-content">
-                        <div class="message-text" th:text="${message.content}">Message text here</div>
-                        
-                        <!-- Attachment preview if exists -->
-                        <div class="message-attachment" th:if="${message.attachment != null}" 
-                             onclick="downloadAttachment(${message.attachment.id})">
-                            <div class="attachment-icon">
-                                <i class="fas fa-file"></i>
-                            </div>
-                            <div class="attachment-info">
-                                <div class="attachment-name" th:text="${message.attachment.fileName}">document.pdf</div>
-                                <div class="attachment-size" th:text="${message.attachment.fileSize} + ' KB'">250 KB</div>
-                            </div>
-                        </div>
-                        
-                        <div class="message-meta">
-                            <span class="message-time" 
-                                  th:text="${#temporals.format(message.sentAt, 'HH:mm')}">14:30</span>
-                            <span class="message-status" th:if="${message.sender.id == user.id}">
-                                <span th:if="${!message.delivered and !message.read}" title="Sent">
-                                    <i class="fas fa-check" style="color: #8f9bab;"></i>
-                                </span>
-
-                                <!-- Double grey tick = delivered but not read -->
-                                <span th:if="${message.delivered and !message.read}" title="Delivered">
-                                    <i class="fas fa-check" style="color: #8f9bab; margin-right: -6px;"></i>
-                                    <i class="fas fa-check" style="color: #8f9bab;"></i>
-                                </span>
-
-                                <!-- Double blue tick = read -->
-                                <span th:if="${message.read}" title="Read">
-                                    <i class="fas fa-check" style="color: #0a66c2; margin-right: -6px;"></i>
-                                    <i class="fas fa-check" style="color: #0a66c2;"></i>
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Message Input -->
-            <div class="message-input-container">
-                <form class="message-form" th:action="@{/student/messages/send}" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="recipientId" th:value="${other.id}">
-                    
-                    <div class="input-actions">
-                        <button type="button" class="input-action-btn" onclick="toggleEmojiPicker()">
-                            <i class="far fa-smile"></i>
-                        </button>
-                        <button type="button" class="input-action-btn" onclick="triggerFileUpload()">
-                            <i class="fas fa-paperclip"></i>
-                        </button>
-                        <input type="file" id="fileUpload" name="attachment" style="display: none;" 
-                               onchange="handleFileSelect(this)">
-                    </div>
-
-                    <!-- Simplified Emoji Picker -->
-                    <div class="emoji-picker" id="emojiPicker">
-                        <span class="emoji" onclick="insertEmoji('😊')">😊</span>
-                        <span class="emoji" onclick="insertEmoji('😂')">😂</span>
-                        <span class="emoji" onclick="insertEmoji('❤️')">❤️</span>
-                        <span class="emoji" onclick="insertEmoji('👍')">👍</span>
-                        <span class="emoji" onclick="insertEmoji('😢')">😢</span>
-                        <span class="emoji" onclick="insertEmoji('🎉')">🎉</span>
-                        <span class="emoji" onclick="insertEmoji('🔥')">🔥</span>
-                        <span class="emoji" onclick="insertEmoji('✅')">✅</span>
-                    </div>
-
-                    <div class="message-input-wrapper">
-                        <input type="text" class="message-input" 
-                               name="content" 
-                               id="messageInput"
-                               placeholder="Write a message..." 
-                               autocomplete="off"
-                               oninput="toggleSendButton()">
-                    </div>
-
-                    <button type="submit" class="send-btn" id="sendButton" disabled>
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Empty State - No Conversation Selected -->
-        <div class="empty-chat-state" th:if="${other == null}">
-            <div class="empty-chat-icon">
-                <i class="fas fa-comments"></i>
-            </div>
-            <h3>Your Messages</h3>
-            <p>Select a conversation to start chatting</p>
-            <div style="margin-top: 24px;">
-                <button class="mark-all-btn" onclick="startNewChat()">
-                    <i class="fas fa-plus"></i> New Message
-                </button>
+            
+            <div th:if="${(conversations == null || conversations.isEmpty()) and (allUsersExceptCurrent == null or allUsersExceptCurrent.isEmpty())}" style="padding:40px; text-align:center; color:#8696a0;">
+                <i class="fas fa-user-friends fa-2x"></i>
+                <p>No contacts available</p>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
-    <div class="toast-container" id="toastContainer"></div>
-    
-        <div id="newChatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:2000;">
-
-        <div style="background:white; width:400px; margin:100px auto; padding:20px; border-radius:12px;">
-            <h3>Start a Chat</h3>
-            <p style="color:#5e6775; font-size:0.85rem; margin-bottom:10px;">Students in your courses</p>
-            <input type="text" placeholder="Search coursemates..." onkeyup="filterUsers(this.value)" 
-                   style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ccc;">
-            <div th:each="u : ${allUsers}" 
-                class="user-item"
-                th:attr="data-name=${u.fullName}, data-id=${u.id}"
-                style="padding:12px; cursor:pointer; border-bottom:1px solid #eee; display:flex; align-items:center; gap:10px; transition: background 0.2s;"
-                onmouseover="this.style.background='#f0f2f5'"
-                onmouseout="this.style.background='white'"
-                onclick="openConversation(this.getAttribute('data-id'))">
-
-               <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#0a66c2,#004182); display:flex; align-items:center; justify-content:center; color:white; font-weight:600; font-size:0.85rem; flex-shrink:0;">
-                   <span th:text="${#strings.substring(u.fullName, 0, 2)}">JD</span>
-               </div>
-               <span th:text="${u.fullName}" style="font-size:0.95rem; color:#1a2634; font-weight:500;">User Name</span>
-           </div>
-            <div th:if="${#lists.isEmpty(allUsers)}" style="padding:20px; text-align:center; color:#5e6775;">
-                No coursemates found
+    <!-- Chat Window -->
+    <div class="chat-window" th:if="${other != null}" id="chatWindowArea">
+        <div class="chat-window-header">
+            <div style="display:flex; align-items:center;">
+                <button class="back-chats-btn" id="mobileBackBtn" onclick="closeMobileSidebar()"><i class="fas fa-arrow-left"></i></button>
+                <div class="chat-target-info">
+                    <div class="target-avatar">
+                        <img th:if="${other.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${other.id})}" style="width:100%;height:100%;object-fit:cover;">
+                        <span th:if="${other.profilePicture == null}" th:text="${#strings.substring(other.fullName,0,2)}">OT</span>
+                    </div>
+                    <div class="target-details">
+                        <h4 th:text="${other.fullName}">Contact Name</h4>
+                        <div class="target-status">
+                            <span th:text="${isOtherOnline} ? 'Online' : 'Offline'"></span>
+                            <span th:if="${other.role != null and other.role.name() == 'LECTURER'}"> • Lecturer</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button onclick="closeModal()" style="margin-top:10px;">Close</button>
+            <div class="chat-actions-wa">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-ellipsis-v"></i>
+            </div>
+        </div>
+        
+        <div class="messages-pane" id="messagesPane">
+            <div th:each="msg : ${messages}" th:classappend="${msg.sender.id == user.id} ? 'msg-row sent' : 'msg-row received'">
+                <div class="bubble">
+                    <div class="message-text" th:text="${msg.content}">Hello</div>
+                    <div class="message-meta-wa">
+                        <span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">14:30</span>
+                        <span class="double-tick" th:if="${msg.sender.id == user.id}">
+                            <span th:if="${!msg.delivered and !msg.read}"><i class="fas fa-check"></i></span>
+                            <span th:if="${msg.delivered and !msg.read}"><i class="fas fa-check"></i><i class="fas fa-check"></i></span>
+                            <span th:if="${msg.read}" style="color:#53bdeb;"><i class="fas fa-check"></i><i class="fas fa-check"></i></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div id="typingArea" style="display:none;">
+                <div class="typing-wa">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <span style="margin-left:6px; font-size:0.75rem;">typing...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <button class="input-icon-btn" id="emojiButtonWA" type="button"><i class="far fa-smile-wink"></i></button>
+            <!-- 24 Emojis -->
+            <div id="emojiPanelWA" class="emoji-panel">
+                <span class="emoji-item" onclick="insertEmoji('😊')">😊</span>
+                <span class="emoji-item" onclick="insertEmoji('😂')">😂</span>
+                <span class="emoji-item" onclick="insertEmoji('❤️')">❤️</span>
+                <span class="emoji-item" onclick="insertEmoji('👍')">👍</span>
+                <span class="emoji-item" onclick="insertEmoji('🔥')">🔥</span>
+                <span class="emoji-item" onclick="insertEmoji('🎉')">🎉</span>
+                <span class="emoji-item" onclick="insertEmoji('✅')">✅</span>
+                <span class="emoji-item" onclick="insertEmoji('🙏')">🙏</span>
+                <span class="emoji-item" onclick="insertEmoji('🤝')">🤝</span>
+                <span class="emoji-item" onclick="insertEmoji('💬')">💬</span>
+                <span class="emoji-item" onclick="insertEmoji('📚')">📚</span>
+                <span class="emoji-item" onclick="insertEmoji('☕')">☕</span>
+                <span class="emoji-item" onclick="insertEmoji('😍')">😍</span>
+                <span class="emoji-item" onclick="insertEmoji('🥳')">🥳</span>
+                <span class="emoji-item" onclick="insertEmoji('😎')">😎</span>
+                <span class="emoji-item" onclick="insertEmoji('💯')">💯</span>
+                <span class="emoji-item" onclick="insertEmoji('🙌')">🙌</span>
+                <span class="emoji-item" onclick="insertEmoji('👏')">👏</span>
+                <span class="emoji-item" onclick="insertEmoji('💪')">💪</span>
+                <span class="emoji-item" onclick="insertEmoji('🎓')">🎓</span>
+                <span class="emoji-item" onclick="insertEmoji('📖')">📖</span>
+                <span class="emoji-item" onclick="insertEmoji('🏆')">🏆</span>
+                <span class="emoji-item" onclick="insertEmoji('⭐')">⭐</span>
+                <span class="emoji-item" onclick="insertEmoji('💡')">💡</span>
+            </div>
+            <input type="text" class="message-input-wa" id="waMessageInput" placeholder="Type a message" autocomplete="off">
+            <button class="send-btn-wa" id="waSendBtn" disabled><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <!-- SSE Connection Script -->
-    <script>
-        let eventSource;
-        let currentUserId = /*[[${user.id}]]*/ 0;
-        let currentChatId = /*[[${other != null ? other.id : null}]]*/ null;
+    <!-- Empty State -->
+    <div class="chat-window" th:if="${other == null}" id="emptyChatState">
+        <div class="empty-chat">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>Bugema Connect Messenger</h3>
+            <p>Select a contact from the left panel to start chatting</p>
+            <button onclick="document.getElementById('chatsSidebar')?.classList.add('mobile-open')">View Contacts</button>
+        </div>
+    </div>
+</div>
 
-        // Initialize SSE connection
-        function connectSSE() {
-            if (eventSource) {
-                eventSource.close();
+<script>
+    let currentUserId = /*[[${user.id}]]*/ 0;
+    let currentChatUserId = /*[[${other != null ? other.id : null}]]*/ null;
+    let eventSourceWa = null;
+    let typingTimeout;
+    let lastTypingSent = 0;
+
+    function connectSSE() {
+        try {
+            if (eventSourceWa) eventSourceWa.close();
+            if (fallbackInterval) {
+                clearInterval(fallbackInterval);
+                fallbackInterval = null;
+                console.log("Polling stopped — SSE restored");
             }
 
-            eventSource = new EventSource('/sse/stream');
+            eventSourceWa = new EventSource('/sse/stream');
 
-            eventSource.addEventListener('badges', function(e) {
+            eventSourceWa.addEventListener('notification', e => {
                 const data = JSON.parse(e.data);
-                updateBadges(data);
-            });
-
-            eventSource.addEventListener('notification', function(e) {
-                const data = JSON.parse(e.data);
-                showToast(data.title, data.message, 'info');
-                
-                // If this is a message notification and we're in the correct chat, refresh messages
-                if (data.title === 'New Message' && data.senderId === currentChatId) {
+                if (data.title === 'New Message' && data.senderId === currentChatUserId) {
                     refreshMessages();
-                } else if (data.title === 'New Message') {
-                    // Update conversation list to show new message preview
-                    refreshConversations();
+                } else {
+                    // lightweight update only
                 }
             });
 
-            eventSource.onerror = function() {
-                console.log('SSE connection error, reconnecting...');
-                setTimeout(connectSSE, 3000);
+            eventSourceWa.addEventListener('typing', e => {
+                const data = JSON.parse(e.data);
+                if (data.senderId === currentChatUserId) showTyping();
+            });
+
+            eventSourceWa.onerror = () => {
+                console.log("SSE offline — switching to fallback mode");
+                if (eventSourceWa) {
+                    eventSourceWa.close();
+                    eventSourceWa = null;
+                }
+                // DO NOTHING ELSE (this is key)
+                enablePollingFallback();
             };
-        }
-
-        // Update badge counts
-        function updateBadges(data) {
-            // Update message badge
-            const messageBadge = document.querySelector('.nav-item[href*="messages"] .badge');
-            if (messageBadge) {
-                if (data.unreadMessages > 0) {
-                    messageBadge.textContent = data.unreadMessages;
-                    messageBadge.style.display = 'flex';
-                } else {
-                    messageBadge.style.display = 'none';
-                }
-            }
-
-            // Update notification badge
-            const notifBadge = document.querySelector('.nav-item[href*="notifications"] .badge');
-            if (notifBadge) {
-                if (data.unreadNotifications > 0) {
-                    notifBadge.textContent = data.unreadNotifications;
-                    notifBadge.style.display = 'flex';
-                } else {
-                    notifBadge.style.display = 'none';
-                }
-            }
-        }
-
-        // Show toast notification
-        function showToast(title, message, type = 'info') {
-            const toastContainer = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
             
-            let icon = 'info-circle';
-            if (type === 'success') icon = 'check-circle';
-            if (type === 'error') icon = 'exclamation-circle';
-            
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fas fa-${icon}"></i>
-                </div>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <button class="toast-close" onclick="this.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
-                }
-            }, 5000);
-        }
-
-        // Open conversation
-        function openConversation(userId) {
-            window.location.href = '/student/messages/' + userId;
-        }
-
-        // Refresh messages in current chat
-        function refreshMessages() {
-            if (!currentChatId) return;
-            
-            fetch('/student/messages/' + currentChatId + '/refresh')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('messagesContainer').innerHTML = html;
-                    scrollToBottom();
-                });
-        }
-
-        // Refresh conversations list
-        function refreshConversations() {
-            fetch('/student/conversations/refresh')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('conversationsList').innerHTML = html;
-                });
-        }
-
-        // Scroll to bottom of messages
-        function scrollToBottom() {
-            const container = document.getElementById('messagesContainer');
-            if (container) {
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        // Toggle send button based on input
-        function toggleSendButton() {
-            const input = document.getElementById('messageInput');
-            const sendBtn = document.getElementById('sendButton');
-            if (sendBtn) {
-                sendBtn.disabled = !input.value.trim();
-            }
-        }
-
-        // Emoji picker
-        function toggleEmojiPicker() {
-            document.getElementById('emojiPicker').classList.toggle('show');
-        }
-
-        function insertEmoji(emoji) {
-            const input = document.getElementById('messageInput');
-            input.value += emoji;
-            input.focus();
-            toggleSendButton();
-            document.getElementById('emojiPicker').classList.remove('show');
-        }
-
-        // File handling
-        function triggerFileUpload() {
-            document.getElementById('fileUpload').click();
-        }
-
-        function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                // Auto-submit form or show file preview
-                const form = input.closest('form');
-                if (file.size <= 10 * 1024 * 1024) { // 10MB limit
-                    form.submit();
-                } else {
-                    showToast('File too large', 'Maximum file size is 10MB', 'error');
-                    input.value = '';
-                }
-            }
-        }
-
-        // Mark messages as read when scrolling into view
-        function observeMessages() {
-            const messages = document.querySelectorAll('.message-wrapper.received');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const messageId = entry.target.dataset.messageId;
-                        if (messageId) {
-                            fetch('/student/messages/' + messageId + '/read', { method: 'POST' });
-                        }
-                    }
-                });
+            eventSourceWa.addEventListener('badges', e => {
+                const data = JSON.parse(e.data);
             });
 
-            messages.forEach(msg => observer.observe(msg));
+        } catch (e) {
+            enablePollingFallback();
         }
+    }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            connectSSE();
-            scrollToBottom();
-            observeMessages();
-            
-           // Close emoji picker when clicking outside
-            document.addEventListener('click', function(e) {
-                const picker = document.getElementById('emojiPicker');
-                if (!picker) return;
-                const smileIcon = document.querySelector('.input-action-btn .fa-smile');
-                const btn = smileIcon ? smileIcon.parentElement : null;
+    function openChatWindow(userId) { 
+        window.location.href = '/student/messages/' + userId; 
+    }
+    
+    function refreshMessages() { 
+        if(!currentChatUserId) return;
+        fetch('/student/messages/'+currentChatUserId+'/refresh')
+            .then(r=>r.text())
+            .then(html=>{
+                document.getElementById('messagesPane').innerHTML = html;
+                scrollToBottom();
+            }).catch(e=>console.log); 
+    }
+    
+    function scrollToBottom() { 
+        const pane = document.getElementById('messagesPane'); 
+        if(pane) pane.scrollTop = pane.scrollHeight; 
+    }
+    
+    function markRead() { 
+        if(currentChatUserId) fetch('/student/messages/'+currentChatUserId+'/read',{method:'POST'}); 
+    }
+    
+    function showTyping() { 
+        const typingDiv = document.getElementById('typingArea'); 
+        if(typingDiv){ 
+            typingDiv.style.display='block'; 
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(()=> typingDiv.style.display='none',3000); 
+        } 
+    }
+    
+   
+    function sendTyping() { 
+        if(!currentChatUserId) return;
+        const now = Date.now();
+        if(now - lastTypingSent < 2000) return;
+        lastTypingSent = now;
+        fetch('/student/messages/typing',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({recipientId:currentChatUserId})
+        }).catch(e=>console.log); 
+    }
 
-                if (!picker.contains(e.target) && (!btn || !btn.contains(e.target))) {
-                    picker.classList.remove('show');
-                }
-            });
+    function insertEmoji(emoji) { 
+        const input = document.getElementById('waMessageInput'); 
+        if(input){ 
+            const start = input.selectionStart; 
+            const val = input.value; 
+            input.value = val.substring(0,start) + emoji + val.substring(start); 
+            input.focus(); 
+            toggleSendBtn(); 
+        } 
+        document.getElementById('emojiPanelWA')?.classList.remove('show'); 
+    }
 
-            // Search conversations
-            document.getElementById('searchConversations')?.addEventListener('input', function(e) {
-                const search = e.target.value.toLowerCase();
-                document.querySelectorAll('.conversation-item').forEach(item => {
-                    const name = item.querySelector('.conversation-name').textContent.toLowerCase();
-                    const preview = item.querySelector('.preview-text').textContent.toLowerCase();
-                    if (name.includes(search) || preview.includes(search)) {
-                        item.style.display = 'flex';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
+    function toggleSendBtn() { 
+        const input = document.getElementById('waMessageInput'); 
+        const btn = document.getElementById('waSendBtn'); 
+        if(btn && input) btn.disabled = !input.value.trim(); 
+    }
 
-            // Handle Enter key for sending
-            document.getElementById('messageInput')?.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
+    function closeMobileSidebar() { 
+        document.getElementById('chatsSidebar')?.classList.remove('mobile-open'); 
+    }
+    let fallbackInterval = null;
+
+    function enablePollingFallback() {
+        if (fallbackInterval) return;
+        
+        console.log("Polling fallback enabled");
+
+        fallbackInterval = setInterval(() => {
+            if (currentChatUserId) {
+                refreshMessages();
+            }
+        }, 5000); // every 5 seconds
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        connectSSE();
+        scrollToBottom();
+        if(currentChatUserId) markRead();
+        
+        document.getElementById('allChatsList').addEventListener('click', function(e) {
+            const item = e.target.closest('[data-user-id]');
+            if (item) {
+                window.location.href = '/student/messages/' + item.getAttribute('data-user-id');
+            }
+        });
+        
+        const sendBtn = document.getElementById('waSendBtn');
+        const msgInput = document.getElementById('waMessageInput');
+        
+        if(sendBtn && msgInput && currentChatUserId){
+            const sendMessage = () => {
+                const content = msgInput.value.trim();
+                if(!content) return;
+                //sendBtn.disabled = true;
+
+                const formData = new URLSearchParams();
+                formData.append('recipientId', currentChatUserId);
+                formData.append('content', content);
+                formData.append('subject', 'Message');
+                fetch('/student/messages/send', {
+                    method:'POST', 
+                    headers:{'Content-Type':'application/x-www-form-urlencoded'}, 
+                    body:formData
+                }).then(res => {
+                    if(res.redirected) window.location.href = res.url;
+                    else refreshMessages();
+                    msgInput.value = '';
+                    toggleSendBtn();
+                }).catch(err => console.log);
+            };
+            sendBtn.onclick = sendMessage;
+            msgInput.addEventListener('keypress', e => {
+                if(e.key === 'Enter' && !e.shiftKey && !sendBtn.disabled) {
                     e.preventDefault();
-                    const sendBtn = document.getElementById('sendButton');
-                    if (!sendBtn.disabled) {
-                        sendBtn.closest('form').submit();
-                    }
+                    sendMessage();
                 }
             });
-        });
-
-        // Clean up on page unload
-        window.addEventListener('beforeunload', function() {
-            if (eventSource) {
-                eventSource.close();
-            }
-        });
-        
-        function startNewChat() {
-            document.getElementById('newChatModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('newChatModal').style.display = 'none';
-        }
-
-        function filterUsers(search) {
-            search = search.toLowerCase();
-            document.querySelectorAll('.user-item').forEach(item => {
-                const name = item.dataset.name.toLowerCase();
-                item.style.display = name.includes(search) ? 'block' : 'none';
+            msgInput.addEventListener('input', () => {
+                toggleSendBtn();
+                sendTyping();
             });
         }
         
-    </script>
+        // Emoji picker toggle
+        const emojiBtn = document.getElementById('emojiButtonWA');
+        const emojiPanel = document.getElementById('emojiPanelWA');
+        if(emojiBtn && emojiPanel) {
+            emojiBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                emojiPanel.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if(!emojiPanel.contains(e.target) && !emojiBtn.contains(e.target)) {
+                    emojiPanel.classList.remove('show');
+                }
+            });
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('globalSearchPeople');
+        if(searchInput) {
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                document.querySelectorAll('.conversation-item, .contact-item').forEach(el => {
+                    const name = el.querySelector('.contact-name')?.innerText.toLowerCase() || '';
+                    const preview = el.querySelector('.message-preview')?.innerText.toLowerCase() || '';
+                    el.style.display = (name.includes(term) || preview.includes(term)) ? 'flex' : 'none';
+                });
+            });
+        }
+        
+        // Mobile sidebar handling
+        const mobileBack = document.getElementById('mobileBackBtn');
+        if(mobileBack) mobileBack.onclick = () => closeMobileSidebar();
+        
+        function checkMobile() {
+            if(window.innerWidth <= 780) {
+                const sidebar = document.getElementById('chatsSidebar');
+                if(sidebar && !sidebar.classList.contains('mobile-open') && window.location.href.includes('/messages/') && currentChatUserId) {
+                    sidebar.classList.add('mobile-open');
+                }
+            }
+        }
+        checkMobile();
+        
+        // Auto-scroll on new messages
+        const observer = new MutationObserver(() => scrollToBottom());
+        const messagesPane = document.getElementById('messagesPane');
+        if(messagesPane) observer.observe(messagesPane, { childList: true, subtree: true });
+    });
+    
+    window.closeMobileSidebar = closeMobileSidebar;
+</script>
 </body>
 </html>

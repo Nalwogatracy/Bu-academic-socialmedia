@@ -6,13 +6,13 @@
     <title th:text="${user.fullName} + ' - Lecturer Dashboard | Bugema Academic Connect'">Lecturer Dashboard - Bugema Academic Connect</title>
     
     <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
     
     <!-- Chart.js for analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script th:src="@{/js/chart.umd.min.js}"></script>
     
     <style>
         /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING - LECTURER THEME ===== */
@@ -1254,23 +1254,23 @@
         </div>
         
         <div class="nav-right">
-            <div class="nav-item">
+            <a class="nav-item" th:href="@{/lecturer/dashboard}">
                 <i class="fas fa-home"></i>
-            </div>
+            </a>
             
             <div class="nav-item">
                 <i class="fas fa-chart-line"></i>
             </div>
             
-            <div class="nav-item">
+            <a class="nav-item" th:href="@{/lecturer/messages}">
                 <i class="fas fa-comment"></i>
                 <span class="badge" th:text="${unreadMessages}">3</span>
-            </div>
+            </a>
             
-            <div class="nav-item">
+            <a class="nav-item" th:href="@{/lecturer/notifications}">
                 <i class="fas fa-bell"></i>
                 <span class="badge" th:text="${unreadNotifications}">2</span>
-            </div>
+            </a>
             
             <!-- Replace the entire user-profile div and the script below it -->
             <div class="user-profile" style="position:relative;">

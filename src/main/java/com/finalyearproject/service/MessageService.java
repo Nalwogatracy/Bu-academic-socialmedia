@@ -37,6 +37,7 @@ public class MessageService {
     }
 
     // Get conversations grouped by the other participant
+    @Transactional
     public Map<User, List<Message>> getConversationsForUser(User user) {
         List<Message> messages = messageRepository.findMessagesForUser(user);
         Map<User, List<Message>> conversations = new HashMap<>();
@@ -70,7 +71,7 @@ public class MessageService {
         // ── Push toast notification to recipient ──────────────────────────────
         sseController.pushNotification(recipient,
             "New Message",
-            sender.getFullName() + " sent you a message");
+            sender.getFullName() + " sent you a message",sender);
         return savedMessage;
 
     }

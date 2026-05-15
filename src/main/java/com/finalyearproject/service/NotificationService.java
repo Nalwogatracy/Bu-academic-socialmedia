@@ -54,7 +54,7 @@ public class NotificationService {
         sseController.pushNotification(
                 recipient,
                 sender != null ? sender.getFullName() : "System",
-                message
+                message, sender
         );
     }
     public void sendAnnouncementEmail(Post post, Set<User> recipients) {
