@@ -11,6 +11,12 @@
     <!-- Google Fonts -->
     <link rel="stylesheet" th:href="@{/css/inter.css}">
     
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    
     <style>
         /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING ===== */
         * {
@@ -1151,7 +1157,7 @@
                      </a>
                 </div>
                 
-                <div class="nav-item">
+                 <div class="nav-item">
                     <a class="nav-item" th:href="@{/student/notifications}"
                         style="text-decoration:none;" id="notificationsNavItem">
                          <i class="fas fa-bell"></i>
@@ -1160,6 +1166,10 @@
                                th:text="${unreadNotifications}">5</span>
                      </a>
                 </div>
+                
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
                 
                 <div class="user-profile" style="position:relative;">
 
@@ -1240,10 +1250,18 @@
                     <i class="fas fa-book-open"></i>
                     <span>My Courses</span>
                 </a>
+                <a class="menu-item-prof" th:href="@{/student/courses/enroll}">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Enroll in Courses</span>
+                </a>
                 <a class="menu-item-prof" th:href="@{/student/assignments}">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Assignments</span>
                     <span class="menu-badge" th:text="${pendingAssignments}">3</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/student/quizzes}">
+                    <i class="fas fa-pencil-alt"></i>
+                    <span>Quizzes</span>
                 </a>
                 <a class="menu-item-prof" th:href="@{/student/grades}">
                     <i class="fas fa-trophy"></i>
@@ -1274,11 +1292,45 @@
                     <i class="fas fa-user-cog"></i>
                     <span>Profile</span>
                 </a>
+                <div class="dark-mode-toggle">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                    <span class="toggle-text">Dark Mode</span>
+                    <span class="toggle-switch"></span>
+                </div>
             </div>
         </div>
 
         <!-- Main Feed -->
         <div class="main-content">
+            <!-- Quiz Stats Bar -->
+            <div th:if="${totalQuizzes > 0}" style="background:white; border:1px solid #eef0f3; border-radius:12px; padding:16px 24px; margin-bottom:20px; display:flex; align-items:center; gap:32px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-pencil-alt" style="color:#0a66c2; font-size:1.3rem;"></i>
+                    <div>
+                        <div style="font-weight:700; color:#1a2634; font-size:1.1rem;" th:text="${totalQuizzes}">0</div>
+                        <div style="font-size:0.8rem; color:#5e6775;">Total Quizzes</div>
+                    </div>
+                </div>
+                <div style="width:1px; height:40px; background:#eef0f3;"></div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-check-circle" style="color:#28a745; font-size:1.3rem;"></i>
+                    <div>
+                        <div style="font-weight:700; color:#1a2634; font-size:1.1rem;" th:text="${completedQuizzes + '/' + totalQuizzes}">0/0</div>
+                        <div style="font-size:0.8rem; color:#5e6775;">Completed</div>
+                    </div>
+                </div>
+                <div style="width:1px; height:40px; background:#eef0f3;"></div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-trophy" style="color:#f5b042; font-size:1.3rem;"></i>
+                    <div>
+                        <div style="font-weight:700; color:#1a2634; font-size:1.1rem;" th:text="${avgQuizScore + '%'}">0%</div>
+                        <div style="font-size:0.8rem; color:#5e6775;">Avg Score</div>
+                    </div>
+                </div>
+                <a th:href="@{/student/quizzes}" style="margin-left:auto; background:#eef3f8; color:#0a66c2; padding:8px 18px; border-radius:20px; text-decoration:none; font-weight:600; font-size:0.85rem; white-space:nowrap;">
+                    <i class="fas fa-arrow-right"></i> View Quizzes
+                </a>
+            </div>
             <!-- Create Post Section -->
             <div class="create-post">
                 <div class="post-type-tabs">

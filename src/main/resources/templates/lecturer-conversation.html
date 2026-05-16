@@ -6,6 +6,10 @@
     <title>Bugema Connect | Messages</title>
     <link rel="stylesheet" th:href="@{/css/all.min.css}">
     <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
     <style>
         * {
             margin: 0;
@@ -674,6 +678,7 @@
             <a class="nav-item" th:href="@{/lecturer/dashboard}"><i class="fas fa-home"></i></a>
             <a class="nav-item active" th:href="@{/lecturer/messages}"><i class="fas fa-comment"></i><span class="badge" th:if="${unreadMessages > 0}" th:text="${unreadMessages}">2</span></a>
             <a class="nav-item" th:href="@{/lecturer/notifications}"><i class="fas fa-bell"></i><span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">3</span></a>
+            <button class="nav-dark-toggle" title="Toggle dark mode"><i class="fas fa-moon dark-toggle-icon"></i></button>
             <div class="user-avatar">
                 <img th:if="${user.profilePicture != null}" th:src="@{/user/profile-picture/{id}(id=${user.id})}" style="width:100%; height:100%; object-fit:cover;">
                 <span th:if="${user.profilePicture == null}" th:text="${#strings.substring(user.fullName,0,2)}">JD</span>

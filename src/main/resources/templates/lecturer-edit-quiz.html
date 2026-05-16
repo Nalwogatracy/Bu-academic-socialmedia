@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${quiz.title} + ' - Edit Quiz | Bugema Academic Connect'">Edit Quiz</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { overflow-x: hidden; background: #f0f2f5; }
+        .navbar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #eef0f3; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .nav-item i { font-size: 1.3rem; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; font-weight: 600; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid white; }
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1rem; }
+        .logout-btn { border: none; background: transparent; color: #5e6775; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+        .main-container { max-width: 900px; margin: 88px auto 30px; padding: 0 24px; }
+        .main-content { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px; border: 1px solid #eef0f3; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: #5e6775; text-decoration: none; margin-bottom: 16px; font-weight: 500; }
+        .back-link:hover { color: #0a66c2; }
+        .page-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #eef0f3; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #1a2634; }
+        .page-header .meta { color: #5e6775; font-size: 0.95rem; margin-top: 8px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; color: #1a2634; display: flex; align-items: center; gap: 8px; }
+        .question-card { background: #f7f9fc; border: 1px solid #eef0f3; border-radius: 10px; padding: 20px; margin-bottom: 12px; }
+        .question-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+        .question-type { background: #eef3f8; color: #0a66c2; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .question-text { font-weight: 600; margin-bottom: 8px; color: #1a2634; }
+        .choice-list { list-style: none; padding-left: 20px; }
+        .choice-item { padding: 4px 0; color: #5e6775; font-size: 0.95rem; }
+        .choice-item.correct { color: #155724; font-weight: 600; }
+        .choice-item.correct::before { content: '\2713'; color: #28a745; margin-right: 6px; }
+        .question-points { font-size: 0.85rem; color: #5e6775; margin-top: 8px; }
+        .add-section { margin-top: 32px; padding-top: 24px; border-top: 2px solid #eef0f3; }
+        .add-section h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; color: #1a2634; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #1a2634; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #e0e4e9; border-radius: 8px; font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #0a66c2; }
+        .form-group textarea { height: 80px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .choice-input { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .choice-input input[type="text"] { flex: 1; }
+        .choice-input input[type="checkbox"] { width: auto; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #0a66c2; color: white; }
+        .btn-primary:hover { background: #004182; }
+        .btn-secondary { background: #eef3f8; color: #1a2634; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .flash-msg { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; }
+        .flash-msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .empty-questions { text-align: center; padding: 40px; color: #5e6775; background: #f7f9fc; border-radius: 10px; border: 2px dashed #e0e4e9; }
+        .empty-questions i { font-size: 2rem; margin-bottom: 12px; color: #c0c8d4; }
+        .tf-options { display: flex; gap: 16px; margin-top: 8px; }
+        .tf-options label { display: flex; align-items: center; gap: 6px; font-weight: 500; cursor: pointer; }
+        .tf-options input[type="radio"] { width: auto; }
+        #choices-section { display: none; }
+        .add-choice-btn { background: none; border: 1px dashed #c0c8d4; color: #5e6775; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 8px; }
+        .add-choice-btn:hover { border-color: #0a66c2; color: #0a66c2; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left"><div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span><span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Lecturer</span></div></div>
+            <div class="nav-right">
+                <div class="nav-item" onclick="location.href='/lecturer/dashboard'"><i class="fas fa-home"></i></div>
+                <div class="nav-item" onclick="location.href='/lecturer/messages'"><i class="fas fa-comment"></i><span class="badge" th:text="${unreadMessages}">0</span></div>
+                <div class="nav-item" onclick="location.href='/lecturer/notifications'"><i class="fas fa-bell"></i><span class="badge" th:text="${unreadNotifications}">0</span></div>
+                <button class="nav-dark-toggle" title="Toggle dark mode"><i class="fas fa-moon dark-toggle-icon"></i></button>
+                <div class="user-profile"><div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div></div>
+                <form th:action="@{/logout}" method="post" style="display:inline;"><button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button></form>
+            </div>
+        </div>
+    </nav>
+    <div class="main-container">
+        <div class="main-content">
+            <a class="back-link" th:href="@{/lecturer/quizzes}"><i class="fas fa-arrow-left"></i> Back to Quizzes</a>
+            <div th:if="${success}" class="flash-msg success" th:text="${success}"></div>
+            <div class="page-header">
+                <h1 th:text="${quiz.title}">Quiz Title</h1>
+                <div class="meta">
+                    <span class="course-tag" style="background:#eef3f8;color:#0a66c2;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;" th:text="${quiz.course.code}">ICT3101</span>
+                    <span><strong>Total Points:</strong> <span th:text="${quiz.totalPoints}">0</span></span>
+                    <span><strong>Questions:</strong> <span th:text="${#lists.size(quiz.questions)}">0</span></span>
+                    <span th:if="${quiz.timeLimitMinutes != null}"><strong>Time Limit:</strong> <span th:text="${quiz.timeLimitMinutes}">30</span> min</span>
+                    <span th:if="${quiz.dueDate != null}"><strong>Due:</strong> <span th:text="${#temporals.format(quiz.dueDate, 'MMM dd, yyyy')}">Mar 20</span></span>
+                </div>
+            </div>
+            <div class="section-title"><i class="fas fa-list"></i> Questions</div>
+            <div th:if="${#lists.isEmpty(quiz.questions)}" class="empty-questions">
+                <i class="fas fa-question-circle"></i>
+                <p>No questions yet. Add your first question below.</p>
+            </div>
+            <div th:each="q : ${quiz.questions}" class="question-card">
+                <div class="question-header">
+                    <span class="question-type" th:text="${q.questionType}">MC</span>
+                    <span style="font-weight:600;color:#0a66c2;" th:text="${q.points + ' pts'}">10 pts</span>
+                </div>
+                <div class="question-text" th:text="${q.questionText}">Question text</div>
+                <ul class="choice-list" th:if="${#lists.size(q.choices) > 0}">
+                    <li class="choice-item" th:classappend="${c.correct} ? 'correct'" th:each="c : ${q.choices}" th:text="${c.text}">Choice text</li>
+                </ul>
+                <div class="question-points" th:if="${q.questionType == 'SHORT_ANSWER'}">Short answer question (manual grading)</div>
+            </div>
+            <div class="add-section">
+                <h2><i class="fas fa-plus-circle"></i> Add Question</h2>
+                <form th:action="@{/lecturer/quizzes/{id}/questions/add(id=${quiz.id})}" method="post" id="questionForm">
+                    <div class="form-group">
+                        <label>Question Type</label>
+                        <select name="questionType" id="questionType" onchange="toggleChoices()">
+                            <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                            <option value="TRUE_FALSE">True / False</option>
+                            <option value="SHORT_ANSWER">Short Answer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Question Text</label>
+                        <textarea name="questionText" required placeholder="Enter your question..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Points</label>
+                            <input type="number" name="points" value="10" min="1" required>
+                        </div>
+                    </div>
+                    <div id="choices-section">
+                        <label style="font-weight:600;display:block;margin-bottom:8px;color:#1a2634;">Choices</label>
+                        <div id="choices-container">
+                            <div class="choice-input">
+                                <input type="text" name="choiceTexts" placeholder="Choice A">
+                                <input type="checkbox" name="correctChoices" value="0"> Correct
+                            </div>
+                            <div class="choice-input">
+                                <input type="text" name="choiceTexts" placeholder="Choice B">
+                                <input type="checkbox" name="correctChoices" value="1"> Correct
+                            </div>
+                        </div>
+                        <button type="button" class="add-choice-btn" onclick="addChoice()"><i class="fas fa-plus"></i> Add Choice</button>
+                    </div>
+                    <div id="tf-section" style="display:none;">
+                        <label style="font-weight:600;display:block;margin-bottom:8px;color:#1a2634;">Correct Answer</label>
+                        <div class="tf-options">
+                            <label><input type="radio" name="correctChoicesTF" value="0" checked> True</label>
+                            <label><input type="radio" name="correctChoicesTF" value="1"> False</label>
+                        </div>
+                        <p style="color:#5e6775;font-size:0.85rem;margin-top:4px;">Hidden inputs will be submitted automatically</p>
+                        <input type="hidden" name="choiceTexts" value="True">
+                        <input type="hidden" name="choiceTexts" value="False">
+                    </div>
+                    <button type="submit" class="btn btn-success" style="margin-top:16px;"><i class="fas fa-check"></i> Add Question</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        let choiceCount = 2;
+        function addChoice() {
+            const container = document.getElementById('choices-container');
+            const div = document.createElement('div');
+            div.className = 'choice-input';
+            div.innerHTML = '<input type="text" name="choiceTexts" placeholder="Choice ' + String.fromCharCode(65 + choiceCount) + '"><input type="checkbox" name="correctChoices" value="' + choiceCount + '"> Correct';
+            container.appendChild(div);
+            choiceCount++;
+        }
+        function toggleChoices() {
+            const type = document.getElementById('questionType').value;
+            document.getElementById('choices-section').style.display = (type === 'MULTIPLE_CHOICE') ? 'block' : 'none';
+            document.getElementById('tf-section').style.display = (type === 'TRUE_FALSE') ? 'block' : 'none';
+        }
+        document.getElementById('questionType').addEventListener('change', toggleChoices);
+        toggleChoices();
+    </script>
+</body>
+</html>

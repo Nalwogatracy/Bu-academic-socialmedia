@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Statistics | Bugema Academic Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/dark-mode.js}"></script>
+    <script th:src="@{/js/chart.umd.min.js}"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; }
+        .navbar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #eef0f3; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #004182); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1rem; }
+        .logout-btn { border: none; background: transparent; color: #5e6775; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+        .main-container { max-width: 1200px; margin: 88px auto 30px; padding: 0 24px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #1a2634; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #eef0f3; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .stat-card .label { font-size: 0.85rem; color: #5e6775; margin-bottom: 4px; }
+        .stat-card .value { font-size: 2rem; font-weight: 700; color: #1a2634; }
+        .chart-card { background: white; border-radius: 12px; border: 1px solid #eef0f3; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .chart-card h3 { font-size: 1.1rem; font-weight: 700; color: #1a2634; margin-bottom: 16px; }
+        .chart-container { max-width: 500px; margin: 0 auto; }
+        .question-table { width: 100%; border-collapse: collapse; }
+        .question-table th { text-align: left; padding: 12px 16px; font-size: 0.85rem; color: #5e6775; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid #eef0f3; }
+        .question-table td { padding: 12px 16px; border-bottom: 1px solid #eef0f3; font-size: 0.95rem; color: #1a2634; }
+        .question-table tr:hover { background: #f7f9fc; }
+        .bar-cell { display: flex; align-items: center; gap: 8px; }
+        .bar-bg { flex: 1; height: 8px; background: #eef0f3; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .bar-fill.good { background: #28a745; }
+        .bar-fill.ok { background: #f5b042; }
+        .bar-fill.bad { background: #dc3545; }
+        .pct-label { font-weight: 600; min-width: 40px; text-align: right; }
+        .back-link { color: #0a66c2; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+        .back-link:hover { text-decoration: underline; }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span></div>
+            </div>
+            <div class="nav-right">
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
+                <div class="user-profile" style="display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:40px; cursor:pointer;" onclick="location.href='/lecturer/profile'">
+                    <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                </div>
+                <form th:action="@{/logout}" method="post" style="display:inline;"><button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button></form>
+            </div>
+        </div>
+    </nav>
+    <div class="main-container">
+        <a class="back-link" th:href="@{/lecturer/quizzes}"><i class="fas fa-arrow-left"></i> Back to Quizzes</a>
+        <div class="page-header">
+            <div>
+                <h1 th:text="${quiz.title}">Quiz Title</h1>
+                <p style="color:#5e6775;" th:text="${quiz.course.code}">ICT3101</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">Total Attempts</div>
+                <div class="value" th:text="${stats.totalAttempts}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Graded Submissions</div>
+                <div class="value" th:text="${stats.gradedAttempts}">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Average Score</div>
+                <div class="value" th:text="${stats.avgScore + '%'}">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Highest Score</div>
+                <div class="value" th:text="${stats.maxScore + '%'}">0%</div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3><i class="fas fa-chart-bar"></i> Score Distribution</h3>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3><i class="fas fa-chart-pie"></i> Per-Question Performance</h3>
+            <table class="question-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Question</th>
+                        <th>Type</th>
+                        <th>Points</th>
+                        <th>Correct</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="qs, iter : ${stats.questionStats}">
+                        <td th:text="${iter.index + 1}">1</td>
+                        <td th:text="${qs.text}">Question text</td>
+                        <td><span class="course-tag" style="background:#eef3f8; color:#0a66c2; padding:2px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;" th:text="${qs.type.replace('_', ' ')}">MC</span></td>
+                        <td th:text="${qs.points}">10</td>
+                        <td th:text="${qs.correctCount + '/' + qs.totalCount}">5/10</td>
+                        <td>
+                            <div class="bar-cell">
+                                <div class="bar-bg">
+                                    <div class="bar-fill" th:classappend="${qs.correctPct >= 75} ? 'good' : (${qs.correctPct >= 50} ? 'ok' : 'bad')" th:style="'width:' + ${qs.correctPct} + '%'"></div>
+                                </div>
+                                <span class="pct-label" th:text="${qs.correctPct + '%'}">50%</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        new Chart(document.getElementById('scoreChart'), {
+            type: 'bar',
+            data: {
+                labels: ['0-25%', '25-50%', '50-75%', '75-100%'],
+                datasets: [{
+                    label: 'Students',
+                    data: [
+                        <span th:text="${stats.dist_0_25}">0</span>,
+                        <span th:text="${stats.dist_25_50}">0</span>,
+                        <span th:text="${stats.dist_50_75}">0</span>,
+                        <span th:text="${stats.dist_75_100}">0</span>
+                    ],
+                    backgroundColor: ['#dc3545', '#f5b042', '#ffc107', '#28a745'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

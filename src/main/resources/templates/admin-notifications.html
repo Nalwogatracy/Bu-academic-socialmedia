@@ -5,6 +5,11 @@
     <title>Notifications | Bugema Academic Connect</title>
     <link rel="stylesheet" th:href="@{/css/all.min.css}">
     <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
         body { background:#f0f2f5; }
@@ -95,6 +100,9 @@
             <a class="nav-item" th:href="@{/admin/notifications}">
                 <i class="fas fa-bell"></i>
             </a>
+            <button class="nav-dark-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon dark-toggle-icon"></i>
+            </button>
             <div class="user-avatar" th:text="${#strings.substring(user.fullName,0,2)}">NT</div>
             <form th:action="@{/logout}" method="post">
                 <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>

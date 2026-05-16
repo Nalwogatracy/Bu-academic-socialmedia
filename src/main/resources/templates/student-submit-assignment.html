@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="'Submit: ' + ${assignment.title}">Submit Assignment</title>
     <link rel="stylesheet" th:href="@{/css/all.min.css}">
-    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css"}>
+
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css"}>
+
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
         body { background:#f0f2f5; }
@@ -185,6 +192,9 @@
             <span>Bugema Connect</span>
         </div>
         <div class="nav-right">
+            <button class="nav-dark-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon dark-toggle-icon"></i>
+            </button>
             <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
             <form th:action="@{/logout}" method="post">
                 <button type="submit" class="logout-btn">
@@ -281,21 +291,61 @@
             <div class="submission-form">
                 <h2><i class="fas fa-paper-plane"></i> Submit Your Work</h2>
 
+                <!-- Auto-grade hint -->
+                <div th:if="${assignment.autoGradeType != 'NONE' and assignment.autoGradeAnswer != null}"
+                     style="background:#fff8e7; border-left:4px solid #f5b042; padding:12px 16px; border-radius:8px; margin-bottom:20px;">
+                    <i class="fas fa-robot" style="color:#f5b042; margin-right:8px;"></i>
+                    <strong>Auto-graded:</strong>
+                    This submission will be automatically graded using
+                    <span th:text="${assignment.autoGradeType == 'EXACT_MATCH' ? 'exact match' : 'keyword match'}">keyword match</span>.
+                </div>
+
+                <!-- Questions section (for QUIZ and MIXED types) -->
+                <div th:if="${assignment.submissionType == 'QUIZ' or assignment.submissionType == 'MIXED'}"
+                     style="margin-bottom:20px;">
+                    <div th:each="q, iter : ${assignment.questions}" style="background:#f7f9fc; border:1px solid #eef0f3; border-radius:10px; padding:16px; margin-bottom:12px;">
+                        <div style="font-size:0.85rem; color:#0a66c2; font-weight:600; margin-bottom:6px;"
+                             th:text="'Question ' + (iter.index + 1) + ' (' + q.points + ' pts)'">Q1</div>
+                        <div style="font-size:1rem; font-weight:600; color:#1a2634; margin-bottom:12px;"
+                             th:text="${q.questionText}">Question text</div>
+
+                        <div th:if="${q.questionType == 'SHORT_ANSWER'}">
+                            <textarea th:name="'text_' + ${q.id}" rows="3"
+                                      placeholder="Type your answer..."
+                                      style="width:100%; padding:12px; border:1px solid #e0e4e9; border-radius:8px; font-size:0.95rem;"></textarea>
+                        </div>
+
+                        <div th:if="${q.questionType == 'MULTIPLE_CHOICE' or q.questionType == 'TRUE_FALSE'}">
+                            <div th:each="c : ${q.choices}"
+                                 style="display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:6px; border:2px solid #e0e4e9; border-radius:8px; cursor:pointer;"
+                                 onclick="this.querySelector('input').checked=true; this.parentElement.querySelectorAll('div').forEach(el=>el.style.borderColor='#e0e4e9'); this.style.borderColor='#0a66c2';">
+                                <input type="radio" th:name="'question_' + ${q.id}" th:value="${c.id}"
+                                       style="width:18px; height:18px; accent-color:#0a66c2;">
+                                <label style="flex:1; cursor:pointer; font-size:0.95rem; color:#1a2634;" th:text="${c.text}">Choice</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Text answer -->
-                <div class="form-group">
+                <div class="form-group"
+                     th:if="${assignment.submissionType == 'TEXT_ONLY' or assignment.submissionType == 'MIXED'}">
                     <label>
                         <i class="fas fa-pen" style="color:#0a66c2;"></i>
-                        Written Answer <span style="color:#5e6775; font-weight:400;">(optional if uploading a file)</span>
+                        Written Answer
+                        <span th:if="${assignment.submissionType == 'MIXED'}" style="color:#5e6775; font-weight:400;">(optional if uploading a file)</span>
                     </label>
                     <textarea name="textAnswer" rows="8"
                               placeholder="Type your answer here..."></textarea>
                 </div>
 
                 <!-- File upload -->
-                <div class="form-group">
+                <div class="form-group"
+                     th:if="${assignment.submissionType == 'FILE_UPLOAD' or assignment.submissionType == 'MIXED'}">
                     <label>
                         <i class="fas fa-paperclip" style="color:#0a66c2;"></i>
-                        Upload File <span style="color:#5e6775; font-weight:400;">(optional if providing written answer)</span>
+                        Upload File
+                        <span th:if="${assignment.submissionType == 'MIXED'}" style="color:#5e6775; font-weight:400;">(optional if providing written answer)</span>
                     </label>
                     <div class="upload-zone" onclick="document.getElementById('submissionFile').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
@@ -340,10 +390,28 @@
     }
 
     function validateSubmission() {
-        const text = document.querySelector('textarea[name="textAnswer"]').value.trim();
-        const file = document.getElementById('submissionFile').files[0];
+        const textEl = document.querySelector('textarea[name="textAnswer"]');
+        const text = textEl ? textEl.value.trim() : '';
+        const fileEl = document.getElementById('submissionFile');
+        const file = fileEl ? fileEl.files[0] : null;
+        const questions = document.querySelectorAll('[name^="question_"]');
 
-        if (!text && !file) {
+        if (questions.length > 0) {
+            const answered = Array.from(document.querySelectorAll('[name^="question_"]:checked')).length;
+            const textQs = document.querySelectorAll('[name^="text_"]');
+            let textAnswered = 0;
+            textQs.forEach(el => { if (el.value.trim()) textAnswered++; });
+            if (answered + textAnswered < questions.length + textQs.length) {
+                const tc = textQs.length;
+                const qc = questions.length;
+                const required = qc + tc;
+                if (!confirm('You have only answered ' + (answered + textAnswered) + ' of ' + required + ' questions. Submit anyway?')) {
+                    return false;
+                }
+            }
+        }
+
+        if (!text && !file && questions.length === 0) {
             alert('Please provide a written answer or upload a file before submitting.');
             return false;
         }

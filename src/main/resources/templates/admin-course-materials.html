@@ -8,6 +8,12 @@
     <link rel="stylesheet" th:href="@{/css/all.min.css}">
     <link rel="stylesheet" th:href="@{/css/inter.css}">
 
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
@@ -515,8 +521,11 @@
                     <i class="fas fa-bell"></i>
                     <span class="badge" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">0</span>
                 </a>
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
                 <div class="user-profile">
-                    <div class="user-avatar" th:text="${user != null and user.fullName != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
+                    <div class="user-avatar" th:text="${user != null ? #strings.substring(user.fullName,0,2) : 'AD'}">AD</div>
                 </div>
                 <form th:action="@{/admin/logout}" method="post" style="display:inline;">
                     <button type="submit" class="logout-btn">
@@ -554,6 +563,11 @@
                 <a class="menu-item-prof active" th:href="@{/admin/courses}"><i class="fas fa-book"></i><span>Course Management</span></a>
                 <a class="menu-item-prof" th:href="@{/admin/posts}"><i class="fas fa-newspaper"></i><span>Content Moderation</span></a>
                 <a class="menu-item-prof" th:href="@{/admin/analytics}"><i class="fas fa-chart-bar"></i><span>Analytics</span></a>
+                <div class="dark-mode-toggle">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                    <span class="toggle-text">Dark Mode</span>
+                    <span class="toggle-switch"></span>
+                </div>
             </div>
         </div>
 

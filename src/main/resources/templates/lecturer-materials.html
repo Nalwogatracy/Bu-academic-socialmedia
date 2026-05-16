@@ -11,6 +11,12 @@
     <!-- Google Fonts -->
     <link rel="stylesheet" th:href="@{/css/inter.css}">
     
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    
     <style>
         /* Same base styles as previous templates */
         * {
@@ -642,6 +648,9 @@
                     <i class="fas fa-bell"></i>
                     <span class="badge" th:text="${unreadNotifications}">0</span>
                 </div>
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
                 <div class="user-profile" onclick="location.href='/lecturer/profile'">
                     <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div>
                 </div>
@@ -702,6 +711,11 @@
                     <i class="fas fa-chart-line"></i>
                     <span>Analytics</span>
                 </a>
+                <div class="dark-mode-toggle">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                    <span class="toggle-text">Dark Mode</span>
+                    <span class="toggle-switch"></span>
+                </div>
             </div>
         </div>
 

@@ -1,20 +1,14 @@
 package com.finalyearproject.service;
 
-import com.finalyearproject.model.Assignment;
-import com.finalyearproject.model.Course;
-import com.finalyearproject.model.Submission;
-import com.finalyearproject.model.User;
+import com.finalyearproject.model.*;
+import com.finalyearproject.repository.AssignmentAnswerRepository;
 import com.finalyearproject.repository.AssignmentRepository;
 import com.finalyearproject.repository.SubmissionRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
+    private final AssignmentAnswerRepository assignmentAnswerRepository;
     private final CourseService courseService;
 
-    public AssignmentService(AssignmentRepository assignmentRepository,SubmissionRepository submissionRepository, CourseService courseService) {
+    public AssignmentService(AssignmentRepository assignmentRepository, SubmissionRepository submissionRepository,
+                             AssignmentAnswerRepository assignmentAnswerRepository, CourseService courseService) {
         this.assignmentRepository = assignmentRepository;
         this.submissionRepository = submissionRepository;
+        this.assignmentAnswerRepository = assignmentAnswerRepository;
         this.courseService = courseService;
     }
 
@@ -284,5 +281,78 @@ public class AssignmentService {
     public Optional<Submission> getSubmissionForStudent(Assignment assignment, User student) {
         return submissionRepository.findByAssignmentAndStudent(assignment, student);
     }
-       
+
+    @Transactional
+    public Submission autoGrade(Submission submission, Map<Long, Long> selectedChoices, Map<Long, String> textAnswers) {
+        Assignment assignment = submission.getAssignment();
+        int totalScore = 0;
+        boolean hasShortAnswer = false;
+
+        if ("QUIZ".equals(assignment.getSubmissionType()) || "MIXED".equals(assignment.getSubmissionType())) {
+            for (AssignmentQuestion question : assignment.getQuestions()) {
+                AssignmentAnswer answer = new AssignmentAnswer();
+                answer.setSubmission(submission);
+                answer.setQuestion(question);
+
+                if ("SHORT_ANSWER".equals(question.getQuestionType())) {
+                    String textAns = textAnswers.get(question.getId());
+                    answer.setTextAnswer(textAns != null ? textAns : "");
+                    answer.setCorrect(false);
+                    answer.setPointsEarned(0);
+                    hasShortAnswer = true;
+                } else {
+                    Long choiceId = selectedChoices.get(question.getId());
+                    if (choiceId != null) {
+                        for (AssignmentChoice choice : question.getChoices()) {
+                            if (choice.getId().equals(choiceId)) {
+                                answer.setSelectedChoice(choice);
+                                answer.setCorrect(choice.isCorrect());
+                                answer.setPointsEarned(choice.isCorrect() ? question.getPoints() : 0);
+                                if (choice.isCorrect()) {
+                                    totalScore += question.getPoints();
+                                }
+                                break;
+                            }
+                        }
+                    } else {
+                        answer.setCorrect(false);
+                        answer.setPointsEarned(0);
+                    }
+                }
+                submission.getAnswers().add(answer);
+            }
+        }
+
+        if ("EXACT_MATCH".equals(assignment.getAutoGradeType()) && submission.getTextAnswer() != null
+                && assignment.getAutoGradeAnswer() != null && !assignment.getAutoGradeAnswer().isBlank()) {
+            if (submission.getTextAnswer().trim().equalsIgnoreCase(assignment.getAutoGradeAnswer().trim())) {
+                totalScore += assignment.getAutoGradePoints() != null ? assignment.getAutoGradePoints() : 0;
+            }
+        } else if ("KEYWORD_MATCH".equals(assignment.getAutoGradeType()) && submission.getTextAnswer() != null
+                && assignment.getAutoGradeAnswer() != null && !assignment.getAutoGradeAnswer().isBlank()) {
+            String[] keywords = assignment.getAutoGradeAnswer().toLowerCase().split("\\s*,\\s*");
+            String answer = submission.getTextAnswer().toLowerCase();
+            boolean allFound = true;
+            for (String kw : keywords) {
+                if (!answer.contains(kw.trim())) {
+                    allFound = false;
+                    break;
+                }
+            }
+            if (allFound) {
+                totalScore += assignment.getAutoGradePoints() != null ? assignment.getAutoGradePoints() : 0;
+            }
+        }
+
+        if (hasShortAnswer || "FILE_UPLOAD".equals(assignment.getSubmissionType())) {
+            submission.setScore(totalScore);
+            submission.setGraded(false);
+        } else {
+            submission.setScore(totalScore);
+            submission.setGraded(true);
+            submission.setGradedAt(LocalDateTime.now());
+        }
+
+        return submissionRepository.save(submission);
+    }
 }

@@ -8,6 +8,10 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/bootstrap-icons.css}">
     <link rel="stylesheet" th:href="@{/css/flatpickr.min.css}">
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
     <style>
         .schedule-card {
             border-left: 4px solid #0d6efd;
@@ -64,6 +68,11 @@
                         <a class="nav-link" href="/lecturer/dashboard">
                             <i class="bi bi-house"></i> Dashboard
                         </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-dark-toggle btn nav-link" title="Toggle dark mode" style="background:none;border:none;">
+                            <i class="fas fa-moon dark-toggle-icon"></i>
+                        </button>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/logout">

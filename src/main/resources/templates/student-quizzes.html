@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Quizzes | Bugema Academic Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; }
+        .navbar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #eef0f3; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .search-bar { position: relative; width: 320px; }
+        .search-bar i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #5e6775; font-size: 0.9rem; }
+        .search-bar input { width: 100%; padding: 10px 16px 10px 44px; border: none; border-radius: 24px; font-size: 0.95rem; background: #eef3f8; }
+        .search-bar input:focus { outline: none; background: white; box-shadow: 0 0 0 2px #0a66c2; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .nav-item i { font-size: 1.3rem; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; font-weight: 600; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid white; }
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; margin-left: 8px; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #004182); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1rem; }
+        .logout-btn { border: none; background: transparent; color: #5e6775; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+        .main-container { max-width: 1280px; margin: 88px auto 30px; padding: 0 24px; display: grid; grid-template-columns: 260px 1fr 320px; gap: 24px; }
+        .left-sidebar { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: fit-content; position: sticky; top: 88px; overflow: hidden; border: 1px solid #eef0f3; }
+        .profile-card { padding: 16px; border-bottom: 1px solid #eef0f3; background: linear-gradient(to bottom, #f7f9fc, white); }
+        .profile-cover { height: 60px; background: linear-gradient(135deg, #0a66c2, #004182); margin: -16px -16px 0 -16px; margin-bottom: 40px; }
+        .profile-avatar-large { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #004182); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 600; margin: -40px auto 12px; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .profile-name-large { font-weight: 700; font-size: 1.2rem; text-align: center; margin-bottom: 4px; color: #1a2634; }
+        .profile-title-large { color: #5e6775; font-size: 0.9rem; text-align: center; margin-bottom: 16px; }
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px 0; border-top: 1px solid #eef0f3; }
+        .stat-cell { text-align: center; }
+        .stat-num { font-weight: 700; font-size: 1.1rem; color: #1a2634; }
+        .stat-label-small { font-size: 0.75rem; color: #5e6775; text-transform: uppercase; letter-spacing: 0.3px; }
+        .menu-section { padding: 16px 0; }
+        .menu-item-prof { display: flex; align-items: center; gap: 14px; padding: 12px 20px; color: #1a2634; transition: all 0.2s; cursor: pointer; text-decoration: none; font-weight: 500; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .menu-item-prof:hover { background: #f7f9fc; color: #0a66c2; }
+        .menu-item-prof.active { background: #eef3f8; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+        .menu-item-prof i { font-size: 1.2rem; width: 24px; color: #5e6775; }
+        .menu-item-prof:hover i { color: #0a66c2; }
+        .menu-item-prof.active i { color: #0a66c2; }
+        .menu-badge { margin-left: auto; background: #eef3f8; color: #1a2634; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .main-content { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px; border: 1px solid #eef0f3; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #1a2634; }
+        .right-sidebar { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: fit-content; position: sticky; top: 88px; border: 1px solid #eef0f3; overflow: hidden; }
+        .sidebar-header { padding: 16px 20px; border-bottom: 1px solid #eef0f3; }
+        .sidebar-header h3 { font-size: 0.9rem; font-weight: 700; color: #1a2634; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sidebar-section { padding: 16px 20px; border-bottom: 1px solid #eef0f3; }
+        .course-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; color: #1a2634; text-decoration: none; font-size: 0.9rem; }
+        .course-item:hover { color: #0a66c2; }
+        .flash-msg { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; }
+        .flash-msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-msg.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .quiz-grid { display: grid; gap: 16px; }
+        .quiz-card { background: #f7f9fc; border: 1px solid #eef0f3; border-radius: 10px; padding: 20px; }
+        .quiz-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+        .quiz-card-header h3 { font-size: 1.1rem; font-weight: 700; color: #1a2634; }
+        .quiz-card-meta { display: flex; gap: 12px; color: #5e6775; font-size: 0.85rem; flex-wrap: wrap; margin-bottom: 12px; }
+        .quiz-card-meta span { display: flex; align-items: center; gap: 4px; }
+        .course-tag { background: #eef3f8; color: #0a66c2; padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .quiz-card-actions { display: flex; justify-content: space-between; align-items: center; }
+        .attempt-info { font-size: 0.85rem; color: #5e6775; }
+        .btn { padding: 8px 20px; border-radius: 30px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+        .btn-primary { background: #0a66c2; color: white; }
+        .btn-primary:hover { background: #004182; }
+        .btn-secondary { background: #eef3f8; color: #5e6775; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #5e6775; }
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; color: #c0c8d4; }
+        .score-badge { background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        @media (max-width: 992px) { .main-container { grid-template-columns: 1fr; } .left-sidebar, .right-sidebar { display: none; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span></div>
+                <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search quizzes..."></div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-item" onclick="location.href='/student/dashboard'"><i class="fas fa-home"></i></div>
+                <div class="nav-item" onclick="location.href='/student/messages'"><i class="fas fa-comment"></i><span class="badge" th:text="${unreadMessages}">0</span></div>
+                <div class="nav-item" onclick="location.href='/student/notifications'"><i class="fas fa-bell"></i><span class="badge" th:text="${unreadNotifications}">0</span></div>
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
+                <div class="user-profile" onclick="location.href='/student/profile'"><div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div></div>
+                <form th:action="@{/logout}" method="post" style="display:inline;"><button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button></form>
+            </div>
+        </div>
+    </nav>
+    <div class="main-container">
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
+                <div class="profile-name-large" th:text="${user.fullName}">Nalwoga Tracy</div>
+                <div class="profile-title-large" th:text="${user.role.name} + ' | ' + ${user.universityId}">Student</div>
+                <div class="profile-stats-grid">
+                    <div class="stat-cell"><div class="stat-num" th:text="${#lists.size(courses)}">0</div><div class="stat-label-small">Courses</div></div>
+                    <div class="stat-cell"><div class="stat-num" th:text="${#lists.size(quizzes)}">0</div><div class="stat-label-small">Quizzes</div></div>
+                </div>
+            </div>
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/student/dashboard}"><i class="fas fa-home"></i><span>Home Feed</span></a>
+                <a class="menu-item-prof" th:href="@{/student/courses}"><i class="fas fa-book-open"></i><span>My Courses</span></a>
+                <a class="menu-item-prof" th:href="@{/student/assignments}"><i class="fas fa-calendar-alt"></i><span>Assignments</span></a>
+                <a class="menu-item-prof active" th:href="@{/student/quizzes}"><i class="fas fa-pencil-alt"></i><span>Quizzes</span></a>
+                <a class="menu-item-prof" th:href="@{/student/grades}"><i class="fas fa-trophy"></i><span>My Grades</span></a>
+                <a class="menu-item-prof" th:href="@{/student/discussions}"><i class="fas fa-comments"></i><span>Discussions</span></a>
+                <a class="menu-item-prof" th:href="@{/student/study-groups}"><i class="fas fa-users"></i><span>Study Groups</span></a>
+                <a class="menu-item-prof" th:href="@{/student/saved}"><i class="fas fa-bookmark"></i><span>Saved</span></a>
+                <a class="menu-item-prof" th:href="@{/student/downloads}"><i class="fas fa-download"></i><span>Downloads</span></a>
+                <div class="dark-mode-toggle">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                    <span class="toggle-text">Dark Mode</span>
+                    <span class="toggle-switch"></span>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div th:if="${success}" class="flash-msg success" th:text="${success}"></div>
+            <div th:if="${error}" class="flash-msg error" th:text="${error}"></div>
+            <div class="page-header">
+                <h1>My Quizzes</h1>
+            </div>
+            <div class="quiz-grid" th:if="${not #lists.isEmpty(quizzes)}">
+                <div class="quiz-card" th:each="quiz : ${quizzes}">
+                    <div class="quiz-card-header">
+                        <h3 th:text="${quiz.title}">Quiz Title</h3>
+                        <span class="course-tag" th:text="${quiz.course.code}">ICT3101</span>
+                    </div>
+                    <div class="quiz-card-meta">
+                        <span th:if="${quiz.dueDate != null}"><i class="far fa-calendar-alt"></i> Due: <span th:text="${#temporals.format(quiz.dueDate, 'MMM dd, yyyy')}">Mar 20</span></span>
+                        <span><i class="fas fa-question-circle"></i> <span th:text="${#lists.size(quiz.questions)}">0</span> questions</span>
+                        <span th:if="${quiz.timeLimitMinutes != null}"><i class="fas fa-clock"></i> <span th:text="${quiz.timeLimitMinutes}">30</span> min</span>
+                    </div>
+                    <div class="quiz-card-actions">
+                        <div class="attempt-info">
+                            <span th:if="${attemptsCount.get(quiz.id) != null and attemptsCount.get(quiz.id) > 0}">
+                                Attempts: <span th:text="${attemptsCount.get(quiz.id)}">1</span>
+                                | Last score: <span class="score-badge" th:if="${lastAttempts.get(quiz.id) != null}" th:text="${lastAttempts.get(quiz.id).score + '/' + lastAttempts.get(quiz.id).totalPoints}">0/0</span>
+                            </span>
+                            <span th:if="${attemptsCount.get(quiz.id) == null or attemptsCount.get(quiz.id) == 0}">Not attempted yet</span>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <a th:if="${lastAttempts.get(quiz.id) != null and lastAttempts.get(quiz.id).status != 'IN_PROGRESS'}"
+                               class="btn btn-secondary" th:href="@{/student/quizzes/{id}/result/{aid}(id=${quiz.id}, aid=${lastAttempts.get(quiz.id).id})}">
+                               <i class="fas fa-eye"></i> Review
+                            </a>
+                            <a th:if="${quiz.dueDate == null or not quiz.dueDate.isBefore(T(java.time.LocalDateTime).now())}"
+                               th:class="${attemptsCount.get(quiz.id) != null and attemptsCount.get(quiz.id) > 0} ? 'btn btn-secondary' : 'btn btn-primary'"
+                               th:href="@{/student/quizzes/{id}/start(id=${quiz.id})}">
+                               <i th:if="${attemptsCount.get(quiz.id) != null and attemptsCount.get(quiz.id) > 0}" class="fas fa-redo"></i>
+                               <i th:if="${attemptsCount.get(quiz.id) == null or attemptsCount.get(quiz.id) == 0}" class="fas fa-play"></i>
+                               <span th:text="${attemptsCount.get(quiz.id) != null and attemptsCount.get(quiz.id) > 0} ? 'Retake' : 'Start Quiz'">Start</span>
+                            </a>
+                            <span th:if="${quiz.dueDate != null and quiz.dueDate.isBefore(T(java.time.LocalDateTime).now())}" style="color:#cc1010;font-weight:600;font-size:0.9rem;">Closed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="empty-state" th:if="${#lists.isEmpty(quizzes)}">
+                <i class="fas fa-pencil-alt"></i>
+                <p>No quizzes available for your courses yet.</p>
+            </div>
+        </div>
+        <div class="right-sidebar">
+            <div class="sidebar-header"><h3>My Courses</h3></div>
+            <div class="sidebar-section">
+                <div th:each="course : ${courses}" class="course-item">
+                    <i class="fas fa-book" style="color:#0a66c2;"></i>
+                    <span th:text="${course.code}">ICT3101</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

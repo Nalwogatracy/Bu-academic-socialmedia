@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${quiz.title} + ' - Result | Bugema Academic Connect'">Quiz Result</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; }
+        .navbar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #eef0f3; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #004182); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1rem; }
+        .logout-btn { border: none; background: transparent; color: #5e6775; padding: 8px 12px; border-radius: 40px; cursor: pointer; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+        .result-container { max-width: 700px; margin: 88px auto 30px; padding: 0 24px; }
+        .result-card { background: white; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef0f3; margin-bottom: 24px; }
+        .score-circle { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #004182); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .score-circle .score-text { color: white; font-size: 2rem; font-weight: 700; }
+        .score-label { font-size: 1.2rem; color: #1a2634; font-weight: 600; margin-bottom: 8px; }
+        .score-percentage { font-size: 3rem; font-weight: 700; margin-bottom: 8px; }
+        .score-percentage.pass { color: #28a745; }
+        .score-percentage.fail { color: #dc3545; }
+        .score-detail { color: #5e6775; font-size: 1rem; margin-bottom: 4px; }
+        .status-msg { display: inline-block; padding: 6px 20px; border-radius: 30px; font-weight: 600; font-size: 0.9rem; margin-top: 12px; }
+        .status-msg.graded { background: #d4edda; color: #155724; }
+        .status-msg.pending { background: #fff3cd; color: #856404; }
+        .answer-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef0f3; }
+        .answer-card .q-text { font-weight: 600; color: #1a2634; margin-bottom: 8px; }
+        .answer-card .student-answer { padding: 8px 12px; border-radius: 6px; margin-bottom: 4px; font-size: 0.95rem; }
+        .answer-card .student-answer.correct { background: #d4edda; color: #155724; }
+        .answer-card .student-answer.incorrect { background: #f8d7da; color: #721c24; }
+        .answer-card .correct-answer { color: #155724; font-weight: 600; font-size: 0.9rem; margin-top: 4px; }
+        .answer-card .points-info { margin-top: 8px; color: #5e6775; font-size: 0.9rem; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 30px; border-radius: 30px; font-weight: 600; text-decoration: none; cursor: pointer; background: #0a66c2; color: white; transition: all 0.2s; }
+        .btn:hover { background: #004182; }
+        .back-link { margin-top: 16px; text-align: center; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left"><div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span></div></div>
+            <div class="nav-right">
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
+                <div class="user-profile"><div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div></div>
+                <form th:action="@{/logout}" method="post" style="display:inline;"><button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button></form>
+            </div>
+        </div>
+    </nav>
+    <div class="result-container">
+        <div class="result-card">
+            <h1 style="font-size:1.5rem;margin-bottom:20px;color:#1a2634;" th:text="${quiz.title}">Quiz Title</h1>
+            <div class="score-circle">
+                <div class="score-text" th:text="${attempt.score + '/' + attempt.totalPoints}">0/0</div>
+            </div>
+            <div class="score-percentage" th:classappend="${attempt.totalPoints > 0 and (attempt.score * 100 / attempt.totalPoints) >= 50} ? 'pass' : 'fail'"
+                 th:text="${attempt.totalPoints > 0 ? (attempt.score * 100 / attempt.totalPoints) + '%' : 'N/A'}">
+                0%
+            </div>
+            <div class="score-detail" th:text="'You scored ' + ${attempt.score} + ' out of ' + ${attempt.totalPoints} + ' points'">You scored 7 out of 10 points</div>
+            <div>
+                <span class="status-msg" th:classappend="${attempt.status == 'GRADED'} ? 'graded' : 'pending'"
+                      th:text="${attempt.status == 'GRADED'} ? 'Completed' : 'Awaiting manual grading'">
+                    Completed
+                </span>
+            </div>
+        </div>
+        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;color:#1a2634;">Your Answers</h2>
+        <div th:each="answer : ${attempt.answers}" class="answer-card">
+            <div class="q-text" th:text="${answer.question.questionText}">Question text</div>
+            <div th:if="${answer.question.questionType != 'SHORT_ANSWER'}">
+                <div class="student-answer" th:classappend="${answer.correct} ? 'correct' : 'incorrect'"
+                     th:text="${'Your answer: ' + (answer.selectedChoice != null ? answer.selectedChoice.text : '(no answer)')}">
+                    Your answer: A
+                </div>
+                <div class="correct-answer" th:if="${quiz.showResults and not answer.correct and answer.selectedChoice != null}">
+                    <span th:each="c : ${answer.question.choices}" th:if="${c.correct}" th:text="'Correct answer: ' + ${c.text}">Correct answer: B</span>
+                </div>
+                <div class="points-info">Points: <strong th:text="${answer.pointsEarned + '/' + answer.question.points}">0/10</strong></div>
+            </div>
+            <div th:if="${answer.question.questionType == 'SHORT_ANSWER'}">
+                <div class="student-answer" th:text="${'Your answer: ' + (answer.textAnswer != null ? answer.textAnswer : '(no answer)')}">Your answer</div>
+                <div class="points-info" th:if="${attempt.status == 'GRADED'}" th:text="'Points: ' + ${answer.pointsEarned} + '/' + ${answer.question.points}">0/10</div>
+                <div class="points-info" th:if="${attempt.status != 'GRADED'}" style="color:#856404;">Pending instructor review</div>
+            </div>
+        </div>
+        <div class="back-link">
+            <a class="btn" th:href="@{/student/quizzes}"><i class="fas fa-arrow-left"></i> Back to Quizzes</a>
+        </div>
+    </div>
+</body>
+</html>

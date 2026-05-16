@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+</head>
 <body>
 <div th:fragment="messages">
     <div th:each="msg : ${messages}" th:classappend="${msg.sender.id == user.id} ? 'msg-row sent' : 'msg-row received'">

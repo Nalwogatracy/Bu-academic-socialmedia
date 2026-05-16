@@ -11,6 +11,12 @@
     <!-- Google Fonts -->
     <link rel="stylesheet" th:href="@{/css/inter.css}">
     
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    
     <!-- Flatpickr for date picking -->
     <link rel="stylesheet" th:href="@{/css/flatpickr.min.css}">
     <script th:src="@{/js/flatpickr.min.js}"></script>
@@ -229,6 +235,9 @@
             </div>
         </div>
         <div class="nav-right" style="display: flex; align-items: center; gap: 16px;">
+            <button class="nav-dark-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon dark-toggle-icon"></i>
+            </button>
             <div class="user-profile" style="display: flex; align-items: center; gap: 8px;">
                 <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">LO</div>
                 <span th:text="${user.fullName}">Laban Onyango</span>

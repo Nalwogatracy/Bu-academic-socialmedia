@@ -2,6 +2,8 @@ package com.finalyearproject.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Submission {
@@ -12,15 +14,20 @@ public class Submission {
 
     private String fileUrl;
     private String fileName;
-    
+
     @Lob
-    @Basic(fetch = FetchType.LAZY)  // ← lazy so it doesn't load on every query
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "file_data")
     private byte[] fileData;
 
-    private String fileType;   // e.g. "application/pdf"
+    private String fileType;
+    private Double fileSize;
 
-    private Double fileSize;   // in KB
+    @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AssignmentAnswer> answers = new ArrayList<>();
+
+    public List<AssignmentAnswer> getAnswers() { return answers != null ? answers : new ArrayList<>(); }
+    public void setAnswers(List<AssignmentAnswer> answers) { this.answers = answers; }
 
     public byte[] getFileData() {
         return fileData;

@@ -6,8 +6,11 @@ import com.finalyearproject.repository.CourseRepository;
 import com.finalyearproject.repository.MessageRepository;
 import com.finalyearproject.repository.PostRepository;
 import com.finalyearproject.service.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Enumeration;
+import org.hibernate.Hibernate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -67,6 +70,10 @@ public class StudentController {
     private CourseRepository courseRepository;
     @Autowired
     private QuestionService questionService;
+    @Autowired
+    private QuizService quizService;
+    @Autowired
+    private QuizAttemptService quizAttemptService;
 
     public StudentController(UserService userService,
                              CourseService courseService,
@@ -162,6 +169,29 @@ public class StudentController {
         // Peers
         List<UserStatus> peersOnline = userStatusService.getOnlinePeersForUser(user);
         model.addAttribute("peersOnline", peersOnline);
+
+        // Quiz stats
+        int totalQuizzes = 0;
+        int completedQuizzes = 0;
+        int totalQuizScore = 0;
+        int totalQuizPoints = 0;
+        for (Course course : courses) {
+            List<Quiz> courseQuizzes = quizService.getQuizzesForCourse(course);
+            for (Quiz quiz : courseQuizzes) {
+                totalQuizzes++;
+                List<QuizAttempt> attempts = quizAttemptService.getAttemptsForStudent(quiz, user);
+                for (QuizAttempt attempt : attempts) {
+                    if ("GRADED".equals(attempt.getStatus())) {
+                        completedQuizzes++;
+                        totalQuizScore += attempt.getScore();
+                        totalQuizPoints += attempt.getTotalPoints();
+                    }
+                }
+            }
+        }
+        model.addAttribute("totalQuizzes", totalQuizzes);
+        model.addAttribute("completedQuizzes", completedQuizzes);
+        model.addAttribute("avgQuizScore", totalQuizPoints > 0 ? (totalQuizScore * 100 / totalQuizPoints) : 0);
 
         // Badges
         int unreadMessages = messageService != null ? messageService.countUnread(user) : 0;
@@ -708,13 +738,13 @@ public class StudentController {
     public String doSubmitAssignment(@PathVariable Long id,
                                       @RequestParam(required = false) String textAnswer,
                                       @RequestParam(required = false) MultipartFile file,
+                                      HttpServletRequest request,
                                       Authentication authentication,
                                       RedirectAttributes redirectAttributes) {
         String email = authentication.getName();
         User user = userService.findByEmail(email);
         Assignment assignment = assignmentService.getAssignmentById(id);
 
-        // Block resubmission
         if (assignmentService.hasStudentSubmitted(assignment, user)) {
             redirectAttributes.addFlashAttribute("error", "You have already submitted this assignment.");
             return "redirect:/student/assignments";
@@ -735,10 +765,42 @@ public class StudentController {
                 submission.setFileName(file.getOriginalFilename());
                 submission.setFileData(file.getBytes());
                 submission.setFileType(file.getContentType());
-                submission.setFileSize((double) file.getSize() / 1024); // KB
+                submission.setFileSize((double) file.getSize() / 1024);
             }
 
             assignmentService.saveSubmission(submission);
+
+            // Auto-grade if applicable
+            String subType = assignment.getSubmissionType();
+            if ("QUIZ".equals(subType) || "MIXED".equals(subType)
+                    || "EXACT_MATCH".equals(assignment.getAutoGradeType())
+                    || "KEYWORD_MATCH".equals(assignment.getAutoGradeType())) {
+
+                Map<Long, Long> selectedChoices = new HashMap<>();
+                Map<Long, String> textAnswers = new HashMap<>();
+
+                Enumeration<String> paramNames = request.getParameterNames();
+                while (paramNames.hasMoreElements()) {
+                    String param = paramNames.nextElement();
+                    if (param.startsWith("question_")) {
+                        Long qId = Long.parseLong(param.substring(9));
+                        String val = request.getParameter(param);
+                        if (val != null && !val.isBlank()) {
+                            selectedChoices.put(qId, Long.parseLong(val));
+                        }
+                    }
+                    if (param.startsWith("text_")) {
+                        Long qId = Long.parseLong(param.substring(5));
+                        String val = request.getParameter(param);
+                        if (val != null) {
+                            textAnswers.put(qId, val);
+                        }
+                    }
+                }
+
+                assignmentService.autoGrade(submission, selectedChoices, textAnswers);
+            }
+
             redirectAttributes.addFlashAttribute("success", "Assignment submitted successfully!");
 
         } catch (IOException e) {
@@ -894,6 +956,15 @@ public class StudentController {
             .filter(c -> !enrolledIds.contains(c.getId()))
             .collect(Collectors.toList());
 
+        // Initialize lazy collections within the transaction to avoid
+        // PostgreSQL Large Object auto-commit issue with @Lob profile pictures
+        for (Course course : allCourses) {
+            Hibernate.initialize(course.getStudents());
+            if (course.getLecturer() != null) {
+                Hibernate.initialize(course.getLecturer());
+            }
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("availableCourses", availableCourses);
         model.addAttribute("enrolledCourses", enrolledCourses);
@@ -993,6 +1064,146 @@ public class StudentController {
             "totalMaterials",    materialService.countMaterialsForUser(user),
             "totalCourses",      courses.size()
         );
+    }
+
+    // ═══════════════ QUIZ ENGINE ═══════════════
+
+    @GetMapping("/quizzes")
+    @Transactional
+    public String quizzes(Model model, Authentication authentication) {
+        User student = userService.findByEmail(authentication.getName());
+        List<Course> courses = student.getCourses();
+        List<Quiz> quizzes = new ArrayList<>();
+        Map<Long, Integer> attemptsCount = new HashMap<>();
+        Map<Long, QuizAttempt> lastAttempts = new HashMap<>();
+
+        for (Course course : courses) {
+            List<Quiz> courseQuizzes = quizService.getQuizzesForCourse(course);
+            for (Quiz quiz : courseQuizzes) {
+                quizzes.add(quiz);
+                int count = quizAttemptService.getAttemptCount(quiz, student);
+                attemptsCount.put(quiz.getId(), count);
+                List<QuizAttempt> attempts = quizAttemptService.getAttemptsForStudent(quiz, student);
+                if (!attempts.isEmpty()) {
+                    lastAttempts.put(quiz.getId(), attempts.get(0));
+                }
+            }
+        }
+
+        model.addAttribute("user", student);
+        model.addAttribute("quizzes", quizzes);
+        model.addAttribute("attemptsCount", attemptsCount);
+        model.addAttribute("lastAttempts", lastAttempts);
+        model.addAttribute("courses", courses);
+        model.addAttribute("unreadMessages", messageService.countUnread(student));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(student));
+        return "student-quizzes";
+    }
+
+    @GetMapping("/quizzes/{id}/start")
+    @Transactional
+    public String startQuiz(@PathVariable Long id, Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        User student = userService.findByEmail(authentication.getName());
+        Quiz quiz = quizService.getQuizById(id);
+
+        QuizAttempt inProgress = quizAttemptService.getInProgressAttempt(quiz, student);
+        if (inProgress != null) {
+            return "redirect:/student/quizzes/" + quiz.getId() + "/take/" + inProgress.getId();
+        }
+
+        if (quiz.getMaxAttempts() != null) {
+            int count = quizAttemptService.getAttemptCount(quiz, student);
+            if (count >= quiz.getMaxAttempts()) {
+                redirectAttributes.addFlashAttribute("error", "Maximum attempts reached");
+                return "redirect:/student/quizzes";
+            }
+        }
+
+        if (quiz.getDueDate() != null && quiz.getDueDate().isBefore(LocalDateTime.now())) {
+            redirectAttributes.addFlashAttribute("error", "This quiz is past due date");
+            return "redirect:/student/quizzes";
+        }
+
+        QuizAttempt attempt = quizAttemptService.startAttempt(quiz, student);
+        return "redirect:/student/quizzes/" + quiz.getId() + "/take/" + attempt.getId();
+    }
+
+    @GetMapping("/quizzes/{id}/take/{attemptId}")
+    @Transactional
+    public String takeQuiz(@PathVariable Long id, @PathVariable Long attemptId,
+                            Model model, Authentication authentication) {
+        QuizAttempt attempt = quizAttemptService.getAttemptById(attemptId);
+        Quiz quiz = attempt.getQuiz();
+
+        if (!"IN_PROGRESS".equals(attempt.getStatus())) {
+            return "redirect:/student/quizzes/" + id + "/result/" + attemptId;
+        }
+
+        model.addAttribute("user", attempt.getStudent());
+        model.addAttribute("quiz", quiz);
+        model.addAttribute("attempt", attempt);
+        model.addAttribute("unreadMessages", messageService.countUnread(attempt.getStudent()));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(attempt.getStudent()));
+        return "student-take-quiz";
+    }
+
+    @PostMapping("/quizzes/{id}/submit/{attemptId}")
+    @Transactional
+    public String submitQuiz(@PathVariable Long id, @PathVariable Long attemptId,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        QuizAttempt attempt = quizAttemptService.getAttemptById(attemptId);
+
+        if (!"IN_PROGRESS".equals(attempt.getStatus())) {
+            return "redirect:/student/quizzes/" + id + "/result/" + attemptId;
+        }
+
+        if (quizAttemptService.isTimeExpired(attempt)) {
+            redirectAttributes.addFlashAttribute("error", "Time limit exceeded");
+            quizAttemptService.submitAttempt(attemptId, Map.of(), Map.of());
+            return "redirect:/student/quizzes/" + id + "/result/" + attemptId;
+        }
+
+        Map<Long, Long> selectedChoices = new HashMap<>();
+        Map<Long, String> textAnswers = new HashMap<>();
+
+        Enumeration<String> paramNames = request.getParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String param = paramNames.nextElement();
+            if (param.startsWith("question_")) {
+                Long questionId = Long.parseLong(param.substring(9));
+                String value = request.getParameter(param);
+                if (value != null && !value.isBlank()) {
+                    selectedChoices.put(questionId, Long.parseLong(value));
+                }
+            }
+            if (param.startsWith("text_")) {
+                Long questionId = Long.parseLong(param.substring(5));
+                String value = request.getParameter(param);
+                if (value != null && !value.isBlank()) {
+                    textAnswers.put(questionId, value);
+                }
+            }
+        }
+
+        quizAttemptService.submitAttempt(attemptId, selectedChoices, textAnswers);
+
+        return "redirect:/student/quizzes/" + id + "/result/" + attemptId;
+    }
+
+    @GetMapping("/quizzes/{id}/result/{attemptId}")
+    public String quizResult(@PathVariable Long id, @PathVariable Long attemptId,
+                              Model model, Authentication authentication) {
+        QuizAttempt attempt = quizAttemptService.getAttemptById(attemptId);
+        Quiz quiz = attempt.getQuiz();
+
+        model.addAttribute("user", attempt.getStudent());
+        model.addAttribute("quiz", quiz);
+        model.addAttribute("attempt", attempt);
+        model.addAttribute("unreadMessages", messageService.countUnread(attempt.getStudent()));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(attempt.getStudent()));
+        return "student-quiz-result";
     }
 
     // ── STUDENT PROFILE ──────────────────────────────────────────────────────────

@@ -11,6 +11,12 @@
     <!-- Google Fonts -->
     <link rel="stylesheet" th:href="@{/css/inter.css}">
     
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    
     <style>
         /* Same base styles as before */
         * {
@@ -662,6 +668,9 @@
                     <i class="fas fa-bell"></i>
                     <span class="badge" th:text="${unreadNotifications}">0</span>
                 </div>
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
                 <div class="user-profile" onclick="location.href='/lecturer/profile'">
                     <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div>
                 </div>
@@ -796,6 +805,37 @@
                             <button class="btn-file" th:onclick="'viewSubmission(' + ${currentSubmission.id} + ')'">
                                 <i class="fas fa-eye"></i> Preview
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Auto-graded answers -->
+                    <div th:if="${currentSubmission != null and !currentSubmission.answers.isEmpty()}"
+                         style="margin-top:20px; padding:16px; background:#f0f8ff; border-radius:10px; border:1px solid #b8daff;">
+                        <h4 style="margin-bottom:12px; color:#0a66c2;"><i class="fas fa-robot"></i> Auto-Graded Results</h4>
+                        <div th:each="answer, iter : ${currentSubmission.answers}"
+                             style="background:white; border-radius:8px; padding:12px; margin-bottom:8px; border:1px solid #eef0f3;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <span style="font-size:0.85rem; font-weight:600; color:#0a66c2;"
+                                      th:text="'Q' + (iter.index + 1)">Q1</span>
+                                <span th:if="${answer.correct}" style="color:#2e7d32; font-weight:600; font-size:0.85rem;">
+                                    <i class="fas fa-check-circle"></i> Correct (<span th:text="${answer.pointsEarned}">10</span> pts)
+                                </span>
+                                <span th:if="${!answer.correct and answer.question.questionType != 'SHORT_ANSWER'}"
+                                      style="color:#cc1010; font-weight:600; font-size:0.85rem;">
+                                    <i class="fas fa-times-circle"></i> Incorrect
+                                </span>
+                                <span th:if="${answer.question.questionType == 'SHORT_ANSWER'}"
+                                      style="color:#f5b042; font-weight:600; font-size:0.85rem;">
+                                    <i class="fas fa-hourglass-half"></i> Needs manual grade
+                                </span>
+                            </div>
+                            <div style="font-size:0.95rem; color:#1a2634; margin-bottom:4px;" th:text="${answer.question.questionText}">Question</div>
+                            <div th:if="${answer.selectedChoice != null}" style="font-size:0.9rem; color:#5e6775;">
+                                Answer: <span th:text="${answer.selectedChoice.text}" th:style="${answer.correct} ? 'color:#2e7d32; font-weight:600;' : 'color:#cc1010; font-weight:600;'">Choice</span>
+                            </div>
+                            <div th:if="${answer.textAnswer != null and !answer.textAnswer.isEmpty()}" style="font-size:0.9rem; color:#5e6775; background:#f7f9fc; padding:8px; border-radius:6px; margin-top:4px;">
+                                <span th:text="${answer.textAnswer}">Text answer</span>
+                            </div>
                         </div>
                     </div>
 

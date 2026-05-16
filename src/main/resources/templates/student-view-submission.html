@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <title th:text="'Submission: ' + ${assignment.title}">View Submission</title>
     <link rel="stylesheet" th:href="@{/css/all.min.css}">
-    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css"}>
+
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css"}>
+
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
         body { background:#f0f2f5; }
@@ -46,6 +53,9 @@
     <div class="nav-container">
         <div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span></div>
         <div style="display:flex; align-items:center; gap:8px;">
+            <button class="nav-dark-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon dark-toggle-icon"></i>
+            </button>
             <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">NT</div>
             <form th:action="@{/logout}" method="post">
                 <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
@@ -105,6 +115,38 @@
         <span class="pending-badge">
             Submitted: <span th:text="${#temporals.format(submission.submittedAt, 'MMM dd, yyyy HH:mm')}">Mar 18</span>
         </span>
+    </div>
+
+    <!-- Auto-graded answers -->
+    <div class="card" th:if="${submission != null and !submission.answers.isEmpty()}">
+        <h2><i class="fas fa-check-circle" style="color:#0a66c2;"></i> Question Results</h2>
+        <div th:each="answer, iter : ${submission.answers}"
+             style="background:#f7f9fc; border:1px solid #eef0f3; border-radius:10px; padding:14px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="font-size:0.85rem; color:#0a66c2; font-weight:600;"
+                      th:text="'Question ' + (iter.index + 1)">Q1</span>
+                <span th:if="${answer.correct}" style="color:#2e7d32; font-weight:600;">
+                    <i class="fas fa-check-circle"></i> Correct (<span th:text="${answer.pointsEarned}">10</span> pts)
+                </span>
+                <span th:if="${!answer.correct and answer.question.questionType != 'SHORT_ANSWER'}" style="color:#cc1010; font-weight:600;">
+                    <i class="fas fa-times-circle"></i> Incorrect
+                </span>
+                <span th:if="${answer.question.questionType == 'SHORT_ANSWER' and !answer.correct}" style="color:#f5b042; font-weight:600;">
+                    <i class="fas fa-hourglass-half"></i> Pending review
+                </span>
+            </div>
+            <div style="font-weight:600; color:#1a2634; margin-bottom:8px;" th:text="${answer.question.questionText}">Question text</div>
+            <div th:if="${answer.selectedChoice != null}"
+                 style="background:white; border-radius:6px; padding:8px 12px; border:1px solid #eef0f3; font-size:0.95rem;">
+                <span style="color:#5e6775;">Your answer: </span>
+                <span th:text="${answer.selectedChoice.text}" th:style="${answer.correct} ? 'color:#2e7d32; font-weight:600;' : 'color:#cc1010; font-weight:600;'">Choice text</span>
+            </div>
+            <div th:if="${answer.textAnswer != null and !answer.textAnswer.isEmpty()}"
+                 style="background:white; border-radius:6px; padding:8px 12px; border:1px solid #eef0f3; font-size:0.95rem; margin-top:4px;">
+                <span style="color:#5e6775;">Your answer: </span>
+                <span th:text="${answer.textAnswer}">Text answer</span>
+            </div>
+        </div>
     </div>
 
     <!-- Submitted text answer -->

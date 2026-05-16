@@ -3,6 +3,7 @@ package com.finalyearproject.controller;
 import com.finalyearproject.model.*;
 import com.finalyearproject.service.*;
 import com.finalyearproject.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +57,12 @@ public class LecturerController {
     private AttachmentRepository attachmentRepository;
     @Autowired
     private AttendanceService attendanceService;
+    @Autowired
+    private QuizService quizService;
+    @Autowired
+    private QuizAttemptService quizAttemptService;
+    @Autowired
+    private QuizAttemptRepository quizAttemptRepository;
 
     public LecturerController(UserService userService,
                                CourseService courseService,
@@ -132,6 +139,25 @@ public class LecturerController {
 
         long materialsShared = materialService.countMaterialsByLecturer(lecturer);
         int  avgEngagement   = calcAvgEngagement(courses);
+
+        // Quiz stats
+        List<Quiz> allQuizzes = quizService.getQuizzesForLecturer(lecturer);
+        int totalQuizSubmissions = 0;
+        int totalQuizScore = 0;
+        int totalQuizPoints = 0;
+        for (Quiz quiz : allQuizzes) {
+            List<QuizAttempt> attempts = quizAttemptService.getAttemptsForQuiz(quiz);
+            for (QuizAttempt attempt : attempts) {
+                if ("GRADED".equals(attempt.getStatus())) {
+                    totalQuizSubmissions++;
+                    totalQuizScore += attempt.getScore();
+                    totalQuizPoints += attempt.getTotalPoints();
+                }
+            }
+        }
+        model.addAttribute("quizCount", allQuizzes.size());
+        model.addAttribute("quizSubmissions", totalQuizSubmissions);
+        model.addAttribute("avgQuizScore", totalQuizPoints > 0 ? (totalQuizScore * 100 / totalQuizPoints) : 0);
 
         model.addAttribute("activeCourses",   activeCourses);
         model.addAttribute("totalStudents",   totalStudents);
@@ -635,7 +661,8 @@ public class LecturerController {
 
 
     @PostMapping("/assignment/create")
-    public String createAssignment(Authentication authentication,
+    public String createAssignment(HttpServletRequest request,
+                                   Authentication authentication,
                                    @RequestParam Long courseId,
                                    @RequestParam String title,
                                    @RequestParam String description,
@@ -643,6 +670,10 @@ public class LecturerController {
                                    @RequestParam Integer totalPoints,
                                    @RequestParam(required = false) MultipartFile file,
                                    @RequestParam String visibility,
+                                   @RequestParam(defaultValue = "FILE_UPLOAD") String submissionType,
+                                   @RequestParam(defaultValue = "NONE") String autoGradeType,
+                                   @RequestParam(required = false) String autoGradeAnswer,
+                                   @RequestParam(required = false) Integer autoGradePoints,
                                    RedirectAttributes redirectAttributes) {
         User lecturer = userService.findByEmail(authentication.getName());
         Course course = courseService.getCourseById(courseId);
@@ -665,8 +696,54 @@ public class LecturerController {
         assignment.setLecturer(lecturer);
         assignment.setCreatedAt(LocalDateTime.now());
         assignment.setVisibility(visibility);
+        assignment.setSubmissionType(submissionType);
+        assignment.setAutoGradeType(autoGradeType);
+        if ("EXACT_MATCH".equals(autoGradeType) || "KEYWORD_MATCH".equals(autoGradeType)) {
+            assignment.setAutoGradeAnswer(autoGradeAnswer);
+            assignment.setAutoGradePoints(autoGradePoints);
+        }
         
         assignmentService.saveAssignment(assignment);
+
+        // Handle questions for QUIZ/MIXED submission types
+        if ("QUIZ".equals(submissionType) || "MIXED".equals(submissionType)) {
+            String[] questionTexts = request.getParameterValues("questionText");
+            String[] questionTypes = request.getParameterValues("questionType");
+            String[] questionPoints = request.getParameterValues("questionPoints");
+
+            if (questionTexts != null) {
+                for (int i = 0; i < questionTexts.length; i++) {
+                    if (questionTexts[i].isBlank()) continue;
+                    AssignmentQuestion q = new AssignmentQuestion();
+                    q.setAssignment(assignment);
+                    q.setQuestionText(questionTexts[i]);
+                    q.setQuestionType(questionTypes != null && i < questionTypes.length ? questionTypes[i] : "MULTIPLE_CHOICE");
+                    q.setPoints(questionPoints != null && i < questionPoints.length ? Integer.parseInt(questionPoints[i]) : 10);
+                    q.setOrderIndex(i);
+
+                    if ("MULTIPLE_CHOICE".equals(q.getQuestionType()) || "TRUE_FALSE".equals(q.getQuestionType())) {
+                        String choicePrefix = "choice_" + i + "_";
+                        String[] choiceTexts = request.getParameterValues(choicePrefix + "text");
+                        String[] correctIdx = request.getParameterValues(choicePrefix + "correct");
+                        if (choiceTexts != null) {
+                            List<AssignmentChoice> choices = new ArrayList<>();
+                            for (int j = 0; j < choiceTexts.length; j++) {
+                                if (choiceTexts[j].isBlank()) continue;
+                                AssignmentChoice c = new AssignmentChoice();
+                                c.setQuestion(q);
+                                c.setText(choiceTexts[j]);
+                                c.setCorrect(correctIdx != null && correctIdx.length > j && "true".equals(correctIdx[j]));
+                                c.setOrderIndex(j);
+                                choices.add(c);
+                            }
+                            q.setChoices(choices);
+                        }
+                    }
+                    assignment.getQuestions().add(q);
+                }
+            }
+            assignmentService.saveAssignment(assignment);
+        }
 
         // ✅ Always create feed post — outside the file block
         Post feedPost = new Post();
@@ -1219,6 +1296,192 @@ public class LecturerController {
                 .body(csvData);
     }
 
+    // ==================== QUIZ MANAGEMENT ====================
+
+    @GetMapping("/quizzes")
+    public String quizzes(Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        List<Course> courses = courseService.getCoursesForLecturer(lecturer);
+        List<Quiz> quizzes = quizService.getQuizzesForLecturer(lecturer);
+
+        model.addAttribute("user", lecturer);
+        model.addAttribute("courses", courses);
+        model.addAttribute("quizzes", quizzes);
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        return "lecturer-quizzes";
+    }
+
+    @GetMapping("/quizzes/create")
+    public String createQuizForm(Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        model.addAttribute("user", lecturer);
+        model.addAttribute("courses", courseService.getCoursesForLecturer(lecturer));
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        return "lecturer-create-quiz";
+    }
+
+    @PostMapping("/quizzes/create")
+    public String createQuiz(Authentication authentication,
+                             @RequestParam String title,
+                             @RequestParam String description,
+                             @RequestParam Long courseId,
+                             @RequestParam(required = false) Integer timeLimitMinutes,
+                             @RequestParam(required = false) String dueDate,
+                             @RequestParam(required = false, defaultValue = "false") boolean shuffleQuestions,
+                             @RequestParam(required = false, defaultValue = "false") boolean showResults,
+                             RedirectAttributes redirectAttributes) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        Course course = courseService.getCourseById(courseId);
+
+        Quiz quiz = new Quiz();
+        quiz.setTitle(title);
+        quiz.setDescription(description);
+        quiz.setCourse(course);
+        quiz.setCreatedBy(lecturer);
+        quiz.setTimeLimitMinutes(timeLimitMinutes);
+        if (dueDate != null && !dueDate.isBlank()) {
+            quiz.setDueDate(LocalDate.parse(dueDate).atStartOfDay());
+        }
+        quiz.setShuffleQuestions(shuffleQuestions);
+        quiz.setShowResults(showResults);
+
+        quizService.createQuiz(quiz);
+
+        redirectAttributes.addFlashAttribute("success", "Quiz created! Now add questions.");
+        return "redirect:/lecturer/quizzes/" + quiz.getId() + "/edit";
+    }
+
+    @GetMapping("/quizzes/{id}/edit")
+    public String editQuiz(@PathVariable Long id, Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        Quiz quiz = quizService.getQuizById(id);
+
+        model.addAttribute("user", lecturer);
+        model.addAttribute("quiz", quiz);
+        model.addAttribute("courses", courseService.getCoursesForLecturer(lecturer));
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        return "lecturer-edit-quiz";
+    }
+
+    @PostMapping("/quizzes/{id}/questions/add")
+    public String addQuestion(@PathVariable Long id,
+                              Authentication authentication,
+                              @RequestParam String questionType,
+                              @RequestParam String questionText,
+                              @RequestParam int points,
+                              @RequestParam(required = false) List<String> choiceTexts,
+                              @RequestParam(required = false) List<String> correctChoices,
+                              RedirectAttributes redirectAttributes) {
+        Quiz quiz = quizService.getQuizById(id);
+
+        QuizQuestion question = new QuizQuestion();
+        question.setQuiz(quiz);
+        question.setQuestionType(questionType);
+        question.setQuestionText(questionText);
+        question.setPoints(points);
+        question.setOrderIndex(quiz.getQuestions() != null ? quiz.getQuestions().size() : 0);
+
+        if ("MULTIPLE_CHOICE".equals(questionType) || "TRUE_FALSE".equals(questionType)) {
+            List<Choice> choices = new ArrayList<>();
+            if (choiceTexts != null) {
+                for (int i = 0; i < choiceTexts.size(); i++) {
+                    Choice choice = new Choice();
+                    choice.setQuestion(question);
+                    choice.setText(choiceTexts.get(i));
+                    choice.setCorrect(correctChoices != null && correctChoices.contains(String.valueOf(i)));
+                    choice.setOrderIndex(i);
+                    choices.add(choice);
+                }
+            }
+            question.setChoices(choices);
+        }
+
+        quizService.addQuestion(quiz, question);
+
+        redirectAttributes.addFlashAttribute("success", "Question added!");
+        return "redirect:/lecturer/quizzes/" + id + "/edit";
+    }
+
+    @PostMapping("/quizzes/{id}/delete")
+    public String deleteQuiz(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        quizService.deleteQuiz(id);
+        redirectAttributes.addFlashAttribute("success", "Quiz deleted");
+        return "redirect:/lecturer/quizzes";
+    }
+
+    @GetMapping("/quizzes/{id}/submissions")
+    public String quizSubmissions(@PathVariable Long id, Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        Quiz quiz = quizService.getQuizById(id);
+        List<QuizAttempt> attempts = quizAttemptService.getAttemptsForQuiz(quiz);
+
+        model.addAttribute("user", lecturer);
+        model.addAttribute("quiz", quiz);
+        model.addAttribute("attempts", attempts);
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        return "lecturer-quiz-submissions";
+    }
+
+    @GetMapping("/quizzes/{id}/submissions/{attemptId}")
+    public String quizSubmissionDetail(@PathVariable Long id, @PathVariable Long attemptId,
+                                        Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        QuizAttempt attempt = quizAttemptService.getAttemptById(attemptId);
+
+        model.addAttribute("user", lecturer);
+        model.addAttribute("quiz", attempt.getQuiz());
+        model.addAttribute("attempt", attempt);
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        return "lecturer-quiz-grade";
+    }
+
+    @PostMapping("/quizzes/{id}/submissions/{attemptId}/grade")
+    public String gradeShortAnswer(@PathVariable Long id, @PathVariable Long attemptId,
+                                    @RequestParam Long answerId,
+                                    @RequestParam int pointsEarned,
+                                    RedirectAttributes redirectAttributes) {
+        QuizAttempt attempt = quizAttemptService.getAttemptById(attemptId);
+        for (QuizAnswer answer : attempt.getAnswers()) {
+            if (answer.getId().equals(answerId)) {
+                answer.setPointsEarned(pointsEarned);
+                answer.setCorrect(pointsEarned > 0);
+                break;
+            }
+        }
+
+        int total = 0;
+        for (QuizAnswer answer : attempt.getAnswers()) {
+            total += answer.getPointsEarned();
+        }
+        attempt.setScore(total);
+        attempt.setStatus("GRADED");
+        quizAttemptRepository.save(attempt);
+
+        redirectAttributes.addFlashAttribute("success", "Grade updated");
+        return "redirect:/lecturer/quizzes/" + id + "/submissions/" + attemptId;
+    }
+
+    @GetMapping("/quizzes/{id}/statistics")
+    @Transactional(readOnly = true)
+    public String quizStatistics(@PathVariable Long id, Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        Quiz quiz = quizService.getQuizById(id);
+
+        Map<String, Object> stats = quizAttemptService.getQuizStatistics(quiz);
+
+        model.addAttribute("user", lecturer);
+        model.addAttribute("quiz", quiz);
+        model.addAttribute("stats", stats);
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        return "lecturer-quiz-statistics";
+    }
+
     // ==================== HELPER METHODS ====================
 
     
@@ -1408,7 +1671,13 @@ public class LecturerController {
     public String createAssignmentPage() {
         return "lecturer-create-assignment";
     }
+    @GetMapping("/attendance")
+    public String attendanceRedirect() {
+        return "redirect:/lecturer/attendance/take";
+    }
+
     @GetMapping("/attendance/take")
+    @Transactional
     public String takeAttendance(Model model, Authentication authentication) {
         User lecturer = userService.findByEmail(authentication.getName());
         List<Course> courses = courseService.getCoursesForLecturer(lecturer);
@@ -1421,6 +1690,24 @@ public class LecturerController {
         model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
 
         return "lecturer-attendance";
+    }
+
+    @GetMapping("/students")
+    @Transactional
+    public String students(Model model, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        List<Course> courses = courseService.getCoursesForLecturer(lecturer);
+        Set<User> allStudents = new LinkedHashSet<>();
+        for (Course course : courses) {
+            allStudents.addAll(course.getStudents());
+        }
+
+        model.addAttribute("user", lecturer);
+        model.addAttribute("students", new ArrayList<>(allStudents));
+        model.addAttribute("courses", courses);
+        model.addAttribute("unreadMessages", messageService.countUnread(lecturer));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(lecturer));
+        return "lecturer-students";
     }
 
     @PostMapping("/attendance/save")

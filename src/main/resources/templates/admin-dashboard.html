@@ -11,8 +11,14 @@
     <!-- Google Fonts -->
     <link rel="stylesheet" th:href="@{/css/inter.css}">
     
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
     <!-- Chart.js for analytics -->
     <script th:src="@{/js/chart.umd.min.js}"></script>
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
     
     <style>
         /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING - ADMIN THEME ===== */
@@ -1056,6 +1062,10 @@
                     <span class="badge" th:text="${unreadNotifications}">2</span>
                 </a>
                 
+                <button class="nav-dark-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                </button>
+                
                 <div class="user-profile">
                     <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">AD</div>
                 </div>
@@ -1128,6 +1138,11 @@
                     <i class="fas fa-cog"></i>
                     <span>System Settings</span>
                 </a>
+                <div class="dark-mode-toggle">
+                    <i class="fas fa-moon dark-toggle-icon"></i>
+                    <span class="toggle-text">Dark Mode</span>
+                    <span class="toggle-switch"></span>
+                </div>
                 <a class="menu-item-prof" th:href="@{/admin/logs}">
                     <i class="fas fa-history"></i>
                     <span>Audit Logs</span>

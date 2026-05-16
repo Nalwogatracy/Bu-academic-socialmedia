@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz | Bugema Academic Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { overflow-x: hidden; background: #f0f2f5; }
+        .navbar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #eef0f3; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; transition: all 0.2s; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .nav-item i { font-size: 1.3rem; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; font-weight: 600; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid white; }
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; transition: all 0.2s; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1rem; }
+        .logout-btn { border: none; background: transparent; color: #5e6775; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 40px; cursor: pointer; transition: all 0.2s; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+        .main-container { max-width: 700px; margin: 88px auto 30px; padding: 0 24px; }
+        .main-content { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px; border: 1px solid #eef0f3; }
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #1a2634; }
+        .page-header p { color: #5e6775; margin-top: 4px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #1a2634; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #e0e4e9; border-radius: 8px; font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #0a66c2; }
+        .form-group textarea { height: 100px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input[type="checkbox"] { width: auto; }
+        .btn { padding: 12px 30px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #0a66c2; color: white; }
+        .btn-primary:hover { background: #004182; }
+        .btn-secondary { background: #eef3f8; color: #1a2634; }
+        .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: #5e6775; text-decoration: none; margin-bottom: 16px; font-weight: 500; }
+        .back-link:hover { color: #0a66c2; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span><span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Lecturer</span></div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-item" onclick="location.href='/lecturer/dashboard'"><i class="fas fa-home"></i></div>
+                <div class="nav-item" onclick="location.href='/lecturer/messages'"><i class="fas fa-comment"></i><span class="badge" th:text="${unreadMessages}">0</span></div>
+                <div class="nav-item" onclick="location.href='/lecturer/notifications'"><i class="fas fa-bell"></i><span class="badge" th:text="${unreadNotifications}">0</span></div>
+                <button class="nav-dark-toggle" title="Toggle dark mode"><i class="fas fa-moon dark-toggle-icon"></i></button>
+                <div class="user-profile"><div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div></div>
+                <form th:action="@{/logout}" method="post" style="display:inline;"><button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button></form>
+            </div>
+        </div>
+    </nav>
+    <div class="main-container">
+        <div class="main-content">
+            <a class="back-link" th:href="@{/lecturer/quizzes}"><i class="fas fa-arrow-left"></i> Back to Quizzes</a>
+            <div class="page-header">
+                <h1>Create New Quiz</h1>
+                <p>Set up your quiz details. You can add questions after creating.</p>
+            </div>
+            <form th:action="@{/lecturer/quizzes/create}" method="post">
+                <div class="form-group">
+                    <label>Quiz Title</label>
+                    <input type="text" name="title" placeholder="e.g. Mid-Term Quiz Chapter 1-4" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Provide instructions or notes for students"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Course</label>
+                    <select name="courseId" required>
+                        <option value="" disabled selected>Select course</option>
+                        <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.code + ' - ' + course.name}">ICT3101 - SE</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Time Limit (minutes, optional)</label>
+                        <input type="number" name="timeLimitMinutes" placeholder="e.g. 30" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date (optional)</label>
+                        <input type="date" name="dueDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="shuffleQuestions" id="shuffleQuestions">
+                        <label for="shuffleQuestions" style="margin-bottom:0;">Shuffle questions for students</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="showResults" id="showResults">
+                        <label for="showResults" style="margin-bottom:0;">Show correct answers after submission</label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <a class="btn btn-secondary" th:href="@{/lecturer/quizzes}">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Create Quiz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzes | Bugema Academic Connect</title>
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/css/inter.css}">
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { overflow-x: hidden; background: #f0f2f5; }
+        .navbar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid #eef0f3; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; gap: 32px; }
+        .logo { font-size: 1.4rem; font-weight: 700; color: #0a66c2; display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 1.6rem; color: #0a66c2; }
+        .logo span { background: linear-gradient(135deg, #0a66c2, #7b2eda); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .search-bar { position: relative; width: 320px; }
+        .search-bar i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #5e6775; font-size: 0.9rem; }
+        .search-bar input { width: 100%; padding: 10px 16px 10px 44px; border: none; border-radius: 24px; font-size: 0.95rem; background: #eef3f8; transition: all 0.2s; }
+        .search-bar input:focus { outline: none; background: white; box-shadow: 0 0 0 2px #0a66c2; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-item { position: relative; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5e6775; transition: all 0.2s; cursor: pointer; }
+        .nav-item:hover { background: #eef3f8; color: #0a66c2; }
+        .nav-item i { font-size: 1.3rem; }
+        .badge { position: absolute; top: 6px; right: 8px; background: #cc1010; color: white; font-size: 0.65rem; font-weight: 600; min-width: 18px; height: 18px; border-radius: 18px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid white; }
+        .user-profile { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 40px; cursor: pointer; transition: all 0.2s; margin-left: 8px; }
+        .user-profile:hover { background: #eef3f8; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1rem; }
+        .logout-btn { border: none; background: transparent; color: #5e6775; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 40px; cursor: pointer; transition: all 0.2s; }
+        .logout-btn:hover { background: #fee2e2; color: #cc1010; }
+        .main-container { max-width: 1400px; margin: 88px auto 30px; padding: 0 24px; display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; }
+        .left-sidebar { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: fit-content; position: sticky; top: 88px; overflow: hidden; border: 1px solid #eef0f3; }
+        .profile-card { padding: 20px; border-bottom: 1px solid #eef0f3; background: linear-gradient(to bottom, #f7f9fc, white); }
+        .profile-cover { height: 80px; background: linear-gradient(135deg, #0a66c2, #7b2eda); margin: -20px -20px 0 -20px; margin-bottom: 30px; position: relative; overflow: hidden; }
+        .profile-cover::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><path d="M0 0 L100 100 M100 0 L0 100" stroke="white" stroke-width="1"/></svg>'); background-size: 20px 20px; }
+        .profile-avatar-large { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #0a66c2, #7b2eda); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.2rem; font-weight: 600; margin: -45px auto 12px; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .profile-name-large { font-weight: 700; font-size: 1.3rem; text-align: center; margin-bottom: 4px; color: #1a2634; }
+        .profile-title-large { color: #5e6775; font-size: 0.9rem; text-align: center; margin-bottom: 16px; background: #eef3f8; padding: 4px 12px; border-radius: 30px; display: inline-block; margin-left: auto; margin-right: auto; width: fit-content; }
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 0 8px; border-top: 1px solid #eef0f3; }
+        .stat-cell { text-align: center; background: #f7f9fc; padding: 12px; border-radius: 10px; }
+        .stat-num { font-weight: 700; font-size: 1.3rem; color: #0a66c2; margin-bottom: 4px; }
+        .stat-label-small { font-size: 0.75rem; color: #5e6775; text-transform: uppercase; letter-spacing: 0.3px; }
+        .menu-section { padding: 16px 0; }
+        .menu-item-prof { display: flex; align-items: center; gap: 14px; padding: 12px 20px; color: #1a2634; transition: all 0.2s; cursor: pointer; text-decoration: none; font-weight: 500; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .menu-item-prof:hover { background: #f7f9fc; color: #0a66c2; }
+        .menu-item-prof.active { background: #eef3f8; color: #0a66c2; border-left-color: #0a66c2; font-weight: 600; }
+        .menu-item-prof i { font-size: 1.2rem; width: 24px; color: #5e6775; }
+        .menu-item-prof:hover i { color: #0a66c2; }
+        .menu-item-prof.active i { color: #0a66c2; }
+        .menu-badge { margin-left: auto; background: #eef3f8; color: #1a2634; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .main-content { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 24px; border: 1px solid #eef0f3; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #1a2634; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #0a66c2; color: white; }
+        .btn-primary:hover { background: #004182; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #bb2d3b; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+        .flash-msg { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; }
+        .flash-msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-msg.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .quiz-grid { display: grid; gap: 16px; }
+        .quiz-card { background: #f7f9fc; border: 1px solid #eef0f3; border-radius: 10px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .quiz-info h3 { font-size: 1.1rem; font-weight: 700; color: #1a2634; margin-bottom: 6px; }
+        .quiz-meta { display: flex; gap: 16px; color: #5e6775; font-size: 0.85rem; }
+        .quiz-meta span { display: flex; align-items: center; gap: 4px; }
+        .quiz-actions { display: flex; gap: 8px; }
+        .course-tag { background: #eef3f8; color: #0a66c2; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #5e6775; }
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; color: #c0c8d4; }
+        .empty-state p { font-size: 1.1rem; }
+        @media (max-width: 768px) { .main-container { grid-template-columns: 1fr; } .left-sidebar { display: none; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo"><i class="fas fa-graduation-cap"></i><span>Bugema Connect</span><span style="font-size:0.8rem; background:#0a66c2; color:white; padding:2px 8px; border-radius:20px; margin-left:8px;">Lecturer</span></div>
+                <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search quizzes..."></div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-item" onclick="location.href='/lecturer/dashboard'"><i class="fas fa-home"></i></div>
+                <div class="nav-item" onclick="location.href='/lecturer/messages'"><i class="fas fa-comment"></i><span class="badge" th:text="${unreadMessages}">0</span></div>
+                <div class="nav-item" onclick="location.href='/lecturer/notifications'"><i class="fas fa-bell"></i><span class="badge" th:text="${unreadNotifications}">0</span></div>
+                <button class="nav-dark-toggle" title="Toggle dark mode"><i class="fas fa-moon dark-toggle-icon"></i></button>
+                <div class="user-profile" onclick="location.href='/lecturer/profile'"><div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div></div>
+                <form th:action="@{/logout}" method="post" style="display:inline;"><button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button></form>
+            </div>
+        </div>
+    </nav>
+    <div class="main-container">
+        <div class="left-sidebar">
+            <div class="profile-card">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar-large" th:text="${#strings.substring(user.fullName, 0, 2)}">JD</div>
+                <div class="profile-name-large" th:text="${user.fullName}">John Doe</div>
+                <div class="profile-title-large">Lecturer</div>
+                <div class="profile-stats-grid">
+                    <div class="stat-cell"><div class="stat-num" th:text="${#lists.size(quizzes)}">0</div><div class="stat-label-small">Quizzes</div></div>
+                    <div class="stat-cell"><div class="stat-num" th:text="${#lists.size(courses)}">0</div><div class="stat-label-small">Courses</div></div>
+                </div>
+            </div>
+            <div class="menu-section">
+                <a class="menu-item-prof" th:href="@{/lecturer/dashboard}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                <a class="menu-item-prof" th:href="@{/lecturer/courses}"><i class="fas fa-book"></i><span>My Courses</span></a>
+                <a class="menu-item-prof" th:href="@{/lecturer/materials}"><i class="fas fa-file-upload"></i><span>Materials</span></a>
+                <a class="menu-item-prof" th:href="@{/lecturer/assignments}"><i class="fas fa-tasks"></i><span>Assignments</span></a>
+                <a class="menu-item-prof active" th:href="@{/lecturer/quizzes}"><i class="fas fa-pencil-alt"></i><span>Quizzes</span></a>
+                <a class="menu-item-prof" th:href="@{/lecturer/discussions}"><i class="fas fa-comments"></i><span>Discussions</span></a>
+                <a class="menu-item-prof" th:href="@{/lecturer/analytics}"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+                <div class="dark-mode-toggle"><i class="fas fa-moon dark-toggle-icon"></i><span class="toggle-text">Dark Mode</span><span class="toggle-switch"></span></div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div th:if="${success}" class="flash-msg success" th:text="${success}"></div>
+            <div th:if="${error}" class="flash-msg error" th:text="${error}"></div>
+            <div class="page-header">
+                <h1>My Quizzes</h1>
+                <a class="btn btn-primary" th:href="@{/lecturer/quizzes/create}"><i class="fas fa-plus"></i> Create Quiz</a>
+            </div>
+            <div class="quiz-grid" th:if="${not #lists.isEmpty(quizzes)}">
+                <div class="quiz-card" th:each="quiz : ${quizzes}">
+                    <div class="quiz-info">
+                        <h3 th:text="${quiz.title}">Quiz Title</h3>
+                        <div class="quiz-meta">
+                            <span class="course-tag" th:text="${quiz.course.code}">ICT3101</span>
+                            <span th:if="${quiz.dueDate != null}"><i class="far fa-calendar-alt"></i> Due: <span th:text="${#temporals.format(quiz.dueDate, 'MMM dd, yyyy')}">Mar 20</span></span>
+                            <span><i class="fas fa-question-circle"></i> <span th:text="${#lists.size(quiz.questions)}">0</span> questions</span>
+                            <span th:if="${quiz.timeLimitMinutes != null}"><i class="fas fa-clock"></i> <span th:text="${quiz.timeLimitMinutes}">30</span> min</span>
+                        </div>
+                    </div>
+                    <div class="quiz-actions">
+                        <a class="btn btn-primary btn-sm" th:href="@{/lecturer/quizzes/{id}/edit(id=${quiz.id})}"><i class="fas fa-edit"></i> Edit</a>
+                        <a class="btn btn-sm" style="background:#eef3f8;color:#1a2634;" th:href="@{/lecturer/quizzes/{id}/submissions(id=${quiz.id})}"><i class="fas fa-users"></i> Submissions</a>
+                        <a class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;" th:href="@{/lecturer/quizzes/{id}/statistics(id=${quiz.id})}"><i class="fas fa-chart-bar"></i> Stats</a>
+                        <form th:action="@{/lecturer/quizzes/{id}/delete(id=${quiz.id})}" method="post" style="display:inline;" onsubmit="return confirm('Delete this quiz?')">
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="empty-state" th:if="${#lists.isEmpty(quizzes)}">
+                <i class="fas fa-pencil-alt"></i>
+                <p>No quizzes yet. Create your first quiz!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

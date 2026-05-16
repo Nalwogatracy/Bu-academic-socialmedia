@@ -11,8 +11,14 @@
     <!-- Google Fonts -->
     <link rel="stylesheet" th:href="@{/css/inter.css}">
     
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
     <!-- Chart.js for analytics -->
     <script th:src="@{/js/chart.umd.min.js}"></script>
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
     
     <style>
         /* ===== PROFESSIONAL ACADEMIC SOCIAL PLATFORM STYLING - LECTURER THEME ===== */
@@ -1272,6 +1278,10 @@
                 <span class="badge" th:text="${unreadNotifications}">2</span>
             </a>
             
+            <button class="nav-dark-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon dark-toggle-icon"></i>
+            </button>
+            
             <!-- Replace the entire user-profile div and the script below it -->
             <div class="user-profile" style="position:relative;">
 
@@ -1372,11 +1382,15 @@
                 <span>Assignments</span>
                 <span class="menu-badge danger" th:text="${pendingGrades}">12</span>
             </a>
+            <a class="menu-item-prof" th:href="@{/lecturer/quizzes}">
+                <i class="fas fa-pencil-alt"></i>
+                <span>Quizzes</span>
+            </a>
             <a class="menu-item-prof" th:href="@{/lecturer/students}">
                 <i class="fas fa-users"></i>
                 <span>Students</span>
             </a>
-            <a class="menu-item-prof" th:href="@{/lecturer/attendance}">
+            <a class="menu-item-prof" th:href="@{/lecturer/attendance/take}">
                 <i class="fas fa-clipboard-list"></i>
                 <span>Attendance</span>
             </a>
@@ -1397,6 +1411,11 @@
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </a>
+            <div class="dark-mode-toggle">
+                <i class="fas fa-moon dark-toggle-icon"></i>
+                <span class="toggle-text">Dark Mode</span>
+                <span class="toggle-switch"></span>
+            </div>
         </div>
 
         <!-- Department Info Widget -->
@@ -1487,6 +1506,19 @@
                     <div class="stat-number" th:text="${avgEngagement + '%'}">87%</div>
                     <div class="stat-trend">
                         <i class="fas fa-arrow-up"></i> +5% vs last month
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fff3e0;">
+                    <i class="fas fa-pencil-alt" style="color:#f5b042;"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Quizzes</h3>
+                    <div class="stat-number" th:text="${quizCount}">0</div>
+                    <div class="stat-trend">
+                        <i class="fas fa-arrow-up"></i> <span th:text="${quizSubmissions}">0</span> submissions
                     </div>
                 </div>
             </div>

@@ -106,8 +106,7 @@ public class User {
     @Column(name = "bio", length = 1000)
     private String bio;
 
-    @Lob
-    @Column(name = "profile_picture")
+    @Column(name = "profile_picture", columnDefinition = "bytea")
     private byte[] profilePicture;
 
     public String getPhoneNumber() {

@@ -3,6 +3,8 @@ package com.finalyearproject.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Assignment {
@@ -15,20 +17,44 @@ public class Assignment {
     @ManyToOne
     private User assignedTo;
 
-    private String status; // "PENDING", "SUBMITTED", etc.
+    private String status;
 
     private LocalDateTime dueDate;
-    private String description;   // ← must exist
+    private String description;
     private Integer totalPoints;
-    private LocalDateTime createdAt; // ← must exist
+    private LocalDateTime createdAt;
     private String visibility;
-  
-    
+
     @ManyToOne
     private Course course;
-    
-     @ManyToOne
+
+    @ManyToOne
     private User lecturer;
+
+    private String submissionType = "FILE_UPLOAD";
+    private String autoGradeType = "NONE";
+    @Column(length = 5000)
+    private String autoGradeAnswer;
+    private Integer autoGradePoints;
+
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orderIndex ASC")
+    private List<AssignmentQuestion> questions = new ArrayList<>();
+
+    public String getSubmissionType() { return submissionType != null ? submissionType : "FILE_UPLOAD"; }
+    public void setSubmissionType(String submissionType) { this.submissionType = submissionType; }
+
+    public String getAutoGradeType() { return autoGradeType != null ? autoGradeType : "NONE"; }
+    public void setAutoGradeType(String autoGradeType) { this.autoGradeType = autoGradeType; }
+
+    public String getAutoGradeAnswer() { return autoGradeAnswer; }
+    public void setAutoGradeAnswer(String autoGradeAnswer) { this.autoGradeAnswer = autoGradeAnswer; }
+
+    public Integer getAutoGradePoints() { return autoGradePoints; }
+    public void setAutoGradePoints(Integer autoGradePoints) { this.autoGradePoints = autoGradePoints; }
+
+    public List<AssignmentQuestion> getQuestions() { return questions; }
+    public void setQuestions(List<AssignmentQuestion> questions) { this.questions = questions; }
 
     public String getDescription() {
         return description;

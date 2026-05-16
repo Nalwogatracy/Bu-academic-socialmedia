@@ -11,6 +11,12 @@
     <!-- Google Fonts -->
     <link rel="stylesheet" th:href="@{/css/inter.css}">
     
+    <!-- Custom theme system (dark mode) -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    
+    <!-- Dark mode toggle script -->
+    <script th:src="@{/js/dark-mode.js}"></script>
+    
     <style>
         /* Copy the same styles from your dashboard */
         * {
@@ -279,6 +285,9 @@
             </div>
         </div>
         <div class="nav-right">
+            <button class="nav-dark-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon dark-toggle-icon"></i>
+            </button>
             <div class="user-profile">
                 <div class="user-avatar" th:text="${#strings.substring(user.fullName, 0, 2)}">LO</div>
             </div>
