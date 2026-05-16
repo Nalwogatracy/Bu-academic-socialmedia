@@ -1296,6 +1296,23 @@ public class LecturerController {
                 .body(csvData);
     }
 
+    @GetMapping("/course/{id}/export/attendance")
+    public ResponseEntity<byte[]> exportAttendance(@PathVariable Long id, Authentication authentication) {
+        User lecturer = userService.findByEmail(authentication.getName());
+        Course course = courseService.getCourseById(id);
+
+        if (!course.getLecturer().getId().equals(lecturer.getId())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        byte[] csvData = attendanceService.generateAttendanceReport(course);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + course.getCode() + "_attendance.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csvData);
+    }
+
     // ==================== QUIZ MANAGEMENT ====================
 
     @GetMapping("/quizzes")

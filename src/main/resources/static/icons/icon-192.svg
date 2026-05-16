@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a66c2"/>
+      <stop offset="100%" stop-color="#05428a"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="32" fill="url(#bg)"/>
+  <g transform="translate(96,96)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Graduation cap -->
+    <path d="M-60,-10 L0,-45 L60,-10 L0,25 Z" stroke-width="5" fill="rgba(255,255,255,0.15)"/>
+    <path d="M-60,-10 L0,-45 L60,-10" stroke-width="5"/>
+    <path d="M-60,-10 L0,25 L60,-10" stroke-width="5" fill="rgba(255,255,255,0.1)"/>
+    <!-- Tassel -->
+    <path d="M0,-45 L0,-60" stroke-width="3"/>
+    <circle cx="0" cy="-64" r="4" fill="#fff"/>
+    <!-- Book below -->
+    <rect x="-35" y="25" width="70" height="40" rx="4" stroke-width="4" fill="rgba(255,255,255,0.1)"/>
+    <line x1="-35" y1="45" x2="35" y2="45" stroke-width="2"/>
+    <!-- Book spine -->
+    <line x1="0" y1="25" x2="0" y2="65" stroke-width="3"/>
+  </g>
+</svg>

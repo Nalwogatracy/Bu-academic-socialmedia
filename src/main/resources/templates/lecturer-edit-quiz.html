@@ -74,6 +74,7 @@
         .add-choice-btn { background: none; border: 1px dashed #c0c8d4; color: #5e6775; padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 8px; }
         .add-choice-btn:hover { border-color: #0a66c2; color: #0a66c2; }
     </style>
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <nav class="navbar">
@@ -187,5 +188,6 @@
         document.getElementById('questionType').addEventListener('change', toggleChoices);
         toggleChoices();
     </script>
+    <script src="/js/offline.js"></script>
 </body>
 </html>

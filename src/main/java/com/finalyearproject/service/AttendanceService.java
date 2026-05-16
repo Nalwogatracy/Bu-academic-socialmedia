@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class AttendanceService {
@@ -82,5 +83,42 @@ public class AttendanceService {
         long present = attendanceRepository.countByStudentAndCourseAndStatus(student, course, "PRESENT");
         long late = attendanceRepository.countByStudentAndCourseAndStatus(student, course, "LATE");
         return ((double) (present + late) / total) * 100;
+    }
+
+    public byte[] generateAttendanceReport(Course course) {
+        List<Attendance> records = attendanceRepository.findByCourse(course);
+        Set<User> students = course.getStudents();
+
+        StringBuilder csv = new StringBuilder();
+        csv.append("Student Name,University ID,Email");
+
+        // Collect distinct dates sorted
+        List<LocalDate> dates = records.stream()
+                .map(Attendance::getDate)
+                .distinct()
+                .sorted()
+                .toList();
+        for (LocalDate d : dates) {
+            csv.append(",").append(d.toString());
+        }
+        csv.append("\n");
+
+        for (User student : students) {
+            csv.append(student.getFullName()).append(",");
+            csv.append(student.getUniversityId() != null ? student.getUniversityId() : "").append(",");
+            csv.append(student.getEmail());
+
+            for (LocalDate d : dates) {
+                String status = records.stream()
+                        .filter(r -> r.getStudent().getId().equals(student.getId()) && r.getDate().equals(d))
+                        .map(Attendance::getStatus)
+                        .findFirst()
+                        .orElse("");
+                csv.append(",").append(status);
+            }
+            csv.append("\n");
+        }
+
+        return csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 }

@@ -1241,6 +1241,7 @@
             opacity: 1;
         }
     </style>
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
 
@@ -1255,7 +1256,9 @@
             </div>
             <div class="search-bar">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search courses, students, materials...">
+                <form th:action="@{/search}" method="get" style="display:contents;">
+                    <input type="text" name="q" placeholder="Search courses, students, materials...">
+                </form>
             </div>
         </div>
         
@@ -1404,8 +1407,12 @@
                 <span class="menu-badge purple" th:text="${newQuestions}">5</span>
             </a>
             <a class="menu-item-prof" th:href="@{/lecturer/schedule}">
-                <i class="fas fa-calendar-alt"></i>
+                <i class="fas fa-clock"></i>
                 <span>Schedule</span>
+            </a>
+            <a class="menu-item-prof" th:href="@{/lecturer/calendar}">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Calendar</span>
             </a>
             <a class="menu-item-prof" th:href="@{/lecturer/settings}">
                 <i class="fas fa-cog"></i>
@@ -2068,5 +2075,6 @@
 } 
 </script>
 
+    <script src="/js/offline.js"></script>
 </body>
 </html>

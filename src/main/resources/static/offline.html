@@ -1,18 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Offline - Bugema Academic Connect</title>
-    <link rel="stylesheet" th:href="@{/css/all.min.css}">
-    <link rel="stylesheet" th:href="@{/css/inter.css}">
-    
-    <!-- Custom theme system (dark mode) -->
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    
-    <!-- Dark mode toggle script -->
-    <script th:src="@{/js/dark-mode.js}"></script>
-    
+    <link rel="stylesheet" href="/css/all.min.css">
+    <link rel="stylesheet" href="/css/inter.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="manifest" href="/manifest.json">
+    <script src="/js/dark-mode.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -70,7 +66,6 @@
             color: #94a3b8;
         }
     </style>
-    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <div class="offline-card">

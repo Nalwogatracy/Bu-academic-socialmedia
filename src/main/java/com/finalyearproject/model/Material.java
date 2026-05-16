@@ -28,7 +28,7 @@ public class Material {
     
     private boolean completed;
     private String visibility;
-    @Lob
+    @Column(columnDefinition = "bytea")
     private byte[] fileData;
 
     public String getVisibility() {

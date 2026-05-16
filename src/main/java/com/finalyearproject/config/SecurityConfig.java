@@ -97,8 +97,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/register", "/forgot-password", "/reset-password",
-                        "/css/**", "/js/**", "/images/**", "/webfonts/**", "/fonts/**", "/user/profile-picture/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                        "/css/**", "/js/**", "/images/**", "/webfonts/**", "/fonts/**",
+                        "/user/profile-picture/**", "/sw.js", "/offline.html", "/manifest.json",
+                        "/icons/**", "/actuator/health").permitAll()
+                .requestMatchers("/admin/**", "/actuator/**").hasRole("ADMIN")
                 .requestMatchers("/lecturer/**").hasRole("LECTURER")
                 .requestMatchers("/student/**").hasRole("STUDENT")
                 .anyRequest().authenticated()

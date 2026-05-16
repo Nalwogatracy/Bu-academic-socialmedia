@@ -15,9 +15,7 @@ public class Submission {
     private String fileUrl;
     private String fileName;
 
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @Column(name = "file_data")
+    @Column(name = "file_data", columnDefinition = "bytea")
     private byte[] fileData;
 
     private String fileType;

@@ -38,4 +38,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     // In CourseRepository.java
     @Query("SELECT DISTINCT u FROM Course c JOIN c.students u WHERE c IN :courses AND u != :user")
     List<User> findCoursematesInCourses(@Param("courses") List<Course> courses, @Param("user") User user);
+    
+    @Query("SELECT c FROM Course c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(c.code) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(c.department) LIKE LOWER(CONCAT('%', :q, '%'))")
+    List<Course> search(@Param("q") String q);
 }

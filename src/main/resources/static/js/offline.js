@@ -322,4 +322,130 @@
         );
     }
 
+    // ─── 8. Polling fallback (Firefox/Safari: no Background Sync) ──────────────
+    // Background Sync API is Chromium-only. This polling mechanism serves as the
+    // fallback for Firefox, Safari, and any browser that lacks sync support.
+
+    let syncInterval = null;
+    const POLL_INTERVAL_MS = 30000; // 30 seconds
+
+    async function flushOutbox() {
+        if (!navigator.onLine) return;
+
+        const db = await openDB().catch(() => null);
+        if (!db) return;
+
+        // Flush message outbox
+        try {
+            const msgTx = db.transaction('messageOutbox', 'readonly');
+            const msgReq = msgTx.objectStore('messageOutbox').getAll();
+            const msgItems = await new Promise(resolve => {
+                msgReq.onsuccess = () => resolve(msgReq.result || []);
+                msgReq.onerror = () => resolve([]);
+            });
+
+            for (const item of msgItems) {
+                if (item.synced) continue;
+                try {
+                    const body = new FormData();
+                    body.append('recipientId', item.recipientId || '');
+                    body.append('content', item.content || '');
+
+                    const resp = await fetch(item.url, { method: 'POST', body });
+                    if (resp.ok || resp.redirected) {
+                        item.synced = true;
+                        const writeTx = db.transaction('messageOutbox', 'readwrite');
+                        await new Promise((resolve, reject) => {
+                            const req = writeTx.objectStore('messageOutbox').put(item);
+                            req.onsuccess = () => resolve();
+                            req.onerror = () => reject(req.error);
+                        });
+                        // Notify page to refresh
+                        const container = document.getElementById('messagesContainer');
+                        if (container && window.refreshMessages) window.refreshMessages();
+                    }
+                } catch (e) {
+                    // Still offline, skip
+                }
+            }
+        } catch (e) { /* outbox store may not exist */ }
+
+        // Flush assignment outbox
+        try {
+            const asgTx = db.transaction('assignmentOutbox', 'readonly');
+            const asgReq = asgTx.objectStore('assignmentOutbox').getAll();
+            const asgItems = await new Promise(resolve => {
+                asgReq.onsuccess = () => resolve(asgReq.result || []);
+                asgReq.onerror = () => resolve([]);
+            });
+
+            let syncedAnyAssignment = false;
+            for (const item of asgItems) {
+                if (item.synced) continue;
+                try {
+                    const body = new FormData();
+                    body.append('textAnswer', item.textAnswer || '');
+                    if (item.fileData) {
+                        const blob = new Blob([item.fileData.buffer], { type: item.fileData.type });
+                        body.append('file', blob, item.fileData.name);
+                    }
+
+                    const resp = await fetch(item.url, { method: 'POST', body });
+                    if (resp.ok || resp.redirected) {
+                        item.synced = true;
+                        const writeTx = db.transaction('assignmentOutbox', 'readwrite');
+                        await new Promise((resolve, reject) => {
+                            const req = writeTx.objectStore('assignmentOutbox').put(item);
+                            req.onsuccess = () => resolve();
+                            req.onerror = () => reject(req.error);
+                        });
+                        syncedAnyAssignment = true;
+                    }
+                } catch (e) {
+                    // Still offline
+                }
+            }
+
+            if (syncedAnyAssignment) {
+                showToastIfAvailable('Assignment submitted', 'Your offline submission was uploaded', 'success');
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        } catch (e) { /* outbox store may not exist */ }
+
+        // Update queue count badge
+        updateQueueCount();
+    }
+
+    function startPolling() {
+        stopPolling();
+        if (navigator.onLine) {
+            syncInterval = setInterval(flushOutbox, POLL_INTERVAL_MS);
+        }
+    }
+
+    function stopPolling() {
+        if (syncInterval) {
+            clearInterval(syncInterval);
+            syncInterval = null;
+        }
+    }
+
+    // Start/stop polling based on connection state
+    window.addEventListener('online', () => {
+        startPolling();
+        // Also flush immediately when coming back online
+        setTimeout(flushOutbox, 1000);
+    });
+
+    window.addEventListener('offline', () => {
+        stopPolling();
+    });
+
+    // Start polling on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startPolling);
+    } else {
+        startPolling();
+    }
+
 })();

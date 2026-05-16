@@ -40,6 +40,16 @@ self.addEventListener('activate', event => {
     );
 });
 
+// ─── Polling fallback (Firefox/Safari: no Background Sync) ────────────────────
+// Retry unsynced items every 60s when there's at least one active client.
+setInterval(async () => {
+    const clients = await self.clients.matchAll().catch(() => []);
+    if (clients.length > 0) {
+        await flushMessageOutbox().catch(() => {});
+        await flushAssignmentOutbox().catch(() => {});
+    }
+}, 60000);
+
 // ─── Fetch: intercept all requests ───────────────────────────────────────────
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);

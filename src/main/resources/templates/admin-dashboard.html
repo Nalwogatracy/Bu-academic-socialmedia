@@ -1026,6 +1026,7 @@
             }
         }
     </style>
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -1039,7 +1040,9 @@
                 </div>
                 <div class="search-bar">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search users, courses, activities...">
+                    <form th:action="@{/search}" method="get" style="display:contents;">
+                        <input type="text" name="q" placeholder="Search users, courses, activities...">
+                    </form>
                 </div>
             </div>
             
@@ -1133,6 +1136,10 @@
                     <i class="fas fa-flag"></i>
                     <span>Reports</span>
                     <span class="menu-badge warning">2</span>
+                </a>
+                <a class="menu-item-prof" th:href="@{/admin/calendar}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendar</span>
                 </a>
                 <a class="menu-item-prof" th:href="@{/admin/system}">
                     <i class="fas fa-cog"></i>
@@ -1651,5 +1658,6 @@
             }
         }
     </script>
+    <script src="/js/offline.js"></script>
 </body>
 </html>

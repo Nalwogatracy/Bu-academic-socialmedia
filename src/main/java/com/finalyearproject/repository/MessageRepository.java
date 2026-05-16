@@ -41,4 +41,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("user") User user,
             @Param("conversationId") Long conversationId
     );
+    
+    @Query("SELECT m FROM Message m WHERE LOWER(m.content) LIKE LOWER(CONCAT('%', :q, '%')) AND (m.sender = :user OR m.recipient = :user)")
+    List<Message> search(@Param("q") String q, @Param("user") User user);
 }

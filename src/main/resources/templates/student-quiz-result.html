@@ -50,6 +50,7 @@
         .btn:hover { background: #004182; }
         .back-link { margin-top: 16px; text-align: center; }
     </style>
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <nav class="navbar">
@@ -105,5 +106,6 @@
             <a class="btn" th:href="@{/student/quizzes}"><i class="fas fa-arrow-left"></i> Back to Quizzes</a>
         </div>
     </div>
+    <script src="/js/offline.js"></script>
 </body>
 </html>
