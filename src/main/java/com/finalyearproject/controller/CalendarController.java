@@ -11,7 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 @Controller
 public class CalendarController {
@@ -29,36 +30,39 @@ public class CalendarController {
         this.notificationService = notificationService;
     }
 
+    private String prepareCalendarView(List<CalendarEvent> events, User user, Model model) {
+        // Group events by date (pre-processed for Thymeleaf compatibility)
+        Map<LocalDate, List<CalendarEvent>> grouped = new TreeMap<>();
+        for (CalendarEvent e : events) {
+            LocalDate date = e.getDateTime().toLocalDate();
+            grouped.computeIfAbsent(date, k -> new ArrayList<>()).add(e);
+        }
+        model.addAttribute("user", user);
+        model.addAttribute("groupedEvents", grouped);
+        model.addAttribute("eventCount", events.size());
+        model.addAttribute("unreadMessages", messageService.countUnread(user));
+        model.addAttribute("unreadNotifications", notificationService.countUnread(user));
+        return "calendar";
+    }
+
     @GetMapping("/student/calendar")
     public String studentCalendar(Authentication auth, Model model) {
         User user = userService.findByEmail(auth.getName());
         List<CalendarEvent> events = calendarService.getEventsForStudent(user);
-        model.addAttribute("user", user);
-        model.addAttribute("events", events);
-        model.addAttribute("unreadMessages", messageService.countUnread(user));
-        model.addAttribute("unreadNotifications", notificationService.countUnread(user));
-        return "calendar";
+        return prepareCalendarView(events, user, model);
     }
 
     @GetMapping("/lecturer/calendar")
     public String lecturerCalendar(Authentication auth, Model model) {
         User user = userService.findByEmail(auth.getName());
         List<CalendarEvent> events = calendarService.getEventsForLecturer(user);
-        model.addAttribute("user", user);
-        model.addAttribute("events", events);
-        model.addAttribute("unreadMessages", messageService.countUnread(user));
-        model.addAttribute("unreadNotifications", notificationService.countUnread(user));
-        return "calendar";
+        return prepareCalendarView(events, user, model);
     }
 
     @GetMapping("/admin/calendar")
     public String adminCalendar(Authentication auth, Model model) {
         User user = userService.findByEmail(auth.getName());
         List<CalendarEvent> events = calendarService.getEventsForAdmin();
-        model.addAttribute("user", user);
-        model.addAttribute("events", events);
-        model.addAttribute("unreadMessages", messageService.countUnread(user));
-        model.addAttribute("unreadNotifications", notificationService.countUnread(user));
-        return "calendar";
+        return prepareCalendarView(events, user, model);
     }
 }
