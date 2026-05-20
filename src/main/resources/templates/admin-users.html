@@ -969,16 +969,23 @@
             </div>
 
             <!-- Pagination -->
-            <div class="pagination">
-                <span style="color:#5e6775; margin-right:16px;">Showing 1-10 of <span th:text="${totalUsers}">1,234</span></span>
-                <a href="#" class="page-link active">1</a>
-                <a href="#" class="page-link">2</a>
-                <a href="#" class="page-link">3</a>
-                <a href="#" class="page-link">4</a>
-                <a href="#" class="page-link">5</a>
-                <a href="#" class="page-link">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
+            <div class="pagination" th:if="${userPage.totalPages > 1}">
+                <span style="color:#5e6775; margin-right:16px;">
+                    Showing <span th:text="${userPage.number * userPage.size + 1}">1</span>-
+                    <span th:text="${userPage.number * userPage.size + userPage.size}">10</span>
+                    of <span th:text="${userPage.totalElements}">100</span>
+                </span>
+                <a th:if="${userPage.hasPrevious()}"
+                   th:href="@{/admin/users(page=${userPage.number - 1})}"
+                   class="page-link"><i class="fas fa-chevron-left"></i></a>
+                <a th:each="i : ${#numbers.sequence(0, userPage.totalPages - 1)}"
+                   th:href="@{/admin/users(page=${i})}"
+                   th:classappend="${i == userPage.number} ? 'active' : ''"
+                   class="page-link"
+                   th:text="${i + 1}">1</a>
+                <a th:if="${userPage.hasNext()}"
+                   th:href="@{/admin/users(page=${userPage.number + 1})}"
+                   class="page-link"><i class="fas fa-chevron-right"></i></a>
             </div>
         </div>
     </div>

@@ -219,17 +219,4 @@ public class AuthController {
         model.addAttribute("showLogin", true);
         return "Login-registration";
     }
-    @PostMapping("/debug-login")
-    public String debugLogin(@RequestParam String username,
-                             @RequestParam String password) {
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        System.out.println("RAW PASSWORD: " + password);
-        System.out.println("HASHED PASSWORD: " + user.getPassword());
-        boolean matches = passwordEncoder.matches(password, user.getPassword());
-        System.out.println("MATCH? " + matches);
-
-        return matches ? "Password matches!" : "Password does NOT match!";
-    }
 }

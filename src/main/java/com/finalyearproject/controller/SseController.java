@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @RestController
 @RequestMapping("/sse")
 public class SseController {
+
+    private static final Logger log = LoggerFactory.getLogger(SseController.class);
 
     // Store one emitter per user (keyed by userId)
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
@@ -51,7 +55,7 @@ public class SseController {
         emitter.onTimeout(()    -> emitters.remove(user.getId()));
         //emitter.onError(e       -> emitters.remove(user.getId()));
         emitter.onError(e -> {
-            System.out.println("SSE error for user " + user.getId() + ": " + e.getMessage());
+            log.warn("SSE error for user {}: {}", user.getId(), e.getMessage());
         });
 
         // Send initial counts immediately on connect

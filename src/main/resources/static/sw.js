@@ -121,7 +121,7 @@ async function handlePost(request) {
     const url = new URL(request.url);
 
     try {
-        const response = await fetch(request);
+        const response = await fetch(request.clone());
         return response;
     } catch {
         // Offline — save to IndexedDB outbox

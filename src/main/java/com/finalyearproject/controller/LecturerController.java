@@ -29,11 +29,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/lecturer")
 public class LecturerController {
+
+    private static final Logger log = LoggerFactory.getLogger(LecturerController.class);
 
     private final UserService         userService;
     private final CourseService       courseService;
@@ -454,11 +458,10 @@ public class LecturerController {
                 );
             }
 
-            System.out.println(">>> SAVING ATTACHMENT: " + originalName
-                + " | type=" + attachment.getFileType());
+            log.debug("Saving attachment: {} type={}", originalName, attachment.getFileType());
 
             attachmentRepository.save(attachment);
-            System.out.println(">>> ATTACHMENT SAVED OK");
+            log.debug("Attachment saved OK");
         }
 
         //redirectAttributes.addFlashAttribute("success", "Material uploaded successfully!");
@@ -772,11 +775,10 @@ public class LecturerController {
                         );
                     }
 
-                    System.out.println(">>> SAVING ASSIGNMENT ATTACHMENT: " + originalName
-                        + " | type=" + attachment.getFileType());
+                    log.debug("Saving assignment attachment: {} type={}", originalName, attachment.getFileType());
 
                     attachmentRepository.save(attachment);
-                    System.out.println(">>> ASSIGNMENT ATTACHMENT SAVED OK");
+                    log.debug("Assignment attachment saved OK");
                         } catch (IOException e) {
                             redirectAttributes.addFlashAttribute("error",
                                     "Assignment created but file upload failed: " + e.getMessage());

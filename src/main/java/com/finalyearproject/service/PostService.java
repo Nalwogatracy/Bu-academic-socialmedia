@@ -6,12 +6,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class PostService {
+
+    private static final Logger log = LoggerFactory.getLogger(PostService.class);
 
     private final PostRepository       postRepository;
     private final CommentRepository    commentRepository;
@@ -110,24 +114,22 @@ public class PostService {
                     );
                 }
 
-                System.out.println(">>> STORING: " + originalName
-                    + " | type=" + attachment.getFileType()
-                    + " | size=" + attachment.getFileSize()
-                    + " | stored=" + attachment.getStoredFileName());
+                log.debug("Storing attachment: {} type={} size={} stored={}",
+                    originalName, attachment.getFileType(),
+                    attachment.getFileSize(), attachment.getStoredFileName());
 
                 Attachment savedAttachment = attachmentRepository.save(attachment);
-                System.out.println(">>> SAVED OK, ID=" + savedAttachment.getId());
+                log.debug("Attachment saved OK, ID={}", savedAttachment.getId());
 
                 if (saved.getAttachments() != null) {
                     saved.getAttachments().add(savedAttachment);
                 } else {
-                    System.err.println(">>> attachments list is NULL on Post!");
+                    log.warn("Attachments list is NULL on Post!");
                 }
 
             } catch (Exception e) {
-                System.err.println(">>> ATTACHMENT FAILED: " 
-                    + e.getClass().getName() + " — " + e.getMessage());
-                e.printStackTrace();
+                log.error("Attachment failed: {} — {}",
+                    e.getClass().getName(), e.getMessage(), e);
             }
         }
 
@@ -181,8 +183,8 @@ public class PostService {
     public Post     getPostById(Long id) { return postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found")); }
     public long     countAllPosts()      { return postRepository.count(); }
     public List<Post> getAllPosts()       { return postRepository.findAll(); }
-    public void     sendAnnouncement(String title, String message) { System.out.println("Announcement: " + title); }
-    public void     generateReport()     { System.out.println("Report generated."); }
+    public void     sendAnnouncement(String title, String message) { log.info("Announcement: {}", title); }
+    public void     generateReport()     { log.info("Report generated."); }
     public int      getPostStatistics()  { return 42; }
     public List<Post> getSavedPostsForUser(User user) {
         return postRepository.findBySavedByContaining(user);

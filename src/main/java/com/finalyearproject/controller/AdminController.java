@@ -12,6 +12,8 @@ import com.finalyearproject.service.UserService;
 import com.finalyearproject.service.UserStatusService;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,16 +87,16 @@ public class AdminController {
 
     // ═══════════════ USERS ═══════════════
     @GetMapping("/admin/users")
-    public String users(Model model) {
+    public String users(Model model, @RequestParam(defaultValue = "0") int page) {
         model.addAttribute("user", userService.getLoggedInAdmin());
         addSidebarData(model);
-        List<User> all = userService.getAllUsers();
-        model.addAttribute("users", all.stream().filter(Objects::nonNull).toList());
-        model.addAttribute("studentCount",
-            all.stream().filter(u -> u.getRole() != null && u.getRole().name().equals("STUDENT")).count());
-        model.addAttribute("lecturerCount",
-            all.stream().filter(u -> u.getRole() != null && u.getRole().name().equals("LECTURER")).count());
-        model.addAttribute("activeUsers", all.stream().filter(User::isApproved).count());
+        Page<User> userPage = userService.getUsersPaged(PageRequest.of(page, 20));
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("users", userPage.getContent());
+        long total = userService.countAllUsers();
+        model.addAttribute("studentCount", userService.countStudents());
+        model.addAttribute("lecturerCount", userService.countLecturers());
+        model.addAttribute("activeUsers", userService.countActiveUsers());
         return "admin-users";
     }
 

@@ -8,6 +8,8 @@ import com.finalyearproject.repository.UserRepository;
 import com.finalyearproject.repository.UserStatusRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -45,27 +47,31 @@ public class UserService {
     
 
     public int countAllUsers() {
-        return 1234;
+        return (int) userRepository.count();
     }
 
     public int countActiveUsers() {
-        return 892;
+        return (int) userRepository.countByLastLoginIsNotNull();
     }
 
     public int countNewUsersToday() {
-        return 12;
+        return (int) userRepository.countByCreatedAtAfter(LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0));
     }
 
     public int countStudents() {
-        return 1148;
+        return (int) userRepository.countByRole(RoleType.STUDENT);
     }
 
     public int countLecturers() {
-        return 86;
+        return (int) userRepository.countByRole(RoleType.LECTURER);
     }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public Page<User> getUsersPaged(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
     public List<User> getPendingUsers() {
         return userRepository.findByApprovedFalse();

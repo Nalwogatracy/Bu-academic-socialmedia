@@ -9,6 +9,8 @@ import com.finalyearproject.service.CourseService;
 import com.finalyearproject.service.MaterialService;
 import com.finalyearproject.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -23,6 +25,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/courses/{courseId}/materials")
 public class CourseMaterialController {
+
+    private static final Logger log = LoggerFactory.getLogger(CourseMaterialController.class);
 
     private final CourseService courseService;
     private final MaterialService materialService;
@@ -71,7 +75,7 @@ public class CourseMaterialController {
 
             return "redirect:/admin/courses/" + courseId;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Failed to upload material for course {}", courseId, e);
             return "redirect:/admin/courses/" + courseId + "?error=true";
         }
     }

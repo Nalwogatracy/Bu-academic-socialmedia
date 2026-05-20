@@ -52,33 +52,7 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
-    // Authentication Logic
-    /*@Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return username -> {
-
-            User user = userRepository.findByEmail(username)
-                .orElseGet(() -> userRepository.findByUniversityId(username)
-                        .orElseThrow(() ->
-                                new UsernameNotFoundException("User not found: " + username)));
-
-            System.out.println("LOGIN ATTEMPT: " + username);
-            System.out.println("PASSWORD IN DB: " + user.getPassword());
-            System.out.println("ROLE: " + user.getRole());
-            System.out.println("APPROVED: " + user.isApproved());
-
-            // Lecturer must be approved
-            if (user.getRole().name().equals("LECTURER") && !user.isApproved()) {
-                throw new DisabledException("Lecturer account not approved yet");
-            }
-
-            return new org.springframework.security.core.userdetails.User(
-                    username,              // <-- use the input username
-                    user.getPassword(),
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-            );
-        };
-    } */
+    // Authentication Logic is delegated to CustomUserDetailsService
 
     // Remember Me Token Repository
     @Bean
@@ -117,7 +91,6 @@ public class SecurityConfig {
                     else response.sendRedirect("/student/dashboard");
                 })
                 .failureHandler((request, response, exception) -> {
-                    System.out.println("LOGIN FAILED: " + exception.getMessage());
                     response.sendRedirect("/login?error=true");
                 })
                 .permitAll()

@@ -3,6 +3,7 @@ package com.finalyearproject.repository;
 
 import com.finalyearproject.model.Role.RoleType;
 import com.finalyearproject.model.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,6 +25,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByRole(RoleType role);
     List<User> findByApprovedFalseAndRole(RoleType role);
     
+    long countByRole(RoleType role);
+
+    long countByCreatedAtAfter(LocalDateTime since);
+
+    long countByLastLoginIsNotNull();
+
     @Query("SELECT u FROM User u WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.universityId) LIKE LOWER(CONCAT('%', :q, '%'))")
     List<User> search(@Param("q") String q);
     

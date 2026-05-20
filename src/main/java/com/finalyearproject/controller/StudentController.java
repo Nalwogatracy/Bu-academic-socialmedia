@@ -40,11 +40,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;   
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/student")
 public class StudentController {
+
+    private static final Logger log = LoggerFactory.getLogger(StudentController.class);
 
     private final UserService userService;
     private final CourseService courseService;
@@ -513,8 +517,7 @@ public class StudentController {
         try {
             postService.createPost(user, title, content, type, courseId, file, linkUrl, courses, visibility);
         } catch (IOException e) {
-            // Log error — in production add proper error handling
-            System.err.println("File upload failed: " + e.getMessage());
+            log.error("File upload failed", e);
         }
 
         return "redirect:/student/dashboard";
@@ -628,7 +631,7 @@ public class StudentController {
             Resource resource = fileStorageService.loadFileAsResource(attachment.getStoredFileName());
 
             if (!resource.exists() || !resource.isReadable()) {
-                System.err.println("File not found or not readable: " + attachment.getStoredFileName());
+                log.warn("File not found or not readable: {}", attachment.getStoredFileName());
                 return ResponseEntity.notFound().build();
             }
 
@@ -646,9 +649,7 @@ public class StudentController {
                     .body(resource);
 
         } catch (Exception e) {
-            System.err.println("Download failed for attachment " + attachmentId
-                    + ": " + e.getMessage());
-            e.printStackTrace();
+            log.error("Download failed for attachment {}: {}", attachmentId, e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }
